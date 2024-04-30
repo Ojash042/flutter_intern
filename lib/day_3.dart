@@ -87,14 +87,36 @@ Map<String, List<String>> mapper = {
     // TODO: implement build
     return Container(
       color: Colors.white,
-      child:(Row(
-        children: [
-          Expanded(
-            child: VerticalList(mapper: mapper, onPressed: () => {changeSetShowMore()}, showMore: widget.showMore)),
-          Expanded(child: HorizontalList(mapper: mapper,)),
-          Expanded(child: WrapList())
-        ],
-      )));
+      child: SingleChildScrollView(
+        child: 
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            Container(
+              height: 512,
+              child: VerticalList(mapper: mapper,onPressed: () => {changeSetShowMore()}, showMore: widget.showMore,),
+              
+            ),
+              Container(
+                height: 512,
+                child: HorizontalList(mapper: mapper)),
+              Container(child: WrapList()),
+            ]
+              )
+            ,
+          )
+        );
+      //   Row(
+      //   children: [
+      //     Expanded(
+      //       child: VerticalList(mapper: mapper, onPressed: () => {changeSetShowMore()}, showMore: widget.showMore)),
+      //     Expanded(child: HorizontalList(mapper: mapper,)),
+      //     Expanded(child: WrapList())
+      //   ],
+      // )
+      
+      
+      
   }
 }
 
@@ -148,17 +170,20 @@ class HorizontalList extends StatelessWidget {
     return ListView.builder(scrollDirection: Axis.horizontal,
     itemCount: 10,
     itemBuilder: (context, index) => (
-      Card(
-        margin: const EdgeInsets.all(5),
+      Container(
+        height: 1024,
+        width: 512,
         child: Padding(
           padding: const EdgeInsets.all(5),
           child: ImageAndDescriptionContainer(imageSrc: mapper["ImageSrcs"]![index], imageTitle: mapper["ImageTitle"]![index], imageDescription: DateTime.now().toString(),),
         ),
-      )
+    )
     )
     );
   }
 }
+
+
 class VerticalList extends StatefulWidget{
   final Map<String, List<String>> mapper;
   final VoidCallback onPressed;
@@ -214,16 +239,12 @@ class ImageAndDescriptionContainer extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-    print(imageTitle);
     // TODO: implement build
     return Column(
       children: [
-        Text(imageTitle),
-        ClipRRect(
-          borderRadius: const BorderRadius.all(Radius.circular(10)),
-          child: Image.network(imageSrc, width: 512, height: 512),
-        ),
-        Text(imageDescription),
+        Text(imageTitle, style: Theme.of(context).textTheme.displayLarge),
+        Image.network(imageSrc, width: 512, height: 256),
+        Text(imageDescription, style: Theme.of(context).textTheme.bodyMedium,),
       ],
     );
   }
