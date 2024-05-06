@@ -8,7 +8,7 @@
         {
             "name": "flutter_intern",
             "request": "launch",
-            "program": "lib/day_2.dart",
+            "program": "lib/flutt_project.dart",
             "type": "dart"
         },
         {
