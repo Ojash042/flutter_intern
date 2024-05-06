@@ -11,6 +11,18 @@ void main(List<String> args) {
  runApp(const MyApp()); 
 }
 
+class DefaultAppBar extends StatelessWidget{
+  const DefaultAppBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(title: const Text("Day 7"),
+      centerTitle: true,
+      backgroundColor: Colors.blueAccent,
+    );
+  }
+}
+
 class MyApp extends StatelessWidget{
   const MyApp({super.key});
   @override
@@ -18,24 +30,152 @@ class MyApp extends StatelessWidget{
     return MaterialApp(
       theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.lightBlueAccent)),
       title: "Day 7",
-      home: const MyHomePage(),
+      initialRoute: '/',
+      routes: {
+        "/": (context) => const MyHomePage(),
+        "/userDetails": (context) => const UserDetailsDisplay(),
+        "/formPage": (context) =>const FormPage(), 
+      },
     );
   }
 }
 
 class MyHomePage extends StatefulWidget{
-  const MyHomePage({super.key});
+  const MyHomePage({super.key}); 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
-
 }
 
 class _MyHomePageState extends State<MyHomePage>{
+  bool? isLoggedIn;
+  String? loggedInEmail;  
+  Future<void> getLoggedInState(context) async{
+
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+    isLoggedIn =  sharedPreferences.getBool("isLoggedIn"); 
+    loggedInEmail =sharedPreferences.getString("loggedInEmail"); 
+        print('Line 50: isLoggedIn $loggedInEmail');
+      if(loggedInEmail == null){ 
+        print(loggedInEmail);
+        print("Testing on line 60");
+        Navigator.popAndPushNamed(context, "/formPage");
+      }
+      else{
+        Navigator.popAndPushNamed(context, "/userDetails");
+      }
+    });
+      
+    
+  }
+
+  @override
+  void initState(){
+      super.initState();
+      getLoggedInState(context); 
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Day 7"),),
+      body: const Center(child: Text("Loading!"),),
+    );    
+  } 
+}
+
+class UserDetailsDisplay extends StatefulWidget{
+  const UserDetailsDisplay({super.key});
+
+  @override
+  State<UserDetailsDisplay> createState() => _UserDetailsDisplayState();
+}
+
+class _UserDetailsDisplayState extends State<UserDetailsDisplay>{
+  String? _loggedInEmail;
+  UserData? userData;
+  late SharedPreferences sharedPreferences;
+
+
+  Future<void> getUserData() async{
+    sharedPreferences = await SharedPreferences.getInstance();    
+    setState(() {
+      _loggedInEmail =  sharedPreferences.getString("loggedInEmail");
+      String? userDetails =  sharedPreferences.getString(_loggedInEmail!);
+      Map<String, dynamic> user = jsonDecode(userDetails!);
+      userData = UserData.fromJson(jsonDecode(userDetails)); 
+    });
+
+      if(userData == null){
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Something went wrong")));
+      }
+  }
+
+  void _logoutUser(){
+    setState(() { 
+    sharedPreferences.setBool("isLoggedIn", false); 
+    sharedPreferences.remove("loggedInEmail");
+    Navigator.popAndPushNamed(context, '/formPage');
+    });
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getUserData();
+  }
+
+
+
+  @override
+  Widget build(BuildContext context) {
+    if(userData != null){
+    return Scaffold(
+      appBar: AppBar(centerTitle: true, title: const Text("Day 7"), backgroundColor: Colors.blueAccent,),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(8.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("Full Name:", style: Theme.of(context).textTheme.headlineMedium,),
+                Text(userData!.fullName, style: Theme.of(context).textTheme.bodyLarge,),
+                const SizedBox(height: 30,),
+                Text("E-mail: ", style: Theme.of(context).textTheme.headlineMedium,),
+                Text(userData!.email, style: Theme.of(context).textTheme.bodyLarge,),
+                const SizedBox(height: 30,),
+                Text("Mobile No:", style: Theme.of(context).textTheme.headlineMedium,),
+                Text(userData!.mobileNo, style: Theme.of(context).textTheme.bodyLarge,),
+                const SizedBox(height: 40,),
+                ElevatedButton(onPressed: _logoutUser, child: const Text("Logout")),
+            ],),
+        ),
+      ),
+    );
+    }
+    else{
+      return const Text("Loading");
+    }
+  }
+}
+
+
+class FormPage extends StatefulWidget{
+  const FormPage({super.key});
+  @override
+  State<FormPage> createState() => _FormPageState();
+
+}
+
+class _FormPageState extends State<FormPage>{
   int _currentIndex = 0;
   final List<Widget> _forms = <Widget>[
     const SignUpForm(),
     const LoginForm(),
   ];
+
 
   void _changeIndex(int index){
     setState(() {   
@@ -74,6 +214,15 @@ class _LoginFormState extends State<LoginForm>{
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
  
+  Future<void> setLoggedInState(BuildContext context) async{
+  print("Setting LoggedIn State");
+     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    sharedPreferences.setBool("isLoggedIn", true);
+    sharedPreferences.setString("loggedInEmail", _emailController.text);
+    Navigator.popAndPushNamed(context, '/userDetails'); 
+      }
+
+
   Future<bool> validateSharedPrefs() async{
     SharedPreferences _sharedPrefs = await SharedPreferences.getInstance();
     var json = _sharedPrefs.getString(_emailController.text); 
@@ -96,8 +245,9 @@ class _LoginFormState extends State<LoginForm>{
             SizedBox(width: MediaQuery.of(context).size.width -100 , child: TextFormField(obscureText: true, decoration: const InputDecoration(hintText: "Enter password"),controller: _passwordController,),),
             const SizedBox(height: 30,), 
             SizedBox(child: ElevatedButton(child: const Text("Login"), onPressed: () async{
-              bool result = await validateSharedPrefs(); 
+                bool result = await validateSharedPrefs(); 
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result? "Logged In": "Invalid Credentials"))); 
+                setLoggedInState(context);
             },)),
           ],
         ),
@@ -170,8 +320,7 @@ Future<void> _pickFiles() async{
       });
     }
   }
-
-
+ 
   Future<void> storeDataToSharedPrefS() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String genderValue = _selectedGender == Gender.Male ? "Male": "Female";   
@@ -237,6 +386,7 @@ Future<void> _pickFiles() async{
           const SizedBox(height: 30,),
           ElevatedButton(onPressed: (){
             if(_formKey.currentState!.validate()){
+              
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Form Submitted")));
               storeDataToSharedPrefS();
             }},
