@@ -1,8 +1,6 @@
 import 'dart:math';
-
-import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
@@ -40,8 +38,8 @@ class WorkExperiences{
   late String jobTitle;
   late String summary;
   late String organizationName;
-  late DateTime startDate;
-  late DateTime endDate;
+  late DateTime? startDate;
+  late DateTime? endDate;
 }
 
 class Hobbies{
@@ -55,7 +53,7 @@ class Accomplishment{
   late int id;  
   late String title;
   late String description;
-  late DateTime dateTime;
+  late DateTime? dateTime;
 }
 
 class Education{
@@ -65,8 +63,8 @@ class Education{
   late String level;
   late String summary;
   late String organizationName;
-  late DateTime startDate;
-  late DateTime endDate;
+  late DateTime? startDate;
+  late DateTime? endDate;
   late List<Accomplishment> accomplishments;
 }
 
@@ -247,7 +245,7 @@ class _PersonalDetailsState extends State<PersonalDetails>{
         } 
     });
   } 
-  }
+}
   void addData(){   
   }
 
@@ -358,16 +356,15 @@ class WorkPlaceDetails extends StatefulWidget{
   DateTime? startDate;
   DateTime? endDate;
   
-  Map<String, List<dynamic>> workplaceData = {
-    "job_title": List.empty(growable: true),
-    "summary": List.empty(growable: true),
-    "organization_name": List.empty(growable: true),
-    "starting_date": List.empty(growable: true),
-    "end_date": List.empty(growable: true),
-  };
-
-
-  WorkPlaceDetails({super.key, required this.incrementPhase, required this.formKey});
+  List<WorkExperiences> workplaceData; 
+  // Map<String, List<dynamic>> workplaceData = {
+  //   "job_title": List.empty(growable: true),
+  //   "summary": List.empty(growable: true),
+  //   "organization_name": List.empty(growable: true),
+  //   "starting_date": List.empty(growable: true),
+  //   "end_date": List.empty(growable: true),
+  // };
+  WorkPlaceDetails({super.key, required this.incrementPhase, required this.formKey, required this.workplaceData});
   @override
   State<WorkPlaceDetails> createState()=> _WorkPlaceDetailsState();
 }
@@ -384,54 +381,453 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{
       key: widget.formKey,
       child: Column(
         children: [
+          Text("Workplace history", style: Theme.of(context).textTheme.headlineMedium,),
           ListView.builder(itemCount: widget.workplaceCount,
           shrinkWrap: true,
-          itemBuilder: (context, index) {
-            Column(
-            children: [
-              Container(child: TextFormField(decoration: const InputDecoration(hintText: "Job Title"),),),
-              Container(child: TextFormField(decoration: const InputDecoration(hintText: "The name of the organization"),),),
-              Container(child: TextFormField(decoration: const InputDecoration(hintText: "Features worked on the organization"),),),
-              Column(
-                children: [
-                  TextField(decoration:  InputDecoration(icon: Icon(Icons.calendar_month), label: Text((widget.workplaceData["starting_date"]!.length < index || widget.workplaceData["starting_date"]![index] == null)? 
-                  widget.workplaceData["starting_date"]![0] : "Enter the starting date here", )),
-                  readOnly: true,
-                  onTap: () async{
-                    DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
-                    if(widget.workplaceData["ending_date"]!.length < index){
-                      widget.workplaceData["starting_date"]!.add(pickeDate);
-                    }
-                    else{
-                      widget.workplaceData["starting_date"]![index] = pickeDate;
-                    }
-                  },
-                  ),
-                  TextField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((widget.workplaceData["end_date"]!.length < index || widget.workplaceData["end_date"]![0] == null)? 
-                  widget.workplaceData["end_date"]![0] : "Enter the starting date here", )),
-                  readOnly: true,
-                  onTap: () async{
-                    DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
-                    if(widget.workplaceData["end_date"]!.length < index){
-                      widget.workplaceData["end_date"]!.add(pickeDate);
-                    }
-                    else{
-                      widget.workplaceData["end_date"]![index] = pickeDate;
-                    }
-                  },),
-                                 ],)
-            ],
-            );
-          }),
+          itemBuilder: (context, index)=> 
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column( 
+              children: [
+                TextFormField(decoration: const InputDecoration(hintText: "Job Title"),),
+                const SizedBox(height: 20,),
+                TextFormField(decoration: const InputDecoration(hintText: "The name of the organization"),),
+                const SizedBox(height: 30,),
+                TextFormField(maxLines: null,decoration: const InputDecoration(hintText: "Features worked on the organization"),),
+                const SizedBox(height: 20,),
+                Column(
+                  children: [
+                    TextField(
+                      decoration:  InputDecoration(icon: const Icon(Icons.calendar_month), 
+                      label: Text((widget.workplaceData.elementAt(index).startDate == null)? 
+                          "Enter the starting date here": 
+                          DateFormat("yyyy-MM-dd").format(widget.workplaceData.elementAt(index).startDate!), )),
+                    readOnly: true,
+                    onTap: () async{
+                      DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
+                      setState(() { 
+                        if(pickeDate!=null){                             
+                          widget.workplaceData.elementAt(index).startDate = pickeDate;
+                        }
+                        });
+                       
+                      FocusScope.of(context).unfocus();
+                    },
+                    ),
+                    TextField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((widget.workplaceData.elementAt(index).endDate == null)? 
+                    "Enter the ending date here" : DateFormat("yyyy-MM-dd").format(widget.workplaceData.elementAt(index).endDate!), )),
+                    readOnly: true,
+                    onTap: () async{
+                      DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
+                        setState(() { 
+                          if(pickeDate!=null){
+                            widget.workplaceData.elementAt(index).endDate = pickeDate;
+                          }
+                        });
+                      
+                      
+                    },),],),
+              const SizedBox(height: 30,),
+              ],),
+            ),
+          ),
             TextButton(onPressed: (){setState(() {
-                  DateTime? dt; 
-                  widget.workplaceData["starting_date"]!.add(dt);
-                  widget.workplaceCount++; 
-                 });}, child: Text("Add more +")) 
+                DateTime? dt; 
+                WorkExperiences workExperiences = WorkExperiences(); 
+                widget.workplaceData.add(workExperiences);
+                 });}, 
+                 child: const Text("Add more +")),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+          IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+          IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward))
+        ],),
+        ],),
+    );
+  }
+}
 
+class EducationForm extends StatefulWidget{
+  GlobalKey<FormState> formKey;
+  VoidCallback incrementPhase;
+
+  EducationForm({super.key, required this.formKey, required this.incrementPhase, required this.educations});
+
+  int educationCount = 0;
+  int achivementCount = 0;
+  
+  List<Education> educations;
+  List<Map<String, dynamic>> educationObjects = List.empty(growable: true); 
+  List<TextEditingController> organizationController = List.empty(growable: true);
+  List<TextEditingController> levelController = List.empty(growable: true);
+  List<TextEditingController> summaryController = List.empty(growable: true);
+
+  @override
+  State<EducationForm> createState()=> _EducationFormState();
+}
+
+class _EducationFormState extends State<EducationForm>{
+  @override
+  Widget build(BuildContext context) {
+  return Form(
+    child: Column(
+      children: [ 
+
+      Text("Education History", style: Theme.of(context).textTheme.displayMedium,),
+        ListView.builder(
+          itemCount: widget.educationCount,
+          physics: const NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemBuilder: (context, index)=>
+          Column(children: [
+            TextFormField(decoration: const InputDecoration(hintText: "Organization name"),),
+            const SizedBox(height: 20,),
+            TextFormField(decoration: const InputDecoration(hintText: "Level"),),
+            const SizedBox(height: 30,),
+            Column(
+              children: [
+                TextField(
+                  decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
+                  label: Text((widget.educations.length<index ||widget.educations.elementAt(index).startDate == null)?
+                  "Enter joined Date": DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).startDate!))),
+                  onTap: () async{
+                    DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030));
+                    setState((){ 
+                    if(pickedDate != null){  
+                      widget.educations.elementAt(index).startDate = pickedDate; 
+                    }
+                    });
+                  },
+                ),
+                TextField(
+                  decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
+                  label: Text((widget.educations.length<index ||widget.educations.elementAt(index).endDate == null)?
+                  "Enter Ended Date": DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).endDate!))),
+                  onTap: () async{
+                    DateTime? dt = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030)); 
+                    setState((){
+                      if(dt!= null){ 
+                        widget.educations.elementAt(index).endDate  =dt;
+                      } 
+                    });
+                  },
+                ),
+              const SizedBox(height: 30.0,),
+              Text("Achievements", style: Theme.of(context).textTheme.headlineSmall),
+              // ListView.builder(
+              //   shrinkWrap: true,
+              //   itemCount: widget.achivementCount+1, itemBuilder: (innerContext, innerIndex) => Text(innerIndex.toString()) )
+              ListView.builder(
+                shrinkWrap: true,
+                itemCount: widget.educations.elementAt(index).accomplishments.length ,
+                physics: const NeverScrollableScrollPhysics(),
+                itemBuilder: (innerContext, innerIndex)=> 
+                
+              Column(
+                children: [ 
+                  const SizedBox(height: 20,),
+                  Text('Achievement #${innerIndex+1}',),
+                  SizedBox(width: 220, child:TextFormField(
+                    onChanged: (value){
+                      setState(() {
+                        widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).title = value;
+                      });
+                    },
+                    decoration: const InputDecoration(hintText: "Achivement Title"),)),
+                  SizedBox(width: 220, child: TextFormField(
+                    onChanged: (value){
+                      setState(() {
+                        widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).description = value;
+                      });
+                    },
+                    maxLines: null,decoration: const InputDecoration(hintText: "Descriptions"),),),
+                  SizedBox(width: 220, child: TextFormField(
+                    decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
+                     hintText: (widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime == null)? 
+                    "Enter accomplished date": 
+                    DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime!),
+                    ),
+                    readOnly: true,
+                    onTap: ()async{  
+                      DateTime? dt = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030));
+                      setState(() {
+                        if(dt!=null){
+                          widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime = dt;
+                        }
+                      });
+                    },
+                    ),),
+                    const SizedBox(height: 30,),
+                ],)
+              ),
+              
+                TextButton(onPressed: (){
+                  setState(() {
+                  Education education = widget.educations.elementAt(index);
+                  Accomplishment accomplishment = Accomplishment();
+                  accomplishment.description = "";
+                  accomplishment.id = 3;
+                  accomplishment.title = "";
+                  accomplishment.dateTime  = null;
+                  List<Accomplishment> accomplishments = (widget.educations.elementAt(index).accomplishments == null)? List.empty(growable: true) 
+                  : widget.educations.elementAt(index).accomplishments; 
+                  accomplishments.add(accomplishment);
+                  education.accomplishments = accomplishments;
+                  widget.achivementCount++;
+                });
+              }, 
+              child: const Text("Add Achievement"))
+              ],
+            )
+          ],)
+          ),
+
+        TextButton(onPressed: (){
+          setState(() { 
+            widget.educationCount++;
+            Education education = Education();
+
+            education.startDate = null;
+            education.endDate = null;
+            education.accomplishments = List.empty(growable: true);
+            widget.educations.add(education);
+          });
+        }, child: const Text("Add more +")),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [ 
+            IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+            IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
+          ]
+        )
+        
+      ],
+    ),
+  );
+  }
+}
+
+class ContactDetailsPage extends StatefulWidget{
+  GlobalKey<FormState> formKey;
+  VoidCallback incrementPhase;
+  ContactDetailsPage({super.key, required this.formKey, required this.incrementPhase, required this.contactInfo});
+
+  @override
+  State<ContactDetailsPage> createState() => _ContactDetailsState();
+
+  int socialMediaCounter = 0; 
+  ContactInfo contactInfo;
+  TextEditingController phoneController = TextEditingController();
+  List<TextEditingController> titleController = List.empty(growable: true);
+  List<TextEditingController> urlController = List.empty(growable: true);
+  List<TextEditingController> typeController = List.empty(growable: true);
+}
+
+class _ContactDetailsState extends State<ContactDetailsPage>{
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Form(
+      key: widget.formKey,
+      child: Column(
+        children: [
+          Text("Contact Details:", style: Theme.of(context).textTheme.displayMedium,),
+          const SizedBox(height: 30,),
+          TextFormField(
+            onChanged: (value) => {
+              setState(() {
+                widget.contactInfo.mobileNo = value;
+              })
+            },
+            decoration: const InputDecoration(hintText: "Enter mobile no:"),),
+          const SizedBox(height: 30,),
+          Text("Social Media Links: ", style: Theme.of(context).textTheme.displaySmall,),
+          const SizedBox(height: 30,),
+          ListView.builder(
+            shrinkWrap: true,
+            itemCount: widget.socialMediaCounter,
+            itemBuilder: (context, index) => Column(children: [
+              TextFormField(
+                onChanged: (value) => {
+                  setState(() {
+                    widget.contactInfo.socialMedias.elementAt(index).title = value;
+                  })
+                },
+                decoration: const InputDecoration(hintText: "Title",), controller: widget.titleController.elementAt(index),), 
+              const SizedBox(height: 10,),
+              TextFormField(
+                onChanged: (value) => {
+                  setState(() {
+                    widget.contactInfo.socialMedias.elementAt(index).url = value;
+                  })
+                },
+                decoration: const InputDecoration(hintText: "Url"), controller: widget.urlController.elementAt(index),),
+              const SizedBox(height: 10,),
+              TextFormField(
+              onChanged: (value) =>{
+                setState(() {
+                  widget.contactInfo.socialMedias.elementAt(index).type = value;
+                })
+              },
+                decoration: const InputDecoration(hintText: "Type"), controller: widget.typeController.elementAt(index),),
+            ],)
+            ),
+            TextButton(onPressed: (){
+              setState(() {
+                SocialMedia socialMedia = SocialMedia();
+                widget.socialMediaCounter++;
+                widget.contactInfo.socialMedias.add(socialMedia);
+                widget.titleController.add(TextEditingController());
+                widget.urlController.add(TextEditingController());
+                widget.typeController.add(TextEditingController());
+              });
+            }, child: const Text("Add More +")),
+
+          const SizedBox(height: 30,), 
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+              IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
+          ],)
         ],
       ),
     );
+  }
+}
+
+class MiscelleneousPage extends StatefulWidget{
+  GlobalKey<FormState> formKey;
+  VoidCallback incrementPhase;
+  MiscelleneousPage({super.key, required this.formKey, required this.incrementPhase, 
+    required this.skills, required this.hobbies, required this.languages
+  });
+
+  int skillCounter = 0;
+  int hobbiesCounter = 0;
+  int languageCounter = 0;
+
+  @override
+  State<MiscelleneousPage> createState() => _MiscelleneousPageState();
+
+  List<Skills> skills;
+  List<Hobbies> hobbies;
+  List<Languages> languages;
+
+}
+
+class _MiscelleneousPageState extends State<MiscelleneousPage> {
+
+  FocusNode skillFocusNode = FocusNode();
+  FocusNode hobbiesFocusNode = FocusNode();
+  FocusNode languageFocusNode = FocusNode();
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Form(
+      key: widget.key,
+      child: Column(children:[
+        Wrap(
+        direction: Axis.horizontal,
+          children: [
+            Container(
+            width: 120,
+              child: ListView.builder(
+              shrinkWrap: true,
+                itemCount: widget.skillCounter,
+                itemBuilder: (context, index)=>
+                  Card(
+                    //width: 120,
+                    //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
+                  elevation: 3,
+                  child: Text(widget.skills.elementAt(index).title, textAlign: TextAlign.center,),
+                  )
+                ),
+            ),
+            const SizedBox(height: 10,),
+            TextFormField(decoration: const InputDecoration(hintText: "Enter skills to be added"), focusNode: skillFocusNode, 
+            onFieldSubmitted: (value){
+
+              Skills skill = Skills();
+            setState(() {
+              widget.skillCounter++;
+              skill.id = Random().nextInt(90000) + 10000;
+              skill.title = value;
+              widget.skills.add(skill);
+
+            });
+                          },),
+          ],
+        ),
+        const SizedBox(height: 30,),
+        Wrap(
+        direction: Axis.horizontal,
+          children: [
+            Container(
+            width: 120,
+              child: ListView.builder(
+              shrinkWrap: true,
+                itemCount: widget.hobbiesCounter,
+                itemBuilder: (context, index)=>
+                  Card(
+                    //width: MediaQuery.of(context).size.width * 0.333,
+                    //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
+                    child: Text(widget.hobbies.elementAt(index).title, textAlign: TextAlign.center,),
+                  )
+                ),
+            ),
+            const SizedBox(height: 10,),
+            TextFormField(decoration: const InputDecoration(hintText: "Enter hobbies to be added"), focusNode: hobbiesFocusNode, 
+            onFieldSubmitted: (value){
+              Hobbies hobbies = Hobbies();
+              setState(() {
+                widget.hobbiesCounter++;
+                hobbies.id = Random().nextInt(90000) + 10000;
+                hobbies.title = value;
+                widget.hobbies.add(hobbies); 
+              });},),
+          ],
+        ),
+        const SizedBox(height: 30,),
+          Wrap(
+          direction: Axis.horizontal,
+          children: [
+            Container(
+              width: 120,
+              child: ListView.builder(
+              shrinkWrap: true,
+                itemCount: widget.languageCounter,
+                itemBuilder: (context, index)=>
+                  Card(
+                    //width: 120,
+                    // decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
+                  child: Text(widget.languages.elementAt(index).title, textAlign: TextAlign.center,),
+                  )
+                ),
+            ),
+            const SizedBox(height: 10,),
+            TextFormField(decoration: const InputDecoration(hintText: "Enter languages to be added"), focusNode: languageFocusNode, 
+            onFieldSubmitted: (value){
+              Languages languages = Languages();
+              setState(() {  
+                widget.languageCounter++;
+                languages.id = Random().nextInt(90000) + 10000;
+                languages.title = value;
+                widget.languages.add(languages);
+              });},),
+          ],
+        ),
+      Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+          IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
+        ]
+      )
+      ],),);
   }
 }
 
@@ -442,9 +838,10 @@ class SignUpForm extends StatefulWidget{
   State<SignUpForm> createState()=> _SignUpFormState(); 
 }
 
+
 class _SignUpFormState extends State<SignUpForm>{
   TextEditingController mobileNoController = TextEditingController();
-  List<GlobalKey<FormState>> formStateList =  List.generate(3, (index) => GlobalKey<FormState>());
+  List<GlobalKey<FormState>> formStateList =  List.generate(6, (index) => GlobalKey<FormState>());
   UserData userData = UserData();
   Gender? _selectedGender = Gender.Male;
   RegExp phoneRegex = RegExp(r'[0-9]{10}');
@@ -456,16 +853,25 @@ class _SignUpFormState extends State<SignUpForm>{
   final _formKey = GlobalKey<FormState>();
   int currentIndex  = 0;
   late List<Widget> formPhases;
+
+  List<Education> educationFields = List.empty(growable: true);
   
+  List<SocialMedia> socialMedias = List.empty(growable: true); 
+  ContactInfo contactInfo = ContactInfo();
+
+  List<Skills> skills = List.empty(growable: true);
+  List<Hobbies> hobbies = List.empty(growable: true);
+  List<Languages> languages = List.empty(growable: true);
+  List<WorkExperiences> workExperiences = List.empty(growable: true);
+
   void _incrementPhase(){
-    print('Incrementing $currentIndex to ${currentIndex+1}');
     setState(() {
       currentIndex = min(++currentIndex, formPhases.length-1);
-    });
+    });   
     // if(formStateList.elementAt(currentIndex).currentState!.validate()){
     //   // formPhases.elementAt(currentIndex).addData()
     //   setState(() {
-    //     currentIndex++;
+    //     currentIndex = min(++currentIndex, formPhases.length-1);
     //   });
     // };
   }
@@ -473,11 +879,18 @@ class _SignUpFormState extends State<SignUpForm>{
   @override
   void initState() {
     super.initState();
+    contactInfo.socialMedias = socialMedias;
     formPhases = [
       BasicDetails(formKey: formStateList.first, userData: userData, incrementPhase: _incrementPhase,),
       PersonalDetails(formKey: formStateList.elementAt(1), incrementPhase: _incrementPhase,),
-      WorkPlaceDetails(formKey: formStateList.elementAt(2), incrementPhase: _incrementPhase,)
+      WorkPlaceDetails(formKey: formStateList.elementAt(2), incrementPhase: _incrementPhase,workplaceData: workExperiences,),
+      EducationForm(formKey: formStateList.elementAt(3), incrementPhase: _incrementPhase, educations: educationFields,),
+      ContactDetailsPage(formKey: formStateList.elementAt(4), incrementPhase: _incrementPhase, contactInfo: contactInfo,),
+      MiscelleneousPage(formKey: formStateList.elementAt(5), incrementPhase: _incrementPhase,
+       skills: skills, languages: languages, hobbies: hobbies,
+       ),
       ];
+      
   }
 
   @override
@@ -495,8 +908,7 @@ class _SignUpFormState extends State<SignUpForm>{
                 child: Text("Sign Up form", style: Theme.of(context).textTheme.headlineLarge,), 
               ),
               formPhases.elementAt(currentIndex),
-            ],
-                    ),
+            ],),
           )),
       // bottomNavigationBar: BottomAppBar(
       //   child: Row(children: [
@@ -516,6 +928,7 @@ class LoginForm extends StatefulWidget{
 
   @override
   State<LoginForm> createState()=> _LoginFormState();
+
 }
 class _LoginFormState extends State<LoginForm>{
   TextEditingController _emailController = TextEditingController();
