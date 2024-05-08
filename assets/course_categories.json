@@ -1,0 +1,85 @@
+{
+    "course_categories":
+    [
+        {
+            "id":1,
+            "Title": "Category"
+        },
+        {
+            "id":2,
+            "Title": "Category"
+        },
+        {
+            "id":3,
+            "Title": "Category"
+        },
+        {
+            "id":4,
+            "Title": "Category"
+        },
+        {
+            "id":5,
+            "Title": "Category"
+        },
+        {
+            "id":6,
+            "Title": "Category"
+        },
+        {
+            "id":7,
+            "Title": "Category"
+        },
+        {
+            "id":8,
+            "Title": "Category"
+        },
+        {
+            "id":9,
+            "Title": "Category"
+        },
+        {
+            "id":10,
+            "Title": "Category"
+        },
+        {
+            "id":11,
+            "Title": "Category"
+        },
+        {
+            "id":12,
+            "Title": "Category"
+        },
+        {
+            "id":13,
+            "Title": "Category"
+        },
+        {
+            "id":14,
+            "Title": "Category"
+        },
+        {
+            "id":15,
+            "Title": "Category"
+        },
+        {
+            "id":16,
+            "Title": "Category"
+        },
+        {
+            "id":17,
+            "Title": "Category"
+        },
+        {
+            "id":18,
+            "Title": "Category"
+        },
+        {
+            "id":19,
+            "Title": "Category"
+        },
+        {
+            "id":20,
+            "Title": "Category"
+        }
+    ]
+}

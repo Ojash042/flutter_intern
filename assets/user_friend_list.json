@@ -1,0 +1,116 @@
+{
+    "user_friend_list":
+    [
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        },
+        {
+            "user_list_id": 0,
+            "user_id":0,
+            "friend_id": 0,
+            "requested_by": 0,
+            "created_at": "2024-03-12",
+            "has_new_request": false,
+            "has_new_request_accepted": false,
+            "has_removed_false": false
+        }
+
+    ]
+}

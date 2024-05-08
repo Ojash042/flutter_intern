@@ -13,7 +13,6 @@ void main(List<String> args) {
 
 class DefaultAppBar extends StatelessWidget{
   const DefaultAppBar({super.key});
-
   @override
   Widget build(BuildContext context) {
     return AppBar(title: const Text("Day 7"),
@@ -122,7 +121,6 @@ class _UserDetailsDisplayState extends State<UserDetailsDisplay>{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getUserData();
   }
@@ -327,7 +325,7 @@ Future<void> _pickFiles() async{
     UserData data = UserData(fullName: fullNameController.text, gender: genderValue, mobileNo: mobileNoController.text, 
     email: emailController.text, password: passwordController.text);
 
-    String jsonData =jsonEncode(data.toJson());
+    String jsonData = jsonEncode(data.toJson());
 
     print('jsonData: $jsonData');
     sharedPreferences.setString(emailController.text, jsonData);

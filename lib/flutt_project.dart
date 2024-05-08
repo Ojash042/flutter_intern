@@ -1,118 +1,16 @@
+import 'dart:convert';
+import 'package:path_provider/path_provider.dart';
+import 'package:image_picker_android/image_picker_android.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_intern/models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main(List<String> args) {
   runApp(const MyApp());
-}
-
-
-enum Gender {Male, Female}
-enum MaritalStatus{married, single}
-
-class UserData{
-  // UserData({required this.id, required this.name, required this.email, required this.password });
-  late int id;
-  late String name;
-  late String email;
-  late String password;
-}
-class ImageModel{
-  // ImageModel({required this.isNetworkUrl, required this.imagePath});
-  late bool isNetworkUrl;
-  late bool imagePath;
-}
-
-class Skills{
-  // Skills({required this.id, required this.title});
-  late int id;
-  late String title;
-}
-
-class WorkExperiences{
-  // WorkExperiences({required this.id, required this.jobTitle, required this.summary, 
-  // required this.organizationName, required this.startDate, required this.endDate});
-  late int id;
-  late String jobTitle;
-  late String summary;
-  late String organizationName;
-  late DateTime? startDate;
-  late DateTime? endDate;
-}
-
-class Hobbies{
-  // Hobbies({required this.id, required this.title});
-  late int id;
-  late String title;
-}
-
-class Accomplishment{
-  // Accomplishment({required this.id, required this.title, required this.description, required this.dateTime});
-  late int id;  
-  late String title;
-  late String description;
-  late DateTime? dateTime;
-}
-
-class Education{
-  // Education({required this.id, required this.level, required this.summary, required this.organizationName, required this.startDate, 
-  // required this.endDate, required this.accomplishments});
-  late int id;
-  late String level;
-  late String summary;
-  late String organizationName;
-  late DateTime? startDate;
-  late DateTime? endDate;
-  late List<Accomplishment> accomplishments;
-}
-
-
-class SocialMedia{
-  // SocialMedia({required this.id, required this.title, required this.url, required this.type});
-  late int id;  
-  late String title;
-  late String url;
-  late String type;
-}
-
-class ContactInfo{
-  // ContactInfo({required this.mobileNo, required this.socialMedias});
-  late String mobileNo;  
-  late List <SocialMedia> socialMedias;
-}
-
-class Languages{
-  // Languages({required this.id, required this.title, required this.status});
-  late int id;
-  late String title;
-  late String status;
-}
-
-class BasicInfo{
-  //BasicInfo({required this.id, required this.profileImage, required this.coverImage, 
-  // required this.summary, required this.gender, required this.dob, required this.maritalStatus});
-  late int id;
-  late ImageModel profileImage;
-  late ImageModel coverImage;
-  late String summary;
-  late String gender;
-  late String dob;
-  late String maritalStatus;
-}
-
-class UserDetails{
-  //UserDetails({required this.id, required this.basicInfo, required this.workExperiences, required this.skills, required this.hobbies, required this.languages, 
-   //required this.educations, required this.contactInfo});
-  late int id;
-  late BasicInfo basicInfo;
-  late List<WorkExperiences> workExperiences ;
-  late List<Skills> skills;
-  late List<Hobbies> hobbies;
-  late List<Languages> languages;
-  late List<Education> educations;
-  late List<ContactInfo> contactInfo;
 }
 
 class MyApp extends StatelessWidget{
@@ -173,8 +71,8 @@ class BasicDetails extends StatefulWidget{
 }
 
 class _BasicDetailsState extends State<BasicDetails>{
-  RegExp _fullNameRegex = RegExp(r'[A-Za-z]+');
-  RegExp _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+  final RegExp _fullNameRegex = RegExp(r'[A-Za-z]+');
+  final RegExp _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
   TextEditingController fullNameController = TextEditingController();
   TextEditingController passwordController = TextEditingController(); 
   TextEditingController emailController =  TextEditingController();
@@ -218,23 +116,27 @@ class _BasicDetailsState extends State<BasicDetails>{
   }
 }
 
+
 class PersonalDetails extends StatefulWidget{
   GlobalKey<FormState> formKey;
   final VoidCallback incrementPhase;
-  PersonalDetails({super.key, required this.formKey, required this.incrementPhase,});
+  BasicInfo basicInfo = BasicInfo();
+  PersonalDetails({super.key, required this.formKey, required this.incrementPhase, required this.basicInfo});
   State<PersonalDetails> createState() => _PersonalDetailsState(); 
 }
 
 class _PersonalDetailsState extends State<PersonalDetails>{
   Gender? _gender = Gender.Male;
   MaritalStatus? _maritalStatus = MaritalStatus.single;
+  TextEditingController summaryController = TextEditingController();
   File? coverImage;
   File? profileImage;
 
   Future<void> pickImage(bool isProfileImage) async{
     ImagePicker _imagePicker = ImagePicker();
     final XFile? pickedImage = await _imagePicker.pickImage(source: ImageSource.gallery);
-
+    var directory = await getApplicationDocumentsDirectory();
+    String path = directory.path;
     if(pickedImage!= null){
       setState((){
         if(isProfileImage){
@@ -244,11 +146,35 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           coverImage = File(pickedImage.path);
         } 
     });
+
+    if(profileImage!=null){
+      String profileImagePath = '$path/profile_image-${Random().nextInt(100)}.png';
+      await profileImage?.copy(profileImagePath);
+      widget.basicInfo.coverImage.isNetworkUrl = false;
+      widget.basicInfo.coverImage.imagePath = profileImagePath;
+    }
+
+    if(coverImage!=null){
+      String coverImagePath = '$path/cover_image${Random().nextInt(100)}.png';
+      await coverImage?.copy(coverImagePath);
+      widget.basicInfo.coverImage.isNetworkUrl = false;
+      widget.basicInfo.coverImage.imagePath = coverImagePath; 
+    }
   } 
 }
+
   void addData(){   
+    widget.basicInfo.summary = summaryController.text;
+    widget.basicInfo.gender = (_gender == Gender.Male)? "Male": "Female";
+    widget.basicInfo.maritalStatus = (_maritalStatus == MaritalStatus.married) ? "Married": "Single";
   }
 
+  @override
+  void initState() {
+    super.initState();
+    widget.basicInfo.id = Random().nextInt(10000) + 1000;
+  }
+  
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -310,12 +236,10 @@ class _PersonalDetailsState extends State<PersonalDetails>{
                   ),
                 ), 
               ),
-              
-
             ],
           ),
           const SizedBox(height: 30,),
-          TextFormField(maxLines: null,decoration: const InputDecoration(hintText: "Describe yourself..."),),
+          TextFormField(maxLines: null, controller: summaryController,decoration: const InputDecoration(hintText: "Describe yourself..."),),
           const SizedBox(height: 30,),
           Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
           RadioListTile(value: Gender.Male, groupValue: _gender, title: const Text("Male"), onChanged: (Gender? value) {
@@ -323,10 +247,10 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           }),
           RadioListTile(value: Gender.Female, title: const Text("Female"), groupValue: _gender, onChanged: (Gender? value){
           _gender = value;
-          }),
-        
+          }), 
+
           const SizedBox(height: 30,),
-          Text("Marital Status", style: Theme.of(context).textTheme.headlineLarge,),
+          Text("Marital Status", style: Theme.of(context).textTheme.headlineSmall,),
           RadioListTile(value: MaritalStatus.married, title: const Text("Married"), groupValue: _maritalStatus, onChanged: (MaritalStatus? value){
             setState(() {
               _maritalStatus = value;
@@ -337,6 +261,16 @@ class _PersonalDetailsState extends State<PersonalDetails>{
               _maritalStatus = value;
             });
           }), 
+          const SizedBox(height: 30,),
+          Text("Date of Birth", style: Theme.of(context).textTheme.headlineSmall,),
+          const SizedBox(height: 10,),
+          InputDatePickerFormField(firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now(),
+          onDateSubmitted: (value) => {
+            setState(() {
+              widget.basicInfo.dob = DateFormat("yyyy-MM-dd").format(value);
+            })
+          },),
+
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children:[
@@ -369,11 +303,7 @@ class WorkPlaceDetails extends StatefulWidget{
   State<WorkPlaceDetails> createState()=> _WorkPlaceDetailsState();
 }
 
-class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{
-
-  Future<void> pickDate() async{
-  
-  }
+class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{ 
 
   @override
   Widget build(BuildContext context) {
@@ -389,11 +319,29 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{
               padding: const EdgeInsets.all(8.0),
               child: Column( 
               children: [
-                TextFormField(decoration: const InputDecoration(hintText: "Job Title"),),
+                TextFormField(
+                  onChanged: (value) => {
+                    setState(() {
+                      widget.workplaceData.elementAt(index).jobTitle = value;
+                    })
+                  },
+                  decoration: const InputDecoration(hintText: "Job Title"),),
                 const SizedBox(height: 20,),
-                TextFormField(decoration: const InputDecoration(hintText: "The name of the organization"),),
+                TextFormField(
+                  onChanged: (value) =>{
+                    setState(() {
+                      widget.workplaceData.elementAt(index).organizationName = value;
+                    })
+                  },
+                  decoration: const InputDecoration(hintText: "The name of the organization"),),
                 const SizedBox(height: 30,),
-                TextFormField(maxLines: null,decoration: const InputDecoration(hintText: "Features worked on the organization"),),
+                TextFormField(
+                  onChanged: (value)=>{
+                    setState(() {
+                      widget.workplaceData.elementAt(index).summary = value;
+                    })
+                  },
+                  maxLines: null,decoration: const InputDecoration(hintText: "Features worked on the organization"),),
                 const SizedBox(height: 20,),
                 Column(
                   children: [
@@ -417,7 +365,7 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{
                     TextField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((widget.workplaceData.elementAt(index).endDate == null)? 
                     "Enter the ending date here" : DateFormat("yyyy-MM-dd").format(widget.workplaceData.elementAt(index).endDate!), )),
                     readOnly: true,
-                    onTap: () async{
+                    onTap: () async {
                       DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
                         setState(() { 
                           if(pickeDate!=null){
@@ -431,9 +379,14 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{
               ],),
             ),
           ),
-            TextButton(onPressed: (){setState(() {
+            TextButton(
+              onPressed: (){setState(() { 
                 DateTime? dt; 
+                widget.workplaceCount++;
                 WorkExperiences workExperiences = WorkExperiences(); 
+                workExperiences.id = Random().nextInt(10000) + 1000;
+                workExperiences.startDate = dt;
+                workExperiences.endDate = dt;
                 widget.workplaceData.add(workExperiences);
                  });}, 
                  child: const Text("Add more +")),
@@ -458,7 +411,6 @@ class EducationForm extends StatefulWidget{
   int achivementCount = 0;
   
   List<Education> educations;
-  List<Map<String, dynamic>> educationObjects = List.empty(growable: true); 
   List<TextEditingController> organizationController = List.empty(growable: true);
   List<TextEditingController> levelController = List.empty(growable: true);
   List<TextEditingController> summaryController = List.empty(growable: true);
@@ -468,6 +420,7 @@ class EducationForm extends StatefulWidget{
 }
 
 class _EducationFormState extends State<EducationForm>{
+
   @override
   Widget build(BuildContext context) {
   return Form(
@@ -567,7 +520,7 @@ class _EducationFormState extends State<EducationForm>{
                   Education education = widget.educations.elementAt(index);
                   Accomplishment accomplishment = Accomplishment();
                   accomplishment.description = "";
-                  accomplishment.id = 3;
+                  accomplishment.id = Random().nextInt(10000) + 1000;
                   accomplishment.title = "";
                   accomplishment.dateTime  = null;
                   List<Accomplishment> accomplishments = (widget.educations.elementAt(index).accomplishments == null)? List.empty(growable: true) 
@@ -587,7 +540,7 @@ class _EducationFormState extends State<EducationForm>{
           setState(() { 
             widget.educationCount++;
             Education education = Education();
-
+            education.id = Random().nextInt(10000) + 1000;
             education.startDate = null;
             education.endDate = null;
             education.accomplishments = List.empty(growable: true);
@@ -615,7 +568,6 @@ class ContactDetailsPage extends StatefulWidget{
 
   @override
   State<ContactDetailsPage> createState() => _ContactDetailsState();
-
   int socialMediaCounter = 0; 
   ContactInfo contactInfo;
   TextEditingController phoneController = TextEditingController();
@@ -677,6 +629,7 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
             TextButton(onPressed: (){
               setState(() {
                 SocialMedia socialMedia = SocialMedia();
+                socialMedia.id = Random().nextInt(10000) + 1000;
                 widget.socialMediaCounter++;
                 widget.contactInfo.socialMedias.add(socialMedia);
                 widget.titleController.add(TextEditingController());
@@ -701,6 +654,7 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
 class MiscelleneousPage extends StatefulWidget{
   GlobalKey<FormState> formKey;
   VoidCallback incrementPhase;
+
   MiscelleneousPage({super.key, required this.formKey, required this.incrementPhase, 
     required this.skills, required this.hobbies, required this.languages
   });
@@ -709,20 +663,22 @@ class MiscelleneousPage extends StatefulWidget{
   int hobbiesCounter = 0;
   int languageCounter = 0;
 
+  
+
   @override
   State<MiscelleneousPage> createState() => _MiscelleneousPageState();
 
   List<Skills> skills;
   List<Hobbies> hobbies;
   List<Languages> languages;
-
 }
 
 class _MiscelleneousPageState extends State<MiscelleneousPage> {
 
+
   FocusNode skillFocusNode = FocusNode();
   FocusNode hobbiesFocusNode = FocusNode();
-  FocusNode languageFocusNode = FocusNode();
+  FocusNode languageFocusNode = FocusNode(); 
 
   @override
   Widget build(BuildContext context) {
@@ -757,9 +713,8 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
               skill.id = Random().nextInt(90000) + 10000;
               skill.title = value;
               widget.skills.add(skill);
-
             });
-                          },),
+          },),
           ],
         ),
         const SizedBox(height: 30,),
@@ -843,14 +798,11 @@ class _SignUpFormState extends State<SignUpForm>{
   TextEditingController mobileNoController = TextEditingController();
   List<GlobalKey<FormState>> formStateList =  List.generate(6, (index) => GlobalKey<FormState>());
   UserData userData = UserData();
-  Gender? _selectedGender = Gender.Male;
   RegExp phoneRegex = RegExp(r'[0-9]{10}');
   RegExp emailRegex = RegExp(r'^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$');
   File? image;
-  final ImagePicker _imagePicker = ImagePicker();
   File? cvFile;
   String cvText = "";
-  final _formKey = GlobalKey<FormState>();
   int currentIndex  = 0;
   late List<Widget> formPhases;
 
@@ -859,15 +811,38 @@ class _SignUpFormState extends State<SignUpForm>{
   List<SocialMedia> socialMedias = List.empty(growable: true); 
   ContactInfo contactInfo = ContactInfo();
 
+  BasicInfo basicInfo = BasicInfo();
   List<Skills> skills = List.empty(growable: true);
   List<Hobbies> hobbies = List.empty(growable: true);
   List<Languages> languages = List.empty(growable: true);
   List<WorkExperiences> workExperiences = List.empty(growable: true);
 
+  Future<int> getMaxId() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance(); 
+    var userJson = sharedPreferences.getString("user_data") as List;
+    int maxIdCount = userJson.map((e) => UserData.fromJson(e)).toList().length + 1;
+    return maxIdCount;
+    }
+  Future<void> storeUserDatatoPreferences() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    userData.id = await getMaxId();
+    UserDetails userDetails = UserDetails();
+    userDetails.id= await getMaxId();
+    userDetails.basicInfo = basicInfo;
+    userDetails.workExperiences = workExperiences;
+    userDetails.skills = skills;
+    userDetails.hobbies = hobbies;
+    userDetails.educations = educationFields;
+    userDetails.contactInfo = contactInfo;
+    //String jsonData = jsonEncode()
+    //String jsonData = jsonEncode();
+  }
+
   void _incrementPhase(){
     setState(() {
       currentIndex = min(++currentIndex, formPhases.length-1);
-    });   
+
+    });
     // if(formStateList.elementAt(currentIndex).currentState!.validate()){
     //   // formPhases.elementAt(currentIndex).addData()
     //   setState(() {
@@ -882,7 +857,7 @@ class _SignUpFormState extends State<SignUpForm>{
     contactInfo.socialMedias = socialMedias;
     formPhases = [
       BasicDetails(formKey: formStateList.first, userData: userData, incrementPhase: _incrementPhase,),
-      PersonalDetails(formKey: formStateList.elementAt(1), incrementPhase: _incrementPhase,),
+      PersonalDetails(formKey: formStateList.elementAt(1), basicInfo: basicInfo, incrementPhase: _incrementPhase,),
       WorkPlaceDetails(formKey: formStateList.elementAt(2), incrementPhase: _incrementPhase,workplaceData: workExperiences,),
       EducationForm(formKey: formStateList.elementAt(3), incrementPhase: _incrementPhase, educations: educationFields,),
       ContactDetailsPage(formKey: formStateList.elementAt(4), incrementPhase: _incrementPhase, contactInfo: contactInfo,),
