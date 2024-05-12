@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:intl/intl.dart';
 enum Gender {Male, Female}
 
@@ -16,7 +15,7 @@ class UserData{
 
   factory UserData.fromJson(Map<String, dynamic> json){
     UserData ud = UserData();
-    ud.name = json["user"];
+    ud.name = json["name"];
     ud.email = json["email"];
     ud.password = json["password"];
     return ud;
@@ -133,7 +132,7 @@ class Education{
   Map<String, dynamic> toJson()=> {"id": id, "level": level, "summary": summary, "organization_name": organizationName,
     "start_date": DateFormat("yyyy-MM-dd").format(startDate!),
     "end_date": DateFormat("yyyy-MM-dd").format(endDate!),
-    "accomplishments": accomplishments.map((e) => e.toJson()).toList()
+    "accomplishments": accomplishments.isEmpty ?[]: accomplishments.map((e) => e.toJson()).toList()
   };
 
   factory Education.fromJson(Map<String, dynamic> json){
@@ -145,7 +144,7 @@ class Education{
     education.startDate = DateFormat("yyyy-MM-dd").parse(json["start_date"]);
     education.endDate = DateFormat("yyyy-MM-dd").parse(json["end_date"]);
     var accomplishmentJson = json["accomplishments"] as List;
-    education.accomplishments = accomplishmentJson.map((e) => Accomplishment.fromJson(e)).toList();
+    education.accomplishments =  accomplishmentJson.map((e) => Accomplishment.fromJson(e)).toList();
     return education;
   } 
 }
@@ -175,7 +174,7 @@ class ContactInfo{
   // ContactInfo({required this.mobileNo, required this.socialMedias});
   late String mobileNo;  
   late List <SocialMedia> socialMedias;
-  Map<String, dynamic> toJson() => {"mobileNo": mobileNo, "social_media": socialMedias.map((e) => e.toJson()).toList()};
+  Map<String, dynamic> toJson() => {"mobileNo": mobileNo, "social_media": socialMedias.isEmpty?[]: socialMedias.map((e) => e.toJson()).toList()};
 
   factory ContactInfo.fromJson(Map<String, dynamic> json){
     ContactInfo contactInfo = ContactInfo();
@@ -191,15 +190,16 @@ class Languages{
   Languages();
   late int id;
   late String title;
-  late String status;
+  // `late String status;
 
-  Map<String, dynamic> toJson()=> {"id": id, "title":title, "status": status};
+  Map<String, dynamic> toJson()=> {"id": id, "title":title, };
+  // Map<String, dynamic> toJson()=> {"id": id, "title":title, "status": status}
 
   factory Languages.fromJson(Map<String, dynamic> json){
     Languages langs  = Languages(); 
     langs.id = json["id"];
     langs.title = json["title"];
-    langs.status = json["status"];
+    //langs.status = json["status"];
     return langs;
   }
 }
@@ -249,11 +249,11 @@ class UserDetails{
   late List<Education> educations;
   late ContactInfo contactInfo;
   Map<String, dynamic> toJson()=>{"id": id, "basic_info": basicInfo.toJson(), 
-  "work_experiences": workExperiences.map((e) => e.toJson()).toList(),
-  "skills": skills.map((e) => e.toJson()).toList(),
-  "hobbies": hobbies.map((e) => e.toJson()).toList(),
-  "languages": languages.map((e) => e.toJson()).toList(),
-  "education": educations.map((e) => e.toJson()).toList(),
+  "work_experiences": workExperiences.isEmpty ? []: workExperiences.map((e) => e.toJson()).toList(),
+  "skills": skills.isEmpty? []: skills.map((e) => e.toJson()).toList(),
+  "hobbies": hobbies.isEmpty?[]: hobbies.map((e) => e.toJson()).toList(),
+  "languages": languages.isEmpty? []: languages.map((e) => e.toJson()).toList(),
+  "education":educations.isEmpty ?[]:  educations.map((e) => e.toJson()).toList(),
   "contact_info": contactInfo.toJson(),
   };
 
@@ -264,7 +264,6 @@ class UserDetails{
     var hb = json["skills"] as List;
     var langs = json["languages"] as List;
     var  educ = json["education"] as List;
-    var contact = json["contact_info"] as List;
 
     userDetails.id = json["id"];
      

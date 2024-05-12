@@ -1,20 +1,66 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:collection/collection.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_intern/project/courses_details_page.dart';
+import 'package:flutter_intern/project/courses_page.dart';
+import 'package:flutter_intern/project/misc.dart';
+import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:path_provider/path_provider.dart';
-import 'package:image_picker_android/image_picker_android.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_intern/models.dart';
+import 'package:flutter_intern/project/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_intern/project/Login_form.dart';
+
 
 void main(List<String> args) {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget{
+class MyApp extends StatefulWidget{
   const MyApp({super.key});
+  State<MyApp> createState() => _MyAppState();
+}
+class _MyAppState extends State<MyApp>{
+  Future<void> loadAssets() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    var courseCategoriesJson =  await rootBundle.loadString('assets/course_categories.json');
+    var courseByCategoriesJson = await rootBundle.loadString('assets/courses_by_categories.json');
+    var coursesJson = await rootBundle.loadString('assets/courses.json');
+    var instructorJson = await rootBundle.loadString('assets/instructor.json');
+    var userFriendJson = await rootBundle.loadString('assets/user_friend_list.json');
+    var userPostJson =await rootBundle.loadString('assets/user_friend_list.json');
+    //List<TModels.CourseByCategories> courseCategories =  courseCategoriesJson.map((e) => TModels.CourseByCategories.fromJson(e)).toList();
+
+    sharedPreferences.setString("course_categories",courseCategoriesJson);
+    sharedPreferences.setString("course_by_categories", courseByCategoriesJson);
+    sharedPreferences.setString("courses", coursesJson);
+    sharedPreferences.setString("instructor", instructorJson);
+
+    // List<dynamic> decoderCourseCategories = jsonDecode(courseCategoriesJson)["course_categories"];
+    // List<dynamic> decoderCourseByCategories = jsonDecode(courseByCategoriesJson)["courses_by_categories"];
+    // List<dynamic> decoderCourses = jsonDecode(coursesJson)["courses"];
+    // List<dynamic> decoderInstructor = jsonDecode(instructorJson)["instructor"];
+    // List<dynamic> decoderUserFriend = jsonDecode(userFriendJson)["user_friend_list"];
+
+    //List<dynamic> decoderUserPost = jsonDecode(userPostJson)["user_post"];
+
+    // List<TModels.CourseCategories> courseCategories = decoderCourseCategories.map((e) => TModels.CourseCategories.fromJson(e)).toList();
+    // List<TModels.CourseByCategories> courseByCategories = decoderCourseByCategories.map((e) => TModels.CourseByCategories.fromJson(e)).toList(); 
+    // List<TModels.Courses> courses = decoderCourses.map((e) => TModels.Courses.fromJson(e)).toList();
+    // List<TModels.Instructor> instructors = decoderInstructor.map((e) => TModels.Instructor.fromJson(e)).toList();  
+    // List<TModels.UserFriend> userFriends = decoderUserFriend.map((e) => TModels.UserFriend.fromJson(e)).toList();
+    // List<TModels.UserPost> userPost = decoderUserPost.map((e) => TModels.UserPost.fromJson(e)).toList();
+  }
+  @override
+  void initState() {
+    super.initState();
+    loadAssets();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,6 +72,13 @@ class MyApp extends StatelessWidget{
         "/": (context)=>const MyHomePage(child: LoginForm()),
         "/login": (context) => const LoginForm(),
         "/signup": (context) => const SignUpForm(),
+        "/courses":(context) => CoursesPage(),
+      },
+      onGenerateRoute: (settings){
+        if(settings.name!.startsWith('/courses/')){
+          var courseId = settings.name!.split('/').last;
+          return MaterialPageRoute(builder: (context) => CoursesDetailsPage(courseId: courseId));
+        }
       },
     );
   }
@@ -44,6 +97,7 @@ class _MyHomePageState extends State<MyHomePage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: MyDrawer(), 
       appBar: AppBar(title: const Text("Project"),
       centerTitle: true,
       backgroundColor: Colors.blueAccent,
@@ -62,7 +116,7 @@ class BodyContainer extends StatelessWidget{
 }
 
 class BasicDetails extends StatefulWidget{
-  GlobalKey<FormState> formKey;
+  final GlobalKey<FormState> formKey;
   UserData userData;
   final VoidCallback incrementPhase;
   BasicDetails({super.key, required this.formKey, required this.userData, required this.incrementPhase});
@@ -77,15 +131,51 @@ class _BasicDetailsState extends State<BasicDetails>{
   TextEditingController passwordController = TextEditingController(); 
   TextEditingController emailController =  TextEditingController();
 
-  void addData(){
+  void addData() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    final GlobalKey<ScaffoldState> bottomSheetKey = GlobalKey<ScaffoldState>();
+    Completer<void> dialogCompleter = Completer<void>();
+
+    String? userDataSharedPrefs =  sharedPreferences.getString("user_data");
+    print(userDataSharedPrefs);
+    List<UserData> retrievedUserData = List.empty();
+    if(userDataSharedPrefs != null){
+      Iterable decoded = jsonDecode(userDataSharedPrefs);
+      retrievedUserData = decoded.map((e) => UserData.fromJson(e)).toList();
+    }
+    var scaffoldContext = context;
+
+    var ret = retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text);
+
+    if(retrievedUserData.isNotEmpty && (retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text)!=null) ){
+      showDialog(context: context, builder: (BuildContext context){
+        context = scaffoldContext;
+        return AlertDialog(
+          title: const Text("User Already exists"),
+          content: const Text("Redirecting to loging page"),
+          actions: [
+            TextButton(
+              onPressed: (){
+                Navigator.of(context).pop();
+                Navigator.pop(scaffoldContext);
+                dialogCompleter.complete();
+              }, child: const Text("Ok!")),
+          ],);
+      
+      });
+
+      
+
+      return;
+    }
     widget.userData.name = fullNameController.text;
     widget.userData.password =passwordController.text;
     widget.userData.email = emailController.text;
+    widget.incrementPhase();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Form(
       key: widget.formKey,
       child: Padding(
@@ -105,7 +195,7 @@ class _BasicDetailsState extends State<BasicDetails>{
               Row(
               mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(onPressed: (){addData();widget.incrementPhase();}, icon: const Icon(Icons.arrow_forward)),
+                  IconButton(onPressed: (){addData();}, icon: const Icon(Icons.arrow_forward)),
                 ],
               ),
             ],
@@ -137,21 +227,26 @@ class _PersonalDetailsState extends State<PersonalDetails>{
     final XFile? pickedImage = await _imagePicker.pickImage(source: ImageSource.gallery);
     var directory = await getApplicationDocumentsDirectory();
     String path = directory.path;
+    print(path);
     if(pickedImage!= null){
       setState((){
         if(isProfileImage){
           profileImage = File(pickedImage.path);
+          widget.basicInfo.profileImage = ImageModel();
         }
         else{
           coverImage = File(pickedImage.path);
+          widget.basicInfo.coverImage = ImageModel();
         } 
     });
 
     if(profileImage!=null){
       String profileImagePath = '$path/profile_image-${Random().nextInt(100)}.png';
       await profileImage?.copy(profileImagePath);
-      widget.basicInfo.coverImage.isNetworkUrl = false;
-      widget.basicInfo.coverImage.imagePath = profileImagePath;
+      setState(() {
+        widget.basicInfo.profileImage.isNetworkUrl = false;
+        widget.basicInfo.profileImage.imagePath = profileImagePath; 
+      });
     }
 
     if(coverImage!=null){
@@ -173,6 +268,7 @@ class _PersonalDetailsState extends State<PersonalDetails>{
   void initState() {
     super.initState();
     widget.basicInfo.id = Random().nextInt(10000) + 1000;
+    widget.basicInfo.dob = "";
   }
   
   @override
@@ -264,14 +360,21 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           const SizedBox(height: 30,),
           Text("Date of Birth", style: Theme.of(context).textTheme.headlineSmall,),
           const SizedBox(height: 10,),
-          InputDatePickerFormField(firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now(),
-          onDateSubmitted: (value) => {
+          TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month, ),
+          label: Text(((widget.basicInfo.dob=="") ?"Enter Date of Birth":
+           widget.basicInfo.dob)), ),
+          readOnly: true,
+          onTap: () async{
+            DateTime? pickedDate = await showDatePicker(context: context, 
+            firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
             setState(() {
-              widget.basicInfo.dob = DateFormat("yyyy-MM-dd").format(value);
-            })
-          },),
-
-        Row(
+              if(pickedDate!=null){
+                widget.basicInfo.dob = DateFormat("yyyy-MM-dd").format(pickedDate);
+              }
+            });
+          }
+          ),
+          Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children:[
           IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
@@ -578,6 +681,28 @@ class ContactDetailsPage extends StatefulWidget{
 
 class _ContactDetailsState extends State<ContactDetailsPage>{
 
+  RegExp phoneNoRegex = RegExp(r'^98\d{8}$');
+  TextEditingController mobilNoController = TextEditingController();
+  bool _mobileNoError = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    widget.contactInfo.mobileNo = "";
+  }
+
+  void validate(){
+    if(widget.contactInfo.mobileNo != "" || phoneNoRegex.hasMatch(widget.contactInfo.mobileNo)){
+      widget.incrementPhase();
+    }
+    else{
+        setState(() { 
+          _mobileNoError = true;
+        });
+        return;
+    }
+  }
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
@@ -593,7 +718,10 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
                 widget.contactInfo.mobileNo = value;
               })
             },
-            decoration: const InputDecoration(hintText: "Enter mobile no:"),),
+            decoration: InputDecoration(
+              errorText: _mobileNoError ?  "Enter a valid mobile no." : null,
+              hintText: "Enter mobile no:"),
+             ),
           const SizedBox(height: 30,),
           Text("Social Media Links: ", style: Theme.of(context).textTheme.displaySmall,),
           const SizedBox(height: 30,),
@@ -643,7 +771,7 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
-              IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
+              IconButton(onPressed: () => { validate()}, icon: const Icon(Icons.arrow_forward)),
           ],)
         ],
       ),
@@ -653,7 +781,7 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
 
 class MiscelleneousPage extends StatefulWidget{
   GlobalKey<FormState> formKey;
-  VoidCallback incrementPhase;
+  final VoidCallback incrementPhase;
 
   MiscelleneousPage({super.key, required this.formKey, required this.incrementPhase, 
     required this.skills, required this.hobbies, required this.languages
@@ -679,6 +807,7 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
   FocusNode skillFocusNode = FocusNode();
   FocusNode hobbiesFocusNode = FocusNode();
   FocusNode languageFocusNode = FocusNode(); 
+  
 
   @override
   Widget build(BuildContext context) {
@@ -786,6 +915,25 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
   }
 }
 
+class FinishedSignupPage extends StatefulWidget{
+  State<FinishedSignupPage> createState()=>_FinishedSignupPageState();
+}
+
+class _FinishedSignupPageState extends State<FinishedSignupPage>{
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Center(
+      
+      child: Column(
+        children: [
+          Text("Finished Signup", style: Theme.of(context).textTheme.bodyMedium,),
+          const SizedBox(height: 30,),
+          ElevatedButton(child: const Text("Go back to Login"), onPressed: ()=> Navigator.pop(context),),
+        ],
+      ));
+  }
+}
 class SignUpForm extends StatefulWidget{
   const SignUpForm({super.key});
 
@@ -817,38 +965,73 @@ class _SignUpFormState extends State<SignUpForm>{
   List<Languages> languages = List.empty(growable: true);
   List<WorkExperiences> workExperiences = List.empty(growable: true);
 
-  Future<int> getMaxId() async{
+  Future<int> getNextId() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance(); 
-    var userJson = sharedPreferences.getString("user_data") as List;
-    int maxIdCount = userJson.map((e) => UserData.fromJson(e)).toList().length + 1;
+
+    var userJson = (sharedPreferences.getString("user_data")  == null) ? List.empty(): sharedPreferences.getString("user_data") as List; 
+    
+        int maxIdCount = userJson.map((e) => UserData.fromJson(e)).toList().length + 1;
     return maxIdCount;
-    }
+  }
+
   Future<void> storeUserDatatoPreferences() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    userData.id = await getMaxId();
+    sharedPreferences.clear();
+    userData.id = await getNextId();
     UserDetails userDetails = UserDetails();
-    userDetails.id= await getMaxId();
+    userDetails.id= await getNextId();
     userDetails.basicInfo = basicInfo;
     userDetails.workExperiences = workExperiences;
     userDetails.skills = skills;
     userDetails.hobbies = hobbies;
     userDetails.educations = educationFields;
     userDetails.contactInfo = contactInfo;
-    //String jsonData = jsonEncode()
-    //String jsonData = jsonEncode();
+    userDetails.languages = languages;
+    String? userDataSharedPrefs = sharedPreferences.getString("user_data");
+    String? userDetailsSharedPrefs = sharedPreferences.getString("user_details");
+
+    List<UserDetails> retrievedUserDetails = List.empty(growable: true); 
+    List<UserData> retrievedUserData = List.empty(growable: true);
+
+    if(userDataSharedPrefs != null){
+      Iterable decoded = jsonDecode(userDataSharedPrefs); 
+      retrievedUserData = decoded.map((e) => UserData.fromJson(e)).toList();
+    }
+    if(userDetailsSharedPrefs != null){
+      Iterable decoded = jsonDecode(userDetailsSharedPrefs);
+      retrievedUserDetails = decoded.map((e) => UserDetails.fromJson(e)).toList();
+    }
+
+    //List<UserDetails> userDetailsList = retrievedUserDetails.map((e) => UserDetails.fromJson(e)).toList();
+    //List<UserData> userDataList = retrievedUserData.map((e) => UserData.fromJson(e)).toList();
+
+    retrievedUserDetails.add(userDetails);
+    retrievedUserData.add(userData);
+    String jsonUserDetails = jsonEncode(retrievedUserDetails.map((e) => e.toJson()).toList());
+    String jsonUserData = jsonEncode(retrievedUserData.map((e) => e.toJson()).toList());
+
+    print(retrievedUserData);
+    // print(retrievedUserData);
+    //String jsonUserDetails = jsonEncode(userDetailsList.map((e) => e.toJson()).toList());
+    // String jsonUserData = jsonEncode(userDataList.map((e) => e.toJson()).toList());
+
+    sharedPreferences.setString("user_details", jsonUserDetails);
+    sharedPreferences.setString("user_data", jsonUserData);
+    _incrementPhase();
   }
 
   void _incrementPhase(){
     setState(() {
       currentIndex = min(++currentIndex, formPhases.length-1);
-
     });
+
     // if(formStateList.elementAt(currentIndex).currentState!.validate()){
     //   // formPhases.elementAt(currentIndex).addData()
     //   setState(() {
     //     currentIndex = min(++currentIndex, formPhases.length-1);
     //   });
     // };
+
   }
 
   @override
@@ -861,11 +1044,11 @@ class _SignUpFormState extends State<SignUpForm>{
       WorkPlaceDetails(formKey: formStateList.elementAt(2), incrementPhase: _incrementPhase,workplaceData: workExperiences,),
       EducationForm(formKey: formStateList.elementAt(3), incrementPhase: _incrementPhase, educations: educationFields,),
       ContactDetailsPage(formKey: formStateList.elementAt(4), incrementPhase: _incrementPhase, contactInfo: contactInfo,),
-      MiscelleneousPage(formKey: formStateList.elementAt(5), incrementPhase: _incrementPhase,
+      MiscelleneousPage(formKey: formStateList.elementAt(5), incrementPhase: storeUserDatatoPreferences,
        skills: skills, languages: languages, hobbies: hobbies,
        ),
-      ];
-      
+       FinishedSignupPage()
+      ];      
   }
 
   @override
@@ -898,42 +1081,10 @@ class _SignUpFormState extends State<SignUpForm>{
   }
 }
 
-class LoginForm extends StatefulWidget{
-  const LoginForm({super.key});
 
-  @override
-  State<LoginForm> createState()=> _LoginFormState();
-
-}
-class _LoginFormState extends State<LoginForm>{
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _passwordController = TextEditingController();
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        child: Form(
-          child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text("Login", style: Theme.of(context).textTheme.displayMedium),
-              const SizedBox(height: 30,),
-              SizedBox(width: MediaQuery.of(context).size.width - 100, child: TextFormField(decoration: const InputDecoration(hintText: "Enter Email"), controller: _emailController,),),
-              const SizedBox(height: 30,),
-              SizedBox(width: MediaQuery.of(context).size.width -100 , child: TextFormField(obscureText: true, decoration: const InputDecoration(hintText: "Enter password"),controller: _passwordController,),),
-              const SizedBox(height: 30,), 
-              SizedBox(child: OutlinedButton(child: const Text("Login"), onPressed: (){},)),
-              const SizedBox(height: 60,),
-              SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, "/signup");}, child: const Text("Sign Up"),),)
-            ],
-          ),
-        ),
-      ),
-    );    
-  } 
-}
 
 class UserProfileScreen extends StatefulWidget{
+  const UserProfileScreen({super.key});
   @override
   State<UserProfileScreen> createState()=> _UserProfileScreenState();
 }
