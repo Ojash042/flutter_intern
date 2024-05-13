@@ -11,22 +11,87 @@ class CoursesDetailsPage extends StatefulWidget{
 }
 
 class SyllabusPage extends StatelessWidget{  
-  List<TModels.Syllabus> syllabus;
-  SyllabusPage({super.key, required this.syllabus});
+  final List<TModels.Syllabus> syllabus;
+  const SyllabusPage({super.key, required this.syllabus});
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+
+  return Container(
+    padding: const EdgeInsets.all(8.0),
+    alignment: Alignment.topLeft,
+    child: SingleChildScrollView(child: 
+    Wrap(
+      children: syllabus.map((e) => ExpansionTile(
+      expandedAlignment: Alignment.topLeft,
+        title: Text(e.title),
+        children:[
+          const SizedBox(height: 15,),
+          const Align(alignment: Alignment.topLeft, child: Text("Summary", style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            decoration: TextDecoration.underline
+          ),),),
+          const SizedBox(height: 5,),
+          Padding(
+            padding: const EdgeInsets.only(left:8.0),
+            child: Align(alignment: Alignment.topLeft, child: Text(e.summary, maxLines: null,)),
+          ),
+          const SizedBox(height: 15,),
+          Row(children: [
+            const Text("Total Content: ", style: TextStyle(fontSize: 14,decoration: TextDecoration.underline, fontWeight: FontWeight.bold),),
+            const SizedBox(width: 15,),
+            Text(e.totalContent.toString()),
+          ],),
+          const SizedBox(height: 15,),
+          Row(children: [
+            const Text("Hours to be completed: ", style: TextStyle(fontSize: 14,decoration: TextDecoration.underline, fontWeight: FontWeight.bold),),
+            const SizedBox(width: 15,),
+            Text(e.hoursToBeCompleted.toString()),
+          ],),
+          const SizedBox(height: 30,)
+          ],
+        )).toList(),
+    ),),
+  );
   }
 }
 
+
 class FAQPage extends StatelessWidget{
-  List<TModels.FAQ> faqs;
-  FAQPage({super.key, required this.faqs}); 
+  final List<TModels.FAQ> faqs;
+  const FAQPage({super.key, required this.faqs}); 
 @override
   Widget build(BuildContext context) {
-    throw UnimplementedError();
+    return Container(
+      alignment: Alignment.topLeft,
+      child: SingleChildScrollView(
+        child: Wrap(alignment: WrapAlignment.start,
+        children: faqs.map((e) => ExpansionTile(
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          title: Text(e.title), children: [
+          const SizedBox(width: 30,),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(children: [
+              const Text("Subtitle:", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),),
+              const SizedBox(width: 5,),
+              Text(e.subtitle),
+              ],),
+          ),
+          const SizedBox(height: 15,),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(children: [
+              const Text("Description:", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),),
+              const SizedBox(width: 5,),
+              Text(e.description),
+              ],),
+          ),
+          const SizedBox(height: 30,),
+        ],)).toList(),),
+      ),
+      );
   }
 } 
 
@@ -40,13 +105,16 @@ class DescriptionPage extends StatelessWidget{
 
   @override
     Widget build(BuildContext context) {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SingleChildScrollView(
-          child: 
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(children: [
+      return Container(
+        padding: const EdgeInsets.all(8),
+        alignment: Alignment.topLeft,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SingleChildScrollView(
+            child: 
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [ 
               const Text("Description", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),),
               const SizedBox(height: 10,),
               Padding(
@@ -54,21 +122,49 @@ class DescriptionPage extends StatelessWidget{
                 child: Text(description),
               ), 
               const SizedBox(height: 30,),
-              Text('Price: $price'),
+              Row(children: [
+                const Text('Price: ', style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.underline, fontSize: 18),),
+                const SizedBox(width: 10,),
+                Text(price.toString()),
+              ],),
+              const SizedBox(height: 30,),
+              const Text("Instructors details", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),), 
               const SizedBox(height: 10,),
-              const Text("Instructors", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),), 
-              Text(instructors.length.toString()),
-              ListView.builder(
+              Row(children: [
+                const Text("No. of instructors: "),
+                Text(instructors.length.toString()),
+              ],),
+              const SizedBox(height: 10,),
+              ListView.builder( 
                 shrinkWrap: true,
                 itemCount: instructors.length,
                 itemBuilder: (context, index){
-                  return Column(children: [
-                   Text(instructors.elementAt(index).name),
-                  Text('-\t${instructors.elementAt(index).summary}')
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    Row(children: [
+                      const Text("Instructor: ", style: TextStyle(fontStyle: FontStyle.italic),),
+                      const SizedBox(width: 5,),
+                      Text(instructors.elementAt(index).name),
+                    ],),
+                    RichText(text: TextSpan(
+                      children: [
+                        const WidgetSpan(child:SizedBox(width: 4,)),
+                        const TextSpan(text: '-'),
+                        const WidgetSpan(child: SizedBox(width: 12,),),
+                       TextSpan(text:instructors.elementAt(index).summary )],
+                      )),
+                    Text('-\t${instructors.elementAt(index).summary}'),
                   ]);
-                })
+                }),
+                const SizedBox(height: 20,),
+                const Text("Skills", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),),
+                const SizedBox(height: 10,),
+                Wrap(children: skills.map((e) => Card(child: Padding(
+                  padding: const EdgeInsets.all(7.0),
+                  child: Text(e),
+                ),)).toList()),
             ],),
-
           ),
         ),
       );
@@ -82,39 +178,25 @@ TModels.Courses? currentCourse;
 List<TModels.Instructor> currentCourseInstructor = List.empty(growable: true);
 late TabController _tabController;
 
-static const List<Tab> courseDetailsTab = [
-  Tab(text: "Description",),
-  Tab(text: "Syllabus"),
-  Tab(text: "FAQs",),
-];
-
-
-
 Future<void> getDataFromSharedPrefs() async{
     try{
       SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-      print(sharedPreferences.getString("courses"));
       String? coursesJson = sharedPreferences.getString("courses"); 
       String? instructorJson = sharedPreferences.getString("instructor");
     List<dynamic> decoderCourse = jsonDecode(coursesJson!)["courses"];
     List<dynamic> decoderInstructor = jsonDecode(instructorJson!)["instructor"];
     courses = decoderCourse.map((e) => TModels.Courses.fromJson(e)).toList(); 
     instructors = decoderInstructor.map((e) => TModels.Instructor.fromJson(e)).toList(); 
-    for (var element in instructors) {
-      print(element.id);
-    }
     currentCourse = courses.firstWhere((element) => element.id == int.parse(widget.courseId));
     for(int item in currentCourse!.instructors){
       currentCourseInstructor.add(instructors.firstWhere((element) =>element.id ==  item));
-      print(currentCourseInstructor);
     }
-
     }
     catch(e){
       print(e);
     }
     // sharedPreferences = await SharedPreferences.getInstance();
-        }
+    }
 
   @override
     void initState(){
@@ -140,26 +222,31 @@ Future<void> getDataFromSharedPrefs() async{
       child: Column(
         children: [
           Row(children: [
-              Image.network(currentCourse!.image, height: 124,width: 124,),
+              Image.network(currentCourse!.image, height: 196,width: 196,),
               const SizedBox(width: 10,),
-              Text(currentCourse!.title, style: Theme.of(context).textTheme.displayMedium,),
+              Column(
+                children: [
+                  Text(currentCourse!.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
+                  Text(currentCourse!.subtitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w100), maxLines: null,),
+                ],
+              ),
           ],),
+
         const SizedBox(height: 30,),
         const Divider(),
         TabBar(tabs: const [
-        Tab(text: "Description",),
-        Tab(text: "Syllabus"),
-        Tab(text: "FAQs",),
-],controller: _tabController,),
+          Tab(text: "Description",),
+          Tab(text: "Syllabus"),
+          Tab(text: "FAQs",),
+        ],
+        controller: _tabController,),
+
         Expanded(
           child: TabBarView(
             controller: _tabController,
             children: <Widget>[
-            Align(
-            alignment: Alignment.topLeft,
-              child: DescriptionPage(description: currentCourse!.description, overview: currentCourse!.overview, price: currentCourse!.price,
-                instructors: currentCourseInstructor, skills: currentCourse!.skills,
-              ),
+            DescriptionPage(description: currentCourse!.description, overview: currentCourse!.overview, price: currentCourse!.price,
+              instructors: currentCourseInstructor, skills: currentCourse!.skills,
             ),
             SyllabusPage(syllabus: currentCourse!.syllabus,),
             FAQPage(faqs: currentCourse!.faqs,),

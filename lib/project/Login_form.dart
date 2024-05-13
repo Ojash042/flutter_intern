@@ -1,37 +1,33 @@
-import 'dart:convert';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_intern/project/models.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:provider/provider.dart';
 class LoginForm extends StatefulWidget{
   const LoginForm({super.key});
 
   @override
   State<LoginForm> createState()=> _LoginFormState();
-
 }
 
 class _LoginFormState extends State<LoginForm>{
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> loginUser() async{
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? userDataJson = sharedPreferences.getString("user_data");
-    if(userDataJson == null){
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("User not available")));
-      return;
+  void checkLoggedIn() async{
+  if(await Provider.of<AuthProvider>(context, listen: false).isLoggedIn()){
+      Navigator.of(context).popAndPushNamed("/home");
     }
-    Iterable decoder = jsonDecode(userDataJson);
-    List<UserData> retrievedUserData = decoder.map((e) => UserData.fromJson(e)).toList(); 
-    if(retrievedUserData.isEmpty || (retrievedUserData.firstWhereOrNull((element) => element.email == _emailController.text) ==null)){
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("User not available")));
-    }
-    sharedPreferences.setBool("loggedIn", true);
-    sharedPreferences.setString("loggedInEmail", _emailController.text);
+  }
+  @override
+  void initState(){
+    super.initState(); 
+    checkLoggedIn();
+  }
 
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content:Text("Successfully Logged In") ,));
-    return;     
+  void loginUser() async {
+    Provider.of<AuthProvider>(context, listen: false).login(context, _emailController.text, _passwordController.text);
+    if(await Provider.of<AuthProvider>(context, listen: false).isLoggedIn()){
+      Navigator.of(context).popAndPushNamed("/home");
+    }
   }
   
   @override
@@ -48,7 +44,7 @@ class _LoginFormState extends State<LoginForm>{
               const SizedBox(height: 30,),
               SizedBox(width: MediaQuery.of(context).size.width -100 , child: TextFormField(obscureText: true, decoration: const InputDecoration(hintText: "Enter password"),controller: _passwordController,),),
               const SizedBox(height: 30,), 
-              SizedBox(child: OutlinedButton(child: const Text("Login"), onPressed: loginUser,)),
+              SizedBox(child: OutlinedButton(onPressed: loginUser,child: const Text("Login"),)),
               const SizedBox(height: 60,),
               SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, "/signup");}, child: const Text("Sign Up"),),)
             ],

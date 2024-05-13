@@ -15,6 +15,7 @@ class UserData{
 
   factory UserData.fromJson(Map<String, dynamic> json){
     UserData ud = UserData();
+    ud.id = json["id"];
     ud.name = json["name"];
     ud.email = json["email"];
     ud.password = json["password"];
@@ -32,8 +33,8 @@ class ImageModel{
 
   factory ImageModel.fromJson(Map<String, dynamic> json){
     ImageModel imageModel = ImageModel();
-    imageModel.imagePath = json["image_model"];
-    imageModel.isNetworkUrl = json["image_path"];
+    imageModel.imagePath = json["image_path"];
+    imageModel.isNetworkUrl = json["is_network_url"];
     return imageModel;  
   }
 }
@@ -89,8 +90,8 @@ class Hobbies{
 
   factory Hobbies.fromJson(Map<String, dynamic> json){
     Hobbies  hobbies = Hobbies();
-    hobbies.id = json["hobbies"];
-    hobbies.title = json["hobbies"];
+    hobbies.id = json["id"];
+    hobbies.title = json["title"];
     return hobbies;
   }
 }
@@ -230,7 +231,9 @@ class BasicInfo{
     basicInfo.profileImage = ImageModel.fromJson(json["profile_image"]);
     basicInfo.coverImage = ImageModel.fromJson(json["cover_image"]);
     basicInfo.gender = json["gender"];
-    basicInfo.maritalStatus = json["marital_status"];
+    basicInfo.maritalStatus = json["maritalStatus"];
+    basicInfo.summary = json["summary"];
+    basicInfo.dob = json["dob"];
     return basicInfo;
   }
 
@@ -248,6 +251,7 @@ class UserDetails{
   late List<Languages> languages;
   late List<Education> educations;
   late ContactInfo contactInfo;
+
   Map<String, dynamic> toJson()=>{"id": id, "basic_info": basicInfo.toJson(), 
   "work_experiences": workExperiences.isEmpty ? []: workExperiences.map((e) => e.toJson()).toList(),
   "skills": skills.isEmpty? []: skills.map((e) => e.toJson()).toList(),
@@ -263,7 +267,7 @@ class UserDetails{
     var sk = json["skills"] as List;
     var hb = json["skills"] as List;
     var langs = json["languages"] as List;
-    var  educ = json["education"] as List;
+    var educ = json["education"] as List;
 
     userDetails.id = json["id"];
      
@@ -275,6 +279,5 @@ class UserDetails{
     userDetails.educations = educ.map((e) => Education.fromJson(e)).toList();
     userDetails.contactInfo = ContactInfo.fromJson(json["contact_info"]); 
     return userDetails;
-
   }
 }

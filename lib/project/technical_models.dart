@@ -1,5 +1,3 @@
-import 'package:intl/intl.dart';
-
 class UserFriend{
   UserFriend();
   late int userListId;

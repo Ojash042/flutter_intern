@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
 import 'package:flutter_intern/project/courses_page.dart';
+import 'package:flutter_intern/project/landing_page.dart';
 import 'package:flutter_intern/project/misc.dart';
-import 'package:flutter_intern/project/technical_models.dart' as TModels;
+import 'package:flutter_intern/project/profile_info_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -13,6 +16,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_intern/project/models.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_intern/project/Login_form.dart';
 
@@ -64,22 +68,28 @@ class _MyAppState extends State<MyApp>{
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue,)),
-      // theme: ThemeData.from(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue,)),
-      initialRoute: "/",
-      routes: {
-        "/": (context)=>const MyHomePage(child: LoginForm()),
-        "/login": (context) => const LoginForm(),
-        "/signup": (context) => const SignUpForm(),
-        "/courses":(context) => CoursesPage(),
-      },
-      onGenerateRoute: (settings){
-        if(settings.name!.startsWith('/courses/')){
-          var courseId = settings.name!.split('/').last;
-          return MaterialPageRoute(builder: (context) => CoursesDetailsPage(courseId: courseId));
-        }
-      },
+    return ChangeNotifierProvider(
+      create: (_)=> AuthProvider(),
+      child: MaterialApp(
+        theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue,)),
+        // theme: ThemeData.from(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue,)),
+        initialRoute: "/",
+        routes: {
+          "/": (context)=>const MyHomePage(child: LoginForm()),
+          "/login": (context) => const LoginForm(),
+          "/signup": (context) => const SignUpForm(),
+          "/courses":(context) => CoursesPage(),
+          "/home": (context) => LandingPage(),
+          "/changePassword": (context)=> const ChangePasswordPage(),
+          "/profileInfo": (context)=> const ProfileInfoPage(),
+        },
+        onGenerateRoute: (settings){
+          if(settings.name!.startsWith('/courses/')){
+            var courseId = settings.name!.split('/').last;
+            return MaterialPageRoute(builder: (context) => CoursesDetailsPage(courseId: courseId));
+          }
+        },
+      ),
     );
   }
 }
@@ -95,7 +105,7 @@ class MyHomePage extends StatefulWidget{
 class _MyHomePageState extends State<MyHomePage>{
   bool isLoggedIn = false;
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return Scaffold(
       drawer: MyDrawer(), 
       appBar: AppBar(title: const Text("Project"),
@@ -137,7 +147,6 @@ class _BasicDetailsState extends State<BasicDetails>{
     Completer<void> dialogCompleter = Completer<void>();
 
     String? userDataSharedPrefs =  sharedPreferences.getString("user_data");
-    print(userDataSharedPrefs);
     List<UserData> retrievedUserData = List.empty();
     if(userDataSharedPrefs != null){
       Iterable decoded = jsonDecode(userDataSharedPrefs);
@@ -160,12 +169,8 @@ class _BasicDetailsState extends State<BasicDetails>{
                 Navigator.pop(scaffoldContext);
                 dialogCompleter.complete();
               }, child: const Text("Ok!")),
-          ],);
-      
-      });
-
-      
-
+          ],); 
+      }); 
       return;
     }
     widget.userData.name = fullNameController.text;
@@ -212,7 +217,10 @@ class PersonalDetails extends StatefulWidget{
   final VoidCallback incrementPhase;
   BasicInfo basicInfo = BasicInfo();
   PersonalDetails({super.key, required this.formKey, required this.incrementPhase, required this.basicInfo});
+
+  @override
   State<PersonalDetails> createState() => _PersonalDetailsState(); 
+
 }
 
 class _PersonalDetailsState extends State<PersonalDetails>{
@@ -227,7 +235,6 @@ class _PersonalDetailsState extends State<PersonalDetails>{
     final XFile? pickedImage = await _imagePicker.pickImage(source: ImageSource.gallery);
     var directory = await getApplicationDocumentsDirectory();
     String path = directory.path;
-    print(path);
     if(pickedImage!= null){
       setState((){
         if(isProfileImage){
@@ -1010,7 +1017,6 @@ class _SignUpFormState extends State<SignUpForm>{
     String jsonUserDetails = jsonEncode(retrievedUserDetails.map((e) => e.toJson()).toList());
     String jsonUserData = jsonEncode(retrievedUserData.map((e) => e.toJson()).toList());
 
-    print(retrievedUserData);
     // print(retrievedUserData);
     //String jsonUserDetails = jsonEncode(userDetailsList.map((e) => e.toJson()).toList());
     // String jsonUserData = jsonEncode(userDataList.map((e) => e.toJson()).toList());
