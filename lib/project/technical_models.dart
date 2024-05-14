@@ -31,11 +31,11 @@ class Image{
   Image();
   late int id;
   late String url;
-  Map<String, dynamic> toJson()=> {"id": id, "url": url};
+  Map<String, dynamic> toJson()=> {"image_id": id, "image_url": url};
   factory Image.fromJson(Map<String, dynamic> json){
     Image im = Image();
-    im.id = json["id"];
-    im.url = json["url"];
+    im.id = json["image_id"];
+    im.url = json["image_url"];
     return im;
   }
 }
@@ -62,15 +62,15 @@ class UserPost{
   late String createdAt;
   late String title;
   late String description;
-  late List<Image> images;
+  late List<Image> images = List.empty(growable: true);
   late List<PostLikedBy> postLikedBys;
 
   Map<String, dynamic> toJson()=> {"post_id": postId, "user_id": userId, "created_at": createdAt, "title": title, "description": description,
-  "images": images.map((e) => e.toJson()).toList(), "post_liked_by": postLikedBys.map((e) => e.toJson()).toList()
+  "image": images.map((e) => e.toJson()).toList(), "post_liked_by": postLikedBys.map((e) => e.toJson()).toList()
   };
 
   factory UserPost.fromJson(Map<String, dynamic> json){
-    var imageJson = json["images"] as List;
+    var imageJson = json["image"] as List;
     var postJson = json["post_liked_by"] as List;
     UserPost userPost = UserPost();
     userPost.postId = json["post_id"];

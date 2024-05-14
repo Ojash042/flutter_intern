@@ -4,77 +4,124 @@
         {
             "post_id": 1,
             "user_id": 1,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 1",
+            "description": "Description 1",
             "image":[
                 {
                 "image_id": 1,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.m4FmOjk0Bx-N4JaBzsBoTgHaEP%26pid%3DApi&f=1&ipt=6a0b0455711e9bbc6d547152a1f620e066422d5fe6c976a0cc3fe9fb2aeadbb1&ipo=images"
                 },  
                 {
                 "image_id": 2,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.m4FmOjk0Bx-N4JaBzsBoTgHaEP%26pid%3DApi&f=1&ipt=6a0b0455711e9bbc6d547152a1f620e066422d5fe6c976a0cc3fe9fb2aeadbb1&ipo=images"
+                }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 1,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 2,
+                    "date_time": "2024-03-12"
                 }
             ]
         },
         {
             "post_id": 2,
             "user_id": 1,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 2",
+            "description": "Description 2",
             "image":[
                 {
                 "image_id": 3,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.UHbAF6yPon33W3A03yO47wHaFj%26pid%3DApi&f=1&ipt=5d9c9de0f0b1d3ef361c8bb1798f30a2577c0bdd1f3b49f8f317685065da99a7&ipo=images"
                 },  
                 {
                 "image_id": 4,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse2.mm.bing.net%2Fth%3Fid%3DOIP.UHbAF6yPon33W3A03yO47wHaFj%26pid%3DApi&f=1&ipt=5d9c9de0f0b1d3ef361c8bb1798f30a2577c0bdd1f3b49f8f317685065da99a7&ipo=images"
+                }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 1,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 2,
+                    "date_time": "2024-03-12"
                 }
             ]
+
         },
         {
             "post_id": 3,
-            "user_id": 1,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "user_id": 2,
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 3",
+            "description": "Description #3",
             "image":[
                 {
                 "image_id": 5,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fwallpapercave.com%2Fwp%2FZMsQjZK.jpg&f=1&nofb=1&ipt=67d0b52eef45e489b1c8bf28ac482be07a4c788dab3dade434bb87f2b456900a&ipo=images"
                 },  
                 {
                 "image_id": 6,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2Fthewowstyle.com%2Fwp-content%2Fuploads%2F2015%2F01%2Fnature-images.jpg&f=1&nofb=1&ipt=755afbf9ffc34ef6d0f1db5c2ebec7901e1d199317971073d58d97849d964e4f&ipo=images"
+                }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 1,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 2,
+                    "date_time": "2024-03-12"
                 }
             ]
+
         },
         {
             "post_id": 4,
-            "user_id": 0,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "user_id": 3,
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 4",
+            "description": "Description 4",
             "image":[
                 {
                 "image_id": 7,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.y2wQKuJK8ZMxUCgqhh03_wHaD4%26pid%3DApi&f=1&ipt=dc42178cbfefe55e6dcca3218b01ee96c87bb9759b4edfd1c53537de96b023c1&ipo=images"
                 },  
                 {
                 "image_id": 8,
-                "image_url": ""
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.y2wQKuJK8ZMxUCgqhh03_wHaD4%26pid%3DApi&f=1&ipt=dc42178cbfefe55e6dcca3218b01ee96c87bb9759b4edfd1c53537de96b023c1&ipo=images"
+                },
+                {
+                "image_id": 8,
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.y2wQKuJK8ZMxUCgqhh03_wHaD4%26pid%3DApi&f=1&ipt=dc42178cbfefe55e6dcca3218b01ee96c87bb9759b4edfd1c53537de96b023c1&ipo=images"
+                },
+                {
+                "image_id": 8,
+                "image_url": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse4.mm.bing.net%2Fth%3Fid%3DOIP.y2wQKuJK8ZMxUCgqhh03_wHaD4%26pid%3DApi&f=1&ipt=dc42178cbfefe55e6dcca3218b01ee96c87bb9759b4edfd1c53537de96b023c1&ipo=images"
+                }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 3,
+                    "date_time": "2024-03-12"
                 }
             ]
+
         },
         {
-            "post_id": 5,
+            "post_id": 0,
             "user_id": 0,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 5",
+            "description": "Description 5",
             "image":[
                 {
                 "image_id": 9,
@@ -84,14 +131,25 @@
                 "image_id": 10,
                 "image_url": ""
                 }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                }
             ]
+
         },
         {
-            "post_id": 6,
+            "post_id": 0,
             "user_id": 0,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 6",
+            "description": "Description 6",
             "image":[
                 {
                 "image_id": 11,
@@ -101,14 +159,25 @@
                 "image_id": 12,
                 "image_url": ""
                 }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                }
             ]
+
         },
         {
-            "post_id": 7,
+            "post_id": 0,
             "user_id": 0,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 7",
+            "description": "Description 7",
             "image":[
                 {
                 "image_id": 13,
@@ -118,14 +187,25 @@
                 "image_id": 14,
                 "image_url": ""
                 }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                }
             ]
+
         },
         {
-            "post_id": 8,
+            "post_id": 0,
             "user_id": 0,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 8",
+            "description": "Description 8",
             "image":[
                 {
                 "image_id": 15,
@@ -135,14 +215,25 @@
                 "image_id": 16,
                 "image_url": ""
                 }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                }
             ]
+
         },
         {
-            "post_id": 9,
+            "post_id": 0,
             "user_id": 0,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 9",
+            "description": "Description 9",
             "image":[
                 {
                 "image_id": 17,
@@ -152,14 +243,25 @@
                 "image_id": 18,
                 "image_url": ""
                 }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                }
             ]
+
         },
         {
-            "post_id": 10,
+            "post_id": 0,
             "user_id": 0,
-            "created_at": "2024-03-22",
-            "title": "Post Title ",
-            "description": "description ",
+            "created_at": "2024-03-22T13:24:32.098",
+            "title": "Post Title 10",
+            "description": "Description 10",
             "image":[
                 {
                 "image_id": 19,
@@ -169,7 +271,18 @@
                 "image_id": 20,
                 "image_url": ""
                 }
+            ],
+            "post_liked_by":[
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                },
+                {
+                    "user_id": 0,
+                    "date_time": "2024-03-12"
+                }
             ]
+
         }
     ]
 }

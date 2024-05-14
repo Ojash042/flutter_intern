@@ -27,6 +27,8 @@ void main(List<String> args) {
 
 class MyApp extends StatefulWidget{
   const MyApp({super.key});
+
+  @override
   State<MyApp> createState() => _MyAppState();
 }
 class _MyAppState extends State<MyApp>{
@@ -36,14 +38,18 @@ class _MyAppState extends State<MyApp>{
     var courseByCategoriesJson = await rootBundle.loadString('assets/courses_by_categories.json');
     var coursesJson = await rootBundle.loadString('assets/courses.json');
     var instructorJson = await rootBundle.loadString('assets/instructor.json');
-    var userFriendJson = await rootBundle.loadString('assets/user_friend_list.json');
-    var userPostJson =await rootBundle.loadString('assets/user_friend_list.json');
+    var userPost = await rootBundle.loadString('assets/user_post.json');
+
+    //var userFriendJson = await rootBundle.loadString('assets/user_friend_list.json');
+    //var userPostJson =await rootBundle.loadString('assets/user_friend_list.json');
+
     //List<TModels.CourseByCategories> courseCategories =  courseCategoriesJson.map((e) => TModels.CourseByCategories.fromJson(e)).toList();
 
     sharedPreferences.setString("course_categories",courseCategoriesJson);
     sharedPreferences.setString("course_by_categories", courseByCategoriesJson);
     sharedPreferences.setString("courses", coursesJson);
     sharedPreferences.setString("instructor", instructorJson);
+    sharedPreferences.setString("user_post", jsonEncode(jsonDecode(userPost)["user_post"]));
 
     // List<dynamic> decoderCourseCategories = jsonDecode(courseCategoriesJson)["course_categories"];
     // List<dynamic> decoderCourseByCategories = jsonDecode(courseByCategoriesJson)["courses_by_categories"];
@@ -59,6 +65,7 @@ class _MyAppState extends State<MyApp>{
     // List<TModels.Instructor> instructors = decoderInstructor.map((e) => TModels.Instructor.fromJson(e)).toList();  
     // List<TModels.UserFriend> userFriends = decoderUserFriend.map((e) => TModels.UserFriend.fromJson(e)).toList();
     // List<TModels.UserPost> userPost = decoderUserPost.map((e) => TModels.UserPost.fromJson(e)).toList();
+
   }
   @override
   void initState() {
@@ -88,6 +95,7 @@ class _MyAppState extends State<MyApp>{
             var courseId = settings.name!.split('/').last;
             return MaterialPageRoute(builder: (context) => CoursesDetailsPage(courseId: courseId));
           }
+          return null;
         },
       ),
     );
@@ -125,6 +133,7 @@ class BodyContainer extends StatelessWidget{
   }
 }
 
+// ignore: must_be_immutable
 class BasicDetails extends StatefulWidget{
   final GlobalKey<FormState> formKey;
   UserData userData;
@@ -154,7 +163,7 @@ class _BasicDetailsState extends State<BasicDetails>{
     }
     var scaffoldContext = context;
 
-    var ret = retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text);
+    // var ret = retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text);
 
     if(retrievedUserData.isNotEmpty && (retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text)!=null) ){
       showDialog(context: context, builder: (BuildContext context){
@@ -373,7 +382,7 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           readOnly: true,
           onTap: () async{
             DateTime? pickedDate = await showDatePicker(context: context, 
-            firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
+            firstDate: DateTime(1970), lastDate: DateTime(DateTime.now().year - 17), initialDate: DateTime(DateTime.now().year -18));
             setState(() {
               if(pickedDate!=null){
                 widget.basicInfo.dob = DateFormat("yyyy-MM-dd").format(pickedDate);
@@ -417,96 +426,99 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: widget.formKey,
-      child: Column(
-        children: [
-          Text("Workplace history", style: Theme.of(context).textTheme.headlineMedium,),
-          ListView.builder(itemCount: widget.workplaceCount,
-          shrinkWrap: true,
-          itemBuilder: (context, index)=> 
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column( 
-              children: [
-                TextFormField(
-                  onChanged: (value) => {
-                    setState(() {
-                      widget.workplaceData.elementAt(index).jobTitle = value;
-                    })
-                  },
-                  decoration: const InputDecoration(hintText: "Job Title"),),
-                const SizedBox(height: 20,),
-                TextFormField(
-                  onChanged: (value) =>{
-                    setState(() {
-                      widget.workplaceData.elementAt(index).organizationName = value;
-                    })
-                  },
-                  decoration: const InputDecoration(hintText: "The name of the organization"),),
-                const SizedBox(height: 30,),
-                TextFormField(
-                  onChanged: (value)=>{
-                    setState(() {
-                      widget.workplaceData.elementAt(index).summary = value;
-                    })
-                  },
-                  maxLines: null,decoration: const InputDecoration(hintText: "Features worked on the organization"),),
-                const SizedBox(height: 20,),
-                Column(
-                  children: [
-                    TextField(
-                      decoration:  InputDecoration(icon: const Icon(Icons.calendar_month), 
-                      label: Text((widget.workplaceData.elementAt(index).startDate == null)? 
-                          "Enter the starting date here": 
-                          DateFormat("yyyy-MM-dd").format(widget.workplaceData.elementAt(index).startDate!), )),
-                    readOnly: true,
-                    onTap: () async{
-                      DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
-                      setState(() { 
-                        if(pickeDate!=null){                             
-                          widget.workplaceData.elementAt(index).startDate = pickeDate;
-                        }
-                        });
-                       
-                      FocusScope.of(context).unfocus();
-                    },
-                    ),
-                    TextField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((widget.workplaceData.elementAt(index).endDate == null)? 
-                    "Enter the ending date here" : DateFormat("yyyy-MM-dd").format(widget.workplaceData.elementAt(index).endDate!), )),
-                    readOnly: true,
-                    onTap: () async {
-                      DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
-                        setState(() { 
-                          if(pickeDate!=null){
-                            widget.workplaceData.elementAt(index).endDate = pickeDate;
-                          }
-                        });
-                      
-                      
-                    },),],),
-              const SizedBox(height: 30,),
-              ],),
-            ),
-          ),
-            TextButton(
-              onPressed: (){setState(() { 
-                DateTime? dt; 
-                widget.workplaceCount++;
-                WorkExperiences workExperiences = WorkExperiences(); 
-                workExperiences.id = Random().nextInt(10000) + 1000;
-                workExperiences.startDate = dt;
-                workExperiences.endDate = dt;
-                widget.workplaceData.add(workExperiences);
-                 });}, 
-                 child: const Text("Add more +")),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Form(
+        key: widget.formKey,
+        child: Column(
           children: [
-          IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
-          IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward))
-        ],),
-        ],),
+            Text("Workplace history", style: Theme.of(context).textTheme.headlineMedium,),
+            ListView.builder(itemCount: widget.workplaceCount,
+            shrinkWrap: true,
+            itemBuilder: (context, index)=> 
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column( 
+                children: [
+                  TextFormField(
+                    onChanged: (value) => {
+                      setState(() {
+                        widget.workplaceData.elementAt(index).jobTitle = value;
+                      })
+                    },
+                    decoration: const InputDecoration(hintText: "Job Title"),),
+                  const SizedBox(height: 20,),
+                  TextFormField(
+                    onChanged: (value) =>{
+                      setState(() {
+                        widget.workplaceData.elementAt(index).organizationName = value;
+                      })
+                    },
+                    decoration: const InputDecoration(hintText: "The name of the organization"),),
+                  const SizedBox(height: 30,),
+                  TextFormField(
+                    onChanged: (value)=>{
+                      setState(() {
+                        widget.workplaceData.elementAt(index).summary = value;
+                      })
+                    },
+                    maxLines: null,decoration: const InputDecoration(hintText: "Features worked on the organization"),),
+                  const SizedBox(height: 20,),
+                  Column(
+                    children: [
+                      TextField(
+                        decoration:  InputDecoration(icon: const Icon(Icons.calendar_month), 
+                        label: Text((widget.workplaceData.elementAt(index).startDate == null)? 
+                            "Enter the starting date here": 
+                            DateFormat("yyyy-MM-dd").format(widget.workplaceData.elementAt(index).startDate!), )),
+                      readOnly: true,
+                      onTap: () async{
+                        DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
+                        setState(() { 
+                          if(pickeDate!=null){                             
+                            widget.workplaceData.elementAt(index).startDate = pickeDate;
+                          }
+                          });
+                         
+                        FocusScope.of(context).unfocus();
+                      },
+                      ),
+                      TextField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((widget.workplaceData.elementAt(index).endDate == null)? 
+                      "Enter the ending date here" : DateFormat("yyyy-MM-dd").format(widget.workplaceData.elementAt(index).endDate!), )),
+                      readOnly: true,
+                      onTap: () async {
+                        DateTime? pickeDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(1970), lastDate: DateTime(2030));
+                          setState(() { 
+                            if(pickeDate!=null){
+                              widget.workplaceData.elementAt(index).endDate = pickeDate;
+                            }
+                          });
+                        
+                        
+                      },),],),
+                const SizedBox(height: 30,),
+                ],),
+              ),
+            ),
+              TextButton(
+                onPressed: (){setState(() { 
+                  DateTime? dt; 
+                  widget.workplaceCount++;
+                  WorkExperiences workExperiences = WorkExperiences(); 
+                  workExperiences.id = Random().nextInt(10000) + 1000;
+                  workExperiences.startDate = dt;
+                  workExperiences.endDate = dt;
+                  widget.workplaceData.add(workExperiences);
+                   });}, 
+                   child: const Text("Add more +")),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+            IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+            IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward))
+          ],),
+          ],),
+      ),
     );
   }
 }
@@ -533,139 +545,159 @@ class _EducationFormState extends State<EducationForm>{
 
   @override
   Widget build(BuildContext context) {
-  return Form(
-    child: Column(
-      children: [ 
-
-      Text("Education History", style: Theme.of(context).textTheme.displayMedium,),
-        ListView.builder(
-          itemCount: widget.educationCount,
-          physics: const NeverScrollableScrollPhysics(),
-          shrinkWrap: true,
-          itemBuilder: (context, index)=>
-          Column(children: [
-            TextFormField(decoration: const InputDecoration(hintText: "Organization name"),),
-            const SizedBox(height: 20,),
-            TextFormField(decoration: const InputDecoration(hintText: "Level"),),
-            const SizedBox(height: 30,),
-            Column(
-              children: [
-                TextField(
-                  decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
-                  label: Text((widget.educations.length<index ||widget.educations.elementAt(index).startDate == null)?
-                  "Enter joined Date": DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).startDate!))),
-                  onTap: () async{
-                    DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030));
-                    setState((){ 
-                    if(pickedDate != null){  
-                      widget.educations.elementAt(index).startDate = pickedDate; 
-                    }
-                    });
-                  },
-                ),
-                TextField(
-                  decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
-                  label: Text((widget.educations.length<index ||widget.educations.elementAt(index).endDate == null)?
-                  "Enter Ended Date": DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).endDate!))),
-                  onTap: () async{
-                    DateTime? dt = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030)); 
-                    setState((){
-                      if(dt!= null){ 
-                        widget.educations.elementAt(index).endDate  =dt;
-                      } 
-                    });
-                  },
-                ),
-              const SizedBox(height: 30.0,),
-              Text("Achievements", style: Theme.of(context).textTheme.headlineSmall),
-              // ListView.builder(
-              //   shrinkWrap: true,
-              //   itemCount: widget.achivementCount+1, itemBuilder: (innerContext, innerIndex) => Text(innerIndex.toString()) )
-              ListView.builder(
-                shrinkWrap: true,
-                itemCount: widget.educations.elementAt(index).accomplishments.length ,
-                physics: const NeverScrollableScrollPhysics(),
-                itemBuilder: (innerContext, innerIndex)=> 
-                
-              Column(
-                children: [ 
-                  const SizedBox(height: 20,),
-                  Text('Achievement #${innerIndex+1}',),
-                  SizedBox(width: 220, child:TextFormField(
-                    onChanged: (value){
-                      setState(() {
-                        widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).title = value;
-                      });
-                    },
-                    decoration: const InputDecoration(hintText: "Achivement Title"),)),
-                  SizedBox(width: 220, child: TextFormField(
-                    onChanged: (value){
-                      setState(() {
-                        widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).description = value;
-                      });
-                    },
-                    maxLines: null,decoration: const InputDecoration(hintText: "Descriptions"),),),
-                  SizedBox(width: 220, child: TextFormField(
-                    decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
-                     hintText: (widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime == null)? 
-                    "Enter accomplished date": 
-                    DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime!),
-                    ),
-                    readOnly: true,
-                    onTap: ()async{  
-                      DateTime? dt = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030));
-                      setState(() {
-                        if(dt!=null){
-                          widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime = dt;
-                        }
-                      });
-                    },
-                    ),),
-                    const SizedBox(height: 30,),
-                ],)
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Form(
+      child: Column(
+        children: [ 
+        Text("Education History", style: Theme.of(context).textTheme.displayMedium,),
+          ListView.builder(
+            itemCount: widget.educationCount,
+            physics: const NeverScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemBuilder: (context, index)=>
+            Column(children: [
+              TextFormField(decoration: const InputDecoration(hintText: "Organization name"),
+              onChanged: (value) => {
+                setState(() {
+                  widget.educations.elementAt(index).organizationName = value;
+                })
+              },
               ),
-              
-                TextButton(onPressed: (){
-                  setState(() {
-                  Education education = widget.educations.elementAt(index);
-                  Accomplishment accomplishment = Accomplishment();
-                  accomplishment.description = "";
-                  accomplishment.id = Random().nextInt(10000) + 1000;
-                  accomplishment.title = "";
-                  accomplishment.dateTime  = null;
-                  List<Accomplishment> accomplishments = (widget.educations.elementAt(index).accomplishments == null)? List.empty(growable: true) 
-                  : widget.educations.elementAt(index).accomplishments; 
-                  accomplishments.add(accomplishment);
-                  education.accomplishments = accomplishments;
-                  widget.achivementCount++;
-                });
-              }, 
-              child: const Text("Add Achievement"))
-              ],
-            )
-          ],)
-          ),
-
-        TextButton(onPressed: (){
-          setState(() { 
-            widget.educationCount++;
-            Education education = Education();
-            education.id = Random().nextInt(10000) + 1000;
-            education.startDate = null;
-            education.endDate = null;
-            education.accomplishments = List.empty(growable: true);
-            widget.educations.add(education);
-          });
-        }, child: const Text("Add more +")),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [ 
-            IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
-            IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
-          ]
-        )
-        
-      ],
+              const SizedBox(height: 20,),
+              TextFormField(decoration: const InputDecoration(hintText: "Level"), onChanged: (value) => {
+                setState(() {
+                  widget.educations.elementAt(index).level = value;
+                })
+              },),
+              const SizedBox(height: 20,),
+              TextFormField(
+                maxLines: null,
+                decoration: const InputDecoration(hintText: "Summary"),onChanged: (value)=>{
+                setState(() {
+                  widget.educations.elementAt(index).summary = value;
+                })
+              },),
+              const SizedBox(height: 30,),
+              Column(
+                children: [
+                  TextField(
+                    decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
+                    label: Text((widget.educations.length<index ||widget.educations.elementAt(index).startDate == null)?
+                    "Enter joined Date": DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).startDate!))),
+                    onTap: () async{
+                      DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030));
+                      setState((){ 
+                      if(pickedDate != null){  
+                        widget.educations.elementAt(index).startDate = pickedDate; 
+                      }
+                      });
+                    },
+                  ),
+                  TextField(
+                    decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
+                    label: Text((widget.educations.length<index ||widget.educations.elementAt(index).endDate == null)?
+                    "Enter Ended Date": DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).endDate!))),
+                    onTap: () async{
+                      DateTime? dt = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030)); 
+                      setState((){
+                        if(dt!= null){ 
+                          widget.educations.elementAt(index).endDate  =dt;
+                        } 
+                      });
+                    },
+                  ),
+                const SizedBox(height: 30.0,),
+                Text("Achievements", style: Theme.of(context).textTheme.headlineSmall),
+                // ListView.builder(
+                //   shrinkWrap: true,
+                //   itemCount: widget.achivementCount+1, itemBuilder: (innerContext, innerIndex) => Text(innerIndex.toString()) )
+                ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: widget.educations.elementAt(index).accomplishments.length ,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (innerContext, innerIndex)=> 
+                  
+                Column(
+                  children: [ 
+                    const SizedBox(height: 20,),
+                    Text('Achievement #${innerIndex+1}',),
+                    SizedBox(width: 220, child:TextFormField(
+                      onChanged: (value){
+                        setState(() {
+                          widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).title = value;
+                        });
+                      },
+                      decoration: const InputDecoration(hintText: "Achivement Title"),)),
+                    SizedBox(width: 220, child: TextFormField(
+                      onChanged: (value){
+                        setState(() {
+                          widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).description = value;
+                        });
+                      },
+                      maxLines: null,decoration: const InputDecoration(hintText: "Descriptions"),),),
+                    SizedBox(width: 220, child: TextFormField(
+                      decoration: InputDecoration(icon: const Icon(Icons.calendar_month),
+                       hintText: (widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime == null)? 
+                      "Enter accomplished date": 
+                      DateFormat("yyyy-MM-dd").format(widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime!),
+                      ),
+                      readOnly: true,
+                      onTap: ()async{  
+                        DateTime? dt = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030));
+                        setState(() {
+                          if(dt!=null){
+                            widget.educations.elementAt(index).accomplishments.elementAt(innerIndex).dateTime = dt;
+                          }
+                        });
+                      },
+                      ),),
+                      const SizedBox(height: 30,),
+                  ],)
+                ),
+                
+                  TextButton(onPressed: (){
+                    setState(() {
+                    Education education = widget.educations.elementAt(index);
+                    Accomplishment accomplishment = Accomplishment();
+                    accomplishment.description = "";
+                    accomplishment.id = Random().nextInt(10000) + 1000;
+                    accomplishment.title = "";
+                    accomplishment.dateTime  = null;
+                    List<Accomplishment> accomplishments = (widget.educations.elementAt(index).accomplishments == null)? List.empty(growable: true) 
+                    : widget.educations.elementAt(index).accomplishments; 
+                    accomplishments.add(accomplishment);
+                    education.accomplishments = accomplishments;
+                    widget.achivementCount++;
+                  });
+                }, 
+                child: const Text("Add Achievement"))
+                ],
+              )
+            ],)
+            ),
+    
+          TextButton(onPressed: (){
+            setState(() { 
+              widget.educationCount++;
+              Education education = Education();
+              education.id = Random().nextInt(10000) + 1000;
+              education.startDate = null;
+              education.endDate = null;
+              education.accomplishments = List.empty(growable: true);
+              widget.educations.add(education);
+            });
+          }, child: const Text("Add more +")),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [ 
+              IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+              IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
+            ]
+          )
+          
+        ],
+      ),
     ),
   );
   }
@@ -713,74 +745,77 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Form(
-      key: widget.formKey,
-      child: Column(
-        children: [
-          Text("Contact Details:", style: Theme.of(context).textTheme.displayMedium,),
-          const SizedBox(height: 30,),
-          TextFormField(
-            onChanged: (value) => {
-              setState(() {
-                widget.contactInfo.mobileNo = value;
-              })
-            },
-            decoration: InputDecoration(
-              errorText: _mobileNoError ?  "Enter a valid mobile no." : null,
-              hintText: "Enter mobile no:"),
-             ),
-          const SizedBox(height: 30,),
-          Text("Social Media Links: ", style: Theme.of(context).textTheme.displaySmall,),
-          const SizedBox(height: 30,),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: widget.socialMediaCounter,
-            itemBuilder: (context, index) => Column(children: [
-              TextFormField(
-                onChanged: (value) => {
-                  setState(() {
-                    widget.contactInfo.socialMedias.elementAt(index).title = value;
-                  })
-                },
-                decoration: const InputDecoration(hintText: "Title",), controller: widget.titleController.elementAt(index),), 
-              const SizedBox(height: 10,),
-              TextFormField(
-                onChanged: (value) => {
-                  setState(() {
-                    widget.contactInfo.socialMedias.elementAt(index).url = value;
-                  })
-                },
-                decoration: const InputDecoration(hintText: "Url"), controller: widget.urlController.elementAt(index),),
-              const SizedBox(height: 10,),
-              TextFormField(
-              onChanged: (value) =>{
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Form(
+        key: widget.formKey,
+        child: Column(
+          children: [
+            Text("Contact Details:", style: Theme.of(context).textTheme.displayMedium,),
+            const SizedBox(height: 30,),
+            TextFormField(
+              onChanged: (value) => {
                 setState(() {
-                  widget.contactInfo.socialMedias.elementAt(index).type = value;
+                  widget.contactInfo.mobileNo = value;
                 })
               },
-                decoration: const InputDecoration(hintText: "Type"), controller: widget.typeController.elementAt(index),),
+              decoration: InputDecoration(
+                errorText: _mobileNoError ?  "Enter a valid mobile no." : null,
+                hintText: "Enter mobile no:"),
+               ),
+            const SizedBox(height: 30,),
+            Text("Social Media Links: ", style: Theme.of(context).textTheme.displaySmall,),
+            const SizedBox(height: 30,),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: widget.socialMediaCounter,
+              itemBuilder: (context, index) => Column(children: [
+                TextFormField(
+                  onChanged: (value) => {
+                    setState(() {
+                      widget.contactInfo.socialMedias.elementAt(index).title = value;
+                    })
+                  },
+                  decoration: const InputDecoration(hintText: "Title",), controller: widget.titleController.elementAt(index),), 
+                const SizedBox(height: 10,),
+                TextFormField(
+                  onChanged: (value) => {
+                    setState(() {
+                      widget.contactInfo.socialMedias.elementAt(index).url = value;
+                    })
+                  },
+                  decoration: const InputDecoration(hintText: "Url"), controller: widget.urlController.elementAt(index),),
+                const SizedBox(height: 10,),
+                TextFormField(
+                onChanged: (value) =>{
+                  setState(() {
+                    widget.contactInfo.socialMedias.elementAt(index).type = value;
+                  })
+                },
+                  decoration: const InputDecoration(hintText: "Type"), controller: widget.typeController.elementAt(index),),
+              ],)
+              ),
+              TextButton(onPressed: (){
+                setState(() {
+                  SocialMedia socialMedia = SocialMedia();
+                  socialMedia.id = Random().nextInt(10000) + 1000;
+                  widget.socialMediaCounter++;
+                  widget.contactInfo.socialMedias.add(socialMedia);
+                  widget.titleController.add(TextEditingController());
+                  widget.urlController.add(TextEditingController());
+                  widget.typeController.add(TextEditingController());
+                });
+              }, child: const Text("Add More +")),
+      
+            const SizedBox(height: 30,), 
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+                IconButton(onPressed: () => { validate()}, icon: const Icon(Icons.arrow_forward)),
             ],)
-            ),
-            TextButton(onPressed: (){
-              setState(() {
-                SocialMedia socialMedia = SocialMedia();
-                socialMedia.id = Random().nextInt(10000) + 1000;
-                widget.socialMediaCounter++;
-                widget.contactInfo.socialMedias.add(socialMedia);
-                widget.titleController.add(TextEditingController());
-                widget.urlController.add(TextEditingController());
-                widget.typeController.add(TextEditingController());
-              });
-            }, child: const Text("Add More +")),
-
-          const SizedBox(height: 30,), 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
-              IconButton(onPressed: () => { validate()}, icon: const Icon(Icons.arrow_forward)),
-          ],)
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -814,122 +849,131 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
   FocusNode skillFocusNode = FocusNode();
   FocusNode hobbiesFocusNode = FocusNode();
   FocusNode languageFocusNode = FocusNode(); 
-  
+
+  TextEditingController skillController = TextEditingController();
+  TextEditingController hobbiesController = TextEditingController();
+  TextEditingController languageController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
-    return Form(
-      key: widget.key,
-      child: Column(children:[
-        Wrap(
-        direction: Axis.horizontal,
-          children: [
-            Container(
-            width: 120,
-              child: ListView.builder(
-              shrinkWrap: true,
-                itemCount: widget.skillCounter,
-                itemBuilder: (context, index)=>
-                  Card(
-                    //width: 120,
-                    //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
-                  elevation: 3,
-                  child: Text(widget.skills.elementAt(index).title, textAlign: TextAlign.center,),
-                  )
-                ),
-            ),
-            const SizedBox(height: 10,),
-            TextFormField(decoration: const InputDecoration(hintText: "Enter skills to be added"), focusNode: skillFocusNode, 
-            onFieldSubmitted: (value){
-
-              Skills skill = Skills();
-            setState(() {
-              widget.skillCounter++;
-              skill.id = Random().nextInt(90000) + 10000;
-              skill.title = value;
-              widget.skills.add(skill);
-            });
-          },),
-          ],
-        ),
-        const SizedBox(height: 30,),
-        Wrap(
-        direction: Axis.horizontal,
-          children: [
-            Container(
-            width: 120,
-              child: ListView.builder(
-              shrinkWrap: true,
-                itemCount: widget.hobbiesCounter,
-                itemBuilder: (context, index)=>
-                  Card(
-                    //width: MediaQuery.of(context).size.width * 0.333,
-                    //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
-                    child: Text(widget.hobbies.elementAt(index).title, textAlign: TextAlign.center,),
-                  )
-                ),
-            ),
-            const SizedBox(height: 10,),
-            TextFormField(decoration: const InputDecoration(hintText: "Enter hobbies to be added"), focusNode: hobbiesFocusNode, 
-            onFieldSubmitted: (value){
-              Hobbies hobbies = Hobbies();
-              setState(() {
-                widget.hobbiesCounter++;
-                hobbies.id = Random().nextInt(90000) + 10000;
-                hobbies.title = value;
-                widget.hobbies.add(hobbies); 
-              });},),
-          ],
-        ),
-        const SizedBox(height: 30,),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Form(
+        key: widget.key,
+        child: Column(children:[
           Wrap(
           direction: Axis.horizontal,
-          children: [
-            Container(
+            children: [
+              Container(
               width: 120,
-              child: ListView.builder(
-              shrinkWrap: true,
-                itemCount: widget.languageCounter,
-                itemBuilder: (context, index)=>
-                  Card(
-                    //width: 120,
-                    // decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
-                  child: Text(widget.languages.elementAt(index).title, textAlign: TextAlign.center,),
-                  )
-                ),
-            ),
-            const SizedBox(height: 10,),
-            TextFormField(decoration: const InputDecoration(hintText: "Enter languages to be added"), focusNode: languageFocusNode, 
-            onFieldSubmitted: (value){
-              Languages languages = Languages();
-              setState(() {  
-                widget.languageCounter++;
-                languages.id = Random().nextInt(90000) + 10000;
-                languages.title = value;
-                widget.languages.add(languages);
-              });},),
-          ],
-        ),
-      Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
-          IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
-        ]
-      )
-      ],),);
+                child: ListView.builder(
+                shrinkWrap: true,
+                  itemCount: widget.skillCounter,
+                  itemBuilder: (context, index)=>
+                    Card(
+                      //width: 120,
+                      //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
+                    elevation: 3,
+                    child: Text(widget.skills.elementAt(index).title, textAlign: TextAlign.center,),
+                    )
+                  ),
+              ),
+              const SizedBox(height: 10,),
+              TextFormField(decoration: const InputDecoration(hintText: "Enter skills to be added"), focusNode: skillFocusNode, 
+              controller: skillController,
+              onFieldSubmitted: (value){ 
+                Skills skill = Skills();
+              setState(() {
+                widget.skillCounter++;
+                skill.id = Random().nextInt(90000) + 10000;
+                skill.title = value;
+                widget.skills.add(skill);
+                skillController.clear();
+              });
+            },),
+            ],
+          ),
+          const SizedBox(height: 30,),
+          Wrap(
+          direction: Axis.horizontal,
+            children: [
+              Container(
+              width: 120,
+                child: ListView.builder(
+                shrinkWrap: true,
+                  itemCount: widget.hobbiesCounter,
+                  itemBuilder: (context, index)=>
+                    Card(
+                      //width: MediaQuery.of(context).size.width * 0.333,
+                      //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
+                      child: Text(widget.hobbies.elementAt(index).title, textAlign: TextAlign.center,),
+                    )
+                  ),
+              ),
+              const SizedBox(height: 10,),
+              TextFormField(decoration: const InputDecoration(hintText: "Enter hobbies to be added"), focusNode: hobbiesFocusNode, controller: hobbiesController, 
+              onFieldSubmitted: (value){
+                Hobbies hobbies = Hobbies();
+                setState(() {
+                  widget.hobbiesCounter++;
+                  hobbies.id = Random().nextInt(90000) + 10000;
+                  hobbies.title = value;
+                  widget.hobbies.add(hobbies); 
+                  hobbiesController.clear();
+                });},),
+            ],
+          ),
+          const SizedBox(height: 30,),
+            Wrap(
+            direction: Axis.horizontal,
+            children: [
+              Container(
+                width: 120,
+                child: ListView.builder(
+                shrinkWrap: true,
+                  itemCount: widget.languageCounter,
+                  itemBuilder: (context, index)=>
+                    Card(
+                      //width: 120,
+                      // decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
+                    child: Text(widget.languages.elementAt(index).title, textAlign: TextAlign.center,),
+                    )
+                  ),
+              ),
+              const SizedBox(height: 10,),
+              TextFormField(decoration: const InputDecoration(hintText: "Enter languages to be added"), focusNode: languageFocusNode, controller: languageController, 
+              onFieldSubmitted: (value){
+                Languages languages = Languages();
+                setState(() {  
+                  widget.languageCounter++;
+                  languages.id = Random().nextInt(90000) + 10000;
+                  languages.title = value;
+                  widget.languages.add(languages);
+                  languageController.clear();
+                });},),
+            ],
+          ),
+        Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
+            IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
+          ]
+        )
+        ],),),
+    );
   }
 }
 
 class FinishedSignupPage extends StatefulWidget{
+
+  @override
   State<FinishedSignupPage> createState()=>_FinishedSignupPageState();
 }
 
 class _FinishedSignupPageState extends State<FinishedSignupPage>{
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Center(
       
       child: Column(
@@ -975,15 +1019,20 @@ class _SignUpFormState extends State<SignUpForm>{
   Future<int> getNextId() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance(); 
 
-    var userJson = (sharedPreferences.getString("user_data")  == null) ? List.empty(): sharedPreferences.getString("user_data") as List; 
+    var userJson = sharedPreferences.getString("user_data"); 
+
+    if(userJson == null){
+      return 1;
+    }
     
-        int maxIdCount = userJson.map((e) => UserData.fromJson(e)).toList().length + 1;
-    return maxIdCount;
+    List<UserData> userDataList = List.empty(growable: true);
+    Iterable decoded = jsonDecode(userJson);
+    userDataList =  decoded.map((e) => UserData.fromJson(e)).toList();
+    return userDataList.length + 1;
   }
 
   Future<void> storeUserDatatoPreferences() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    sharedPreferences.clear();
     userData.id = await getNextId();
     UserDetails userDetails = UserDetails();
     userDetails.id= await getNextId();
@@ -1021,23 +1070,15 @@ class _SignUpFormState extends State<SignUpForm>{
     //String jsonUserDetails = jsonEncode(userDetailsList.map((e) => e.toJson()).toList());
     // String jsonUserData = jsonEncode(userDataList.map((e) => e.toJson()).toList());
 
-    sharedPreferences.setString("user_details", jsonUserDetails);
-    sharedPreferences.setString("user_data", jsonUserData);
-    _incrementPhase();
+      sharedPreferences.setString("user_details", jsonUserDetails);
+      sharedPreferences.setString("user_data", jsonUserData);
+      _incrementPhase();
   }
 
   void _incrementPhase(){
     setState(() {
       currentIndex = min(++currentIndex, formPhases.length-1);
     });
-
-    // if(formStateList.elementAt(currentIndex).currentState!.validate()){
-    //   // formPhases.elementAt(currentIndex).addData()
-    //   setState(() {
-    //     currentIndex = min(++currentIndex, formPhases.length-1);
-    //   });
-    // };
-
   }
 
   @override

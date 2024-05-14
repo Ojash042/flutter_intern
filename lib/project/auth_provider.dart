@@ -28,8 +28,10 @@ class AuthProvider with ChangeNotifier{
     notifyListeners();
   }
 
-  void logout(){
+  void logout() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     _userData = null;
+    sharedPreferences.remove("loggedInEmail");
     notifyListeners();
   }
 

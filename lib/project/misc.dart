@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class MyDrawer extends StatelessWidget{
   @override
@@ -52,13 +54,18 @@ class LoggedInDrawer extends StatelessWidget{
           Navigator.of(context).pushNamed("/profileInfo");
           },
           ),
-          ListTile(title: const Text("Change Password"),
+          // ListTile(title: const Text("Change Password"),
+          // onTap: (){
+          //   Navigator.pushNamed(context, '/changePassword');
+          // },),
+          ListTile(title: const Text("Log out"),
           onTap: (){
-            Navigator.pushNamed(context, '/changePassword');
-          },),
+            Provider.of<AuthProvider>(context, listen: false).logout(); 
+            Navigator.of(context).popAndPushNamed("/");
+          },
+          ),
           ],
         ),
-
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/misc.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
@@ -19,6 +21,14 @@ class _CoursesPageState extends State<CoursesPage>{
   List<List<dynamic>> coursesGroupedByCategories = [];
 
   Map<String, List<TModels.Courses>> groupedData = {}; 
+  bool isLoggedIn = false;
+  bool checkLoggedIn(){
+    Provider.of<AuthProvider>(context, listen: false).isLoggedIn().then((value){
+    setState(() {  
+      isLoggedIn = value;
+    });});
+    return isLoggedIn;
+  }
   
   Future<void> getDataFromSharedPrefs() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();  
@@ -68,7 +78,7 @@ class _CoursesPageState extends State<CoursesPage>{
         centerTitle: true,
         title: const Text("Project"),
       ),
-      drawer: MyDrawer(),
+      drawer: checkLoggedIn() ? LoggedInDrawer(): MyDrawer(),
       body: SingleChildScrollView(
         child: Column(children: [
           Text("Courses", style: Theme.of(context).textTheme.headlineMedium,),

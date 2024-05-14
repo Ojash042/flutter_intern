@@ -26,8 +26,8 @@ class UserData{
 class ImageModel{
   ImageModel();
   //ImageModel({this.isNetworkUrl = false, this.imagePath = ""});
-  late bool isNetworkUrl;
-  late String imagePath;
+  late bool isNetworkUrl = true;
+  late String imagePath = "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.9tXWOz32JObN3aVicx731gHaEV%26pid%3DApi&f=1&ipt=5a1bf56c0379590aa7cff90053d5835d2159055434a9f0426494f04b6f98dbd4&ipo=images";
 
   Map<String, dynamic> toJson()=> {"is_network_url": isNetworkUrl, "image_path": imagePath};
 
@@ -59,11 +59,11 @@ class WorkExperiences{
   // WorkExperiences({required this.id, required this.jobTitle, required this.summary, 
   // required this.organizationName, required this.startDate, required this.endDate});
   late int id;
-  late String jobTitle;
-  late String summary;
-  late String organizationName;
-  late DateTime? startDate;
-  late DateTime? endDate;
+  String jobTitle = "";
+  String summary ="";
+  String organizationName  = "";
+  DateTime? startDate;
+  DateTime? endDate;
 
   Map<String, dynamic> toJson()=> {"id": id, "job_title": jobTitle, "summary": summary, 
     "organization_name": organizationName, "start_date": DateFormat("yyyy-MM-dd").format(startDate!),
@@ -74,11 +74,13 @@ class WorkExperiences{
     WorkExperiences workExperiences = WorkExperiences();
     workExperiences.id = json["id"];
     workExperiences.jobTitle = json["job_title"];
+    workExperiences.organizationName = json["organization_name"];
     workExperiences.summary = json["summary"];
     workExperiences.startDate = DateFormat("yyyy-MM-dd").parse(json["start_date"]);
     workExperiences.endDate = DateFormat("yyyy-MM-dd").parse(json["end_date"]);
-    return WorkExperiences();
+    return workExperiences;
   }
+
 }
 
 class Hobbies{
@@ -166,6 +168,7 @@ class SocialMedia{
     sm.id = json["id"];
     sm.title = json["title"];
     sm.url = json["url"];
+    sm.type = json["type"];
     return sm;
   }
 }
@@ -210,8 +213,8 @@ class BasicInfo{
   //BasicInfo({required this.id, required this.profileImage, required this.coverImage, 
   // required this.summary, required this.gender, required this.dob, required this.maritalStatus});
   late int id;
-  late ImageModel profileImage;
-  late ImageModel coverImage;
+  ImageModel profileImage = ImageModel();
+  ImageModel coverImage = ImageModel();
   late String summary;
   late String gender;
   late String dob;
