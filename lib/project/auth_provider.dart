@@ -40,4 +40,16 @@ class AuthProvider with ChangeNotifier{
     String? loggedInEmail = sharedPreferences.getString("loggedInEmail");
     return loggedInEmail!=null;
   }
+
+  Future<UserData?> getLoggedInUser() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? loggedInEmail = sharedPreferences.getString("loggedInEmail");
+    if(loggedInEmail == null ){
+      return null;
+    }
+    String? userData = sharedPreferences.getString("user_data");
+    Iterable decoder = jsonDecode(userData!);
+    List<UserData> userDataList = decoder.map((e) => UserData.fromJson(e)).toList();
+    return userDataList.firstWhere((element) => element.email == loggedInEmail);
+  }
 }

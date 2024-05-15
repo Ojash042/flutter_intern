@@ -7,23 +7,20 @@ import 'package:flutter_intern/project/models.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ProfileInfoPage extends StatefulWidget{
-  final String id;
-  const ProfileInfoPage({super.key, required this.id});
+class UserInfoPage extends StatefulWidget{
+  const UserInfoPage({super.key});
 
-@override
+  @override
   State<StatefulWidget> createState() {
-    return _ProfileInfoPageState();
+    return _UserInfoPageState();
   }
+
 }
 
-class _ProfileInfoPageState extends State<ProfileInfoPage>{
+class _UserInfoPageState extends State<UserInfoPage>{
 
   UserData? currentUser;
   UserDetails? currentUserDetails;
-  late List<UserData> userDataList;
-  late List<UserDetails> userDetailsList;
-  bool isCurrentUserLoggedInUser = false;
 
   Future<void> getDataFromSharedPrefs() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -34,18 +31,11 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
     Iterable userDataDecoder = jsonDecode(userDataString!);
     Iterable userDetalsDecoder = jsonDecode(userDetailsString!);
 
-    userDataList = userDataDecoder.map((e) => UserData.fromJson(e)).toList();
-    currentUser = userDataList.firstWhereOrNull((element) => element.id == int.parse(widget.id));
+    currentUser = userDataDecoder.map((e) => UserData.fromJson(e)).toList()
+    .firstWhereOrNull((element) => element.id == loggedInEmail);
     
     currentUserDetails = userDetalsDecoder.map((e) => UserDetails.fromJson(e)).toList()
     .firstWhereOrNull((element) => element.id == currentUser?.id);
-
-    if(loggedInEmail != null){
-      UserData loggedInUser = userDataList.firstWhere((element) => element.email == loggedInEmail);
-      if(loggedInUser.id == 0){
-        isCurrentUserLoggedInUser = true;
-      }
-    }  
   }
 
   @override

@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'dart:async';
 import 'dart:convert';
 import 'package:collection/collection.dart';
@@ -6,9 +8,12 @@ import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
 import 'package:flutter_intern/project/courses_page.dart';
+import 'package:flutter_intern/project/friend_requests.dart';
+import 'package:flutter_intern/project/friend_service_provider.dart';
 import 'package:flutter_intern/project/landing_page.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/profile_info_page.dart';
+import 'package:flutter_intern/project/search_page.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:math';
 import 'package:intl/intl.dart';
@@ -32,6 +37,22 @@ class MyApp extends StatefulWidget{
   State<MyApp> createState() => _MyAppState();
 }
 class _MyAppState extends State<MyApp>{
+  late List<UserData> userDataList;
+  late int currentUserId;
+
+  Future<void> getDataFromSharedPrefs() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      String? userDataJson = sharedPreferences.getString("user_data");
+      String? loggedInEmail = sharedPreferences.getString("loggedInEmail"); 
+      
+      Iterable decoder = jsonDecode(userDataJson!);
+
+      userDataList = decoder.map((e) => UserData.fromJson(e)).toList();
+      UserData userData = userDataList.firstWhere((element) => element.email == loggedInEmail);
+      currentUserId = userData.id;
+    });}
+
   Future<void> loadAssets() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     var courseCategoriesJson =  await rootBundle.loadString('assets/course_categories.json');
@@ -40,7 +61,7 @@ class _MyAppState extends State<MyApp>{
     var instructorJson = await rootBundle.loadString('assets/instructor.json');
     var userPost = await rootBundle.loadString('assets/user_post.json');
 
-    //var userFriendJson = await rootBundle.loadString('assets/user_friend_list.json');
+    var userFriendJson = await rootBundle.loadString('assets/user_friend_list.json');
     //var userPostJson =await rootBundle.loadString('assets/user_friend_list.json');
 
     //List<TModels.CourseByCategories> courseCategories =  courseCategoriesJson.map((e) => TModels.CourseByCategories.fromJson(e)).toList();
@@ -50,7 +71,7 @@ class _MyAppState extends State<MyApp>{
     sharedPreferences.setString("courses", coursesJson);
     sharedPreferences.setString("instructor", instructorJson);
     sharedPreferences.setString("user_post", jsonEncode(jsonDecode(userPost)["user_post"]));
-
+    sharedPreferences.setString("user_friend", jsonEncode(jsonDecode(userFriendJson)["user_friend_list"]));
     // List<dynamic> decoderCourseCategories = jsonDecode(courseCategoriesJson)["course_categories"];
     // List<dynamic> decoderCourseByCategories = jsonDecode(courseByCategoriesJson)["courses_by_categories"];
     // List<dynamic> decoderCourses = jsonDecode(coursesJson)["courses"];
@@ -75,8 +96,12 @@ class _MyAppState extends State<MyApp>{
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_)=> AuthProvider(),
+    return MultiProvider(
+    
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()), 
+        ChangeNotifierProvider(create: (context) => FriendServiceProvider(context)),
+      ],
       child: MaterialApp(
         theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue,)),
         // theme: ThemeData.from(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue,)),
@@ -88,14 +113,20 @@ class _MyAppState extends State<MyApp>{
           "/courses":(context) => CoursesPage(),
           "/home": (context) => LandingPage(),
           "/changePassword": (context)=> const ChangePasswordPage(),
-          "/profileInfo": (context)=> const ProfileInfoPage(),
+          "/profileInfo": (context)=> ProfileInfoPage(id: currentUserId.toString(),),
+          "/search": (context) => const SearchPage(),
+          "/friendRequests":(context) => FriendRequests(),
         },
         onGenerateRoute: (settings){
           if(settings.name!.startsWith('/courses/')){
             var courseId = settings.name!.split('/').last;
             return MaterialPageRoute(builder: (context) => CoursesDetailsPage(courseId: courseId));
           }
-          return null;
+          if(settings.name!.startsWith('/profileInfo/')){
+            var profileId = settings.name!.split('/').last;
+            return MaterialPageRoute(builder: (context) => ProfileInfoPage(id: profileId));
+          }
+          return null; 
         },
       ),
     );
@@ -110,8 +141,12 @@ class MyHomePage extends StatefulWidget{
   State<MyHomePage> createState()=> _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage>{
-  bool isLoggedIn = false;
+class _MyHomePageState extends State<MyHomePage>{ 
+  @override
+  void initState() {
+    super.initState();
+
+  }
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -120,20 +155,44 @@ class _MyHomePageState extends State<MyHomePage>{
       centerTitle: true,
       backgroundColor: Colors.blueAccent,
       ),
-      body: widget.child ,
+      body: BodyContainer() ,
     );
   }
 }
 
-class BodyContainer extends StatelessWidget{
+class BodyContainer extends StatefulWidget{
+
+  const BodyContainer({super.key});
+
+  @override
+  State<BodyContainer> createState() => _BodyContainerState();
+
+}
+
+class _BodyContainerState extends State<BodyContainer>{  
+  Future<void> checkLoggedInState() async{    
+    bool getLoggedInState = await Provider.of<AuthProvider>(context, listen: false).isLoggedIn();
+    if(getLoggedInState){
+      Navigator.popAndPushNamed(context, "/home");
+    }
+    else{
+      Navigator.popAndPushNamed(context, '/login');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkLoggedInState(); 
+  }
 
   @override
   Widget build(BuildContext context) {
+    
     return Container();
   }
 }
 
-// ignore: must_be_immutable
 class BasicDetails extends StatefulWidget{
   final GlobalKey<FormState> formKey;
   UserData userData;
@@ -152,7 +211,7 @@ class _BasicDetailsState extends State<BasicDetails>{
 
   void addData() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    final GlobalKey<ScaffoldState> bottomSheetKey = GlobalKey<ScaffoldState>();
+    // final GlobalKey<ScaffoldState> bottomSheetKey = GlobalKey<ScaffoldState>();
     Completer<void> dialogCompleter = Completer<void>();
 
     String? userDataSharedPrefs =  sharedPreferences.getString("user_data");
@@ -664,6 +723,7 @@ class _EducationFormState extends State<EducationForm>{
                     accomplishment.id = Random().nextInt(10000) + 1000;
                     accomplishment.title = "";
                     accomplishment.dateTime  = null;
+                    // ignore: unnecessary_null_comparison
                     List<Accomplishment> accomplishments = (widget.educations.elementAt(index).accomplishments == null)? List.empty(growable: true) 
                     : widget.educations.elementAt(index).accomplishments; 
                     accomplishments.add(accomplishment);
@@ -744,7 +804,6 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
   }
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Form(
@@ -871,8 +930,6 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
                   itemCount: widget.skillCounter,
                   itemBuilder: (context, index)=>
                     Card(
-                      //width: 120,
-                      //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
                     elevation: 3,
                     child: Text(widget.skills.elementAt(index).title, textAlign: TextAlign.center,),
                     )
@@ -905,7 +962,6 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
                   itemBuilder: (context, index)=>
                     Card(
                       //width: MediaQuery.of(context).size.width * 0.333,
-                      //decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
                       child: Text(widget.hobbies.elementAt(index).title, textAlign: TextAlign.center,),
                     )
                   ),
@@ -935,7 +991,6 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
                   itemBuilder: (context, index)=>
                     Card(
                       //width: 120,
-                      // decoration: BoxDecoration(borderRadius: const BorderRadius.all(Radius.elliptical(0, 1)),border: Border.all(width: 1, style: BorderStyle.solid, strokeAlign: BorderSide.strokeAlignInside)),
                     child: Text(widget.languages.elementAt(index).title, textAlign: TextAlign.center,),
                     )
                   ),
@@ -1058,21 +1113,14 @@ class _SignUpFormState extends State<SignUpForm>{
       retrievedUserDetails = decoded.map((e) => UserDetails.fromJson(e)).toList();
     }
 
-    //List<UserDetails> userDetailsList = retrievedUserDetails.map((e) => UserDetails.fromJson(e)).toList();
-    //List<UserData> userDataList = retrievedUserData.map((e) => UserData.fromJson(e)).toList();
-
     retrievedUserDetails.add(userDetails);
     retrievedUserData.add(userData);
     String jsonUserDetails = jsonEncode(retrievedUserDetails.map((e) => e.toJson()).toList());
     String jsonUserData = jsonEncode(retrievedUserData.map((e) => e.toJson()).toList());
 
-    // print(retrievedUserData);
-    //String jsonUserDetails = jsonEncode(userDetailsList.map((e) => e.toJson()).toList());
-    // String jsonUserData = jsonEncode(userDataList.map((e) => e.toJson()).toList());
-
-      sharedPreferences.setString("user_details", jsonUserDetails);
-      sharedPreferences.setString("user_data", jsonUserData);
-      _incrementPhase();
+    sharedPreferences.setString("user_details", jsonUserDetails);
+    sharedPreferences.setString("user_data", jsonUserData);
+    _incrementPhase();
   }
 
   void _incrementPhase(){
@@ -1115,30 +1163,7 @@ class _SignUpFormState extends State<SignUpForm>{
               formPhases.elementAt(currentIndex),
             ],),
           )),
-      // bottomNavigationBar: BottomAppBar(
-      //   child: Row(children: [
-      //     if( currentIndex > 0)
-      //       IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
-      //     if(currentIndex < formPhases.length - 1)
-      //       IconButton(onPressed: _incrementPhase, icon: const Icon(Icons.arrow_forward)) ,
-      //   ],),
-      // ),
-      )
+        )
     );
-  }
-}
-
-
-
-class UserProfileScreen extends StatefulWidget{
-  const UserProfileScreen({super.key});
-  @override
-  State<UserProfileScreen> createState()=> _UserProfileScreenState();
-}
-
-class _UserProfileScreenState extends State<UserProfileScreen>{
-  @override
-  Widget build(BuildContext context) {
-    return  const Text("User Profile");
   }
 }

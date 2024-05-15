@@ -5,6 +5,7 @@ import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CoursesDetailsPage extends StatefulWidget{
+  @override
   State<CoursesDetailsPage> createState() => _CoursesDetailsPageState();
   final String courseId;
   const CoursesDetailsPage({super.key, required this.courseId});

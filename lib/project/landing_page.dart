@@ -17,6 +17,8 @@ class LandingPage extends StatefulWidget{
 class _LandingPageState extends State<LandingPage>{
   late List<UserData> userList;
   late List<TModels.UserPost> userPosts = List.empty(growable: true);
+  String? loggedInEmail;
+  bool isLoggedIn = false;
   Future<void> getDataFromSharedPrefs() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.getString("user_post");
@@ -27,6 +29,13 @@ class _LandingPageState extends State<LandingPage>{
     Iterable decoderUserPost = jsonDecode(userPostJson!);
 
     setState(() {  
+
+    loggedInEmail = sharedPreferences.getString("loggedInEmail");
+
+    if(loggedInEmail != null){
+      isLoggedIn = true;
+    }
+
     userList =  decoderUserData.map((e) => UserData.fromJson(e)).toList();
     userPosts = decoderUserPost.map((e) => TModels.UserPost.fromJson(e)).toList();
     });
@@ -44,33 +53,13 @@ Future<void> addPost(TModels.UserPost userPost) async{
     userPost.postId = userPosts.length + 1;
     userPost.userId = currentUserId;
     userPosts.add(userPost);
+
     String editedJson = jsonEncode(userPosts.map((e) => e.toJson()).toList());
     sharedPreferences.setString("user_post", editedJson);
-  });
 
-  return;
+  });
 }
-  void _showToast(FToast fToast){
-    Widget toast  = Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
-        decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25.0),
-        color: Colors.greenAccent,
-        ),
-        child: const Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-            Icon(Icons.check),
-            SizedBox(
-            width: 12.0,
-            ),
-            Text("This is a Custom Toast"),
-        ],
-        )
-    );
-    fToast.showToast(child: toast, gravity: ToastGravity.TOP, toastDuration: const Duration(seconds: 2));
-    
-  }
+  
 
   Widget createPostModal(BuildContext buildContext){
 
@@ -174,19 +163,43 @@ Future<void> addPost(TModels.UserPost userPost) async{
   void initState() {
     super.initState();
     getDataFromSharedPrefs();
-  }
+  } 
 
- @override
+  Future<void> pressedLikeOperation(int postId) async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    int currentUserId = userList.firstWhere((element) => element.email == loggedInEmail).id;
+    List<TModels.PostLikedBy> postLikedBys = userPosts.firstWhere((element) => element.postId == postId).postLikedBys;
+    bool userLikedPost = postLikedBys.firstWhereOrNull((element) => element.userId == currentUserId) == null;
+    if(userLikedPost){
+      TModels.PostLikedBy postLikedBy = TModels.PostLikedBy();
+      postLikedBy.dateTime = DateTime.now().toIso8601String();
+      postLikedBy.userId = currentUserId;
+      userPosts.firstWhere((element) => element.postId == postId).postLikedBys.add(postLikedBy);
+    }
+    else{
+      postLikedBys.remove(postLikedBys.firstWhere((element) => element.userId == currentUserId));
+    }
+      setState(() { 
+      String? editedJson = jsonEncode(userPosts.map((e) => e.toJson()).toList());
+      sharedPreferences.setString("user_post", editedJson);
+      });
+  } 
+
+
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(
       backgroundColor: Colors.blueAccent,
       centerTitle: true,
       title: const Text("Project"),
-      actions: [TextButton(onPressed: (){
+      actions: [
+      isLoggedIn? 
+        TextButton(onPressed: (){
         showDialog(context: context, builder:(BuildContext buildContext) => createPostModal(buildContext));
-      }, child: const Row(children: [Icon(Icons.add), Text("Create Post")],))],
+      }, child: const Row(children: [Icon(Icons.add), Text("Create Post")],)) : Container()],
       ),
-      drawer: LoggedInDrawer(),
+      drawer: isLoggedIn? LoggedInDrawer() : MyDrawer(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -204,7 +217,9 @@ Future<void> addPost(TModels.UserPost userPost) async{
                         children: [
                           Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
                           const SizedBox(height: 5,),
-                          Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 12),),
+                          GestureDetector(
+                            onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
+                            child: Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 12),)),
                           const SizedBox(height: 10,), 
                           SizedBox(
                             height: 156 * min(4, e.images.length.toDouble()) / 3,
@@ -213,8 +228,7 @@ Future<void> addPost(TModels.UserPost userPost) async{
                               child: GridView.builder(
                                 itemCount: e.images.length,
                                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5.0, mainAxisSpacing: 4.0),
-                              physics: const NeverScrollableScrollPhysics(), 
-                                                      
+                              physics: const NeverScrollableScrollPhysics(),           
                               itemBuilder:(context, index)=> Padding(
                                 padding: const EdgeInsets.all(8.0),
                                 child: Image.network(e.images.elementAt(index).url, fit: BoxFit.cover,),
@@ -227,7 +241,13 @@ Future<void> addPost(TModels.UserPost userPost) async{
                           // )
                         const SizedBox(height: 10,),
                         Row(children: [
-                          const Icon(Icons.thumb_up_sharp),
+                          IconButton(onPressed: (){
+                            if(!isLoggedIn){
+                              return;
+                            }
+                            pressedLikeOperation(e.postId);
+                            }, 
+                            icon: const Icon(Icons.thumb_up_alt_outlined, color: Colors.lightBlue,)),
                           const SizedBox(width: 5,),
                           e.postLikedBys.length >= 2?
                           Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.')
