@@ -8,10 +8,13 @@ import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
 import 'package:flutter_intern/project/courses_page.dart';
+import 'package:flutter_intern/project/forgot_password_page.dart';
+import 'package:flutter_intern/project/friend_list_page.dart';
 import 'package:flutter_intern/project/friend_requests.dart';
 import 'package:flutter_intern/project/friend_service_provider.dart';
 import 'package:flutter_intern/project/landing_page.dart';
 import 'package:flutter_intern/project/misc.dart';
+import 'package:flutter_intern/project/my_posts_page.dart';
 import 'package:flutter_intern/project/profile_info_page.dart';
 import 'package:flutter_intern/project/search_page.dart';
 import 'package:path_provider/path_provider.dart';
@@ -116,7 +119,11 @@ class _MyAppState extends State<MyApp>{
           "/profileInfo": (context)=> ProfileInfoPage(id: currentUserId.toString(),),
           "/search": (context) => const SearchPage(),
           "/friendRequests":(context) => FriendRequests(),
+          "/friendLists": (context) => FriendListPage(),
+          "/forgotPassword": (context)=> const ForgotPasswordPage(),
+          "/myPosts": (context) => MyPostsPage(),
         },
+
         onGenerateRoute: (settings){
           if(settings.name!.startsWith('/courses/')){
             var courseId = settings.name!.split('/').last;
@@ -187,8 +194,7 @@ class _BodyContainerState extends State<BodyContainer>{
   }
 
   @override
-  Widget build(BuildContext context) {
-    
+  Widget build(BuildContext context) { 
     return Container();
   }
 }
@@ -337,6 +343,22 @@ class _PersonalDetailsState extends State<PersonalDetails>{
     widget.basicInfo.summary = summaryController.text;
     widget.basicInfo.gender = (_gender == Gender.Male)? "Male": "Female";
     widget.basicInfo.maritalStatus = (_maritalStatus == MaritalStatus.married) ? "Married": "Single";
+    if(profileImage==null){
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile Image cannot be empty!"))); 
+      return; 
+    }
+    if(coverImage == null){
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cover Image cannot be empty!"))); 
+      return; 
+    }
+    // if(widget.basicInfo.dob == ""){
+    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Date of Birth cannot be empty")));
+    // }
+
+    if(widget.formKey.currentState!.validate()){ 
+      widget.incrementPhase(); 
+    }
+    return;
   }
 
   @override
@@ -435,7 +457,9 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           const SizedBox(height: 30,),
           Text("Date of Birth", style: Theme.of(context).textTheme.headlineSmall,),
           const SizedBox(height: 10,),
-          TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month, ),
+          TextFormField(
+            validator: (value) => (value == null || value.isEmpty)? "Date of Birth cannot be empty": null,
+            decoration: InputDecoration(icon: const Icon(Icons.calendar_month, ),
           label: Text(((widget.basicInfo.dob=="") ?"Enter Date of Birth":
            widget.basicInfo.dob)), ),
           readOnly: true,
@@ -450,10 +474,9 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           }
           ),
           Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.end,
           children:[
-          IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
-          IconButton(onPressed:(){ addData(); widget.incrementPhase();} , icon: const Icon(Icons.arrow_forward))
+          IconButton(onPressed:(){ addData();} , icon: const Icon(Icons.arrow_forward))
           ]),
         ]),
       ));
@@ -571,9 +594,8 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails>{
                    });}, 
                    child: const Text("Add more +")),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-            IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
             IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward))
           ],),
           ],),
@@ -749,9 +771,8 @@ class _EducationFormState extends State<EducationForm>{
             });
           }, child: const Text("Add more +")),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [ 
-              IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
               IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
             ]
           )
@@ -868,9 +889,8 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
       
             const SizedBox(height: 30,), 
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
                 IconButton(onPressed: () => { validate()}, icon: const Icon(Icons.arrow_forward)),
             ],)
           ],
@@ -1009,9 +1029,8 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
             ],
           ),
         Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_back)),
             IconButton(onPressed: widget.incrementPhase, icon: const Icon(Icons.arrow_forward)),
           ]
         )

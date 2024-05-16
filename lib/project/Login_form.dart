@@ -50,6 +50,9 @@ class _LoginFormState extends State<LoginForm>{
                 const SizedBox(height: 30,), 
                 SizedBox(child: OutlinedButton(onPressed: loginUser,child: const Text("Login"),)),
                 const SizedBox(height: 60,),
+                const SizedBox(height: 30,),
+                SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, '/forgotPassword');}, child: const Text("Forgot Password"),),),
+                const SizedBox(height: 30,),
                 SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, "/signup");}, child: const Text("Sign Up"),),)
               ],
             ),

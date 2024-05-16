@@ -38,6 +38,42 @@ class _SearchPageState extends State<SearchPage>{
     });
   }
 
+  Future<Widget> getFriendStateWidget(int id) async{
+    String friendStateString;
+    FriendState friendState = await Provider.of<FriendServiceProvider>(context,listen: false).getFriendState(id);
+    IconData ico;
+    VoidCallback onPressed;
+    switch(friendState){
+      case FriendState.notFriend:
+        friendStateString = "Add Friend";
+        ico = Icons.group_add;
+        onPressed = () => Provider.of<FriendServiceProvider>(context,listen: false).addFriend(id);
+        break;
+
+      case FriendState.friend:
+        friendStateString = "Remove Friend";
+        ico = Icons.group_off_outlined;
+        onPressed = () => Provider.of<FriendServiceProvider>(context, listen: false).removeFriend(id);
+        break;
+
+      case FriendState.pending:
+        friendStateString = "Pending";
+        ico = Icons.access_time;
+        onPressed= (){};
+        break;
+      case FriendState.requested:
+        friendStateString = "Requested";
+        ico = Icons.group;
+        onPressed = () => Provider.of<FriendServiceProvider>(context).acceptRequest(id);
+        break;
+      case FriendState.isUser:
+        return Container();
+    }
+    return OutlinedButton(onPressed: (){onPressed();setState(() {
+      
+    });},child: Row(children: [Icon(ico), Text(friendStateString)],));
+  }
+
   Future<void> searchData(String value) async{
     setState(() { 
       searchedData = List.empty(growable: true);
@@ -48,7 +84,7 @@ class _SearchPageState extends State<SearchPage>{
         searchedDataDetails.add(userDetail);
       }
      });
-     print(searchedData);
+
     List<FriendState> friendStates = List.empty(growable: true);
     for(var item in searchedData){
       FriendState friendState = await Provider.of<FriendServiceProvider>(context, listen: false).getFriendState(item.id);
@@ -63,8 +99,6 @@ class _SearchPageState extends State<SearchPage>{
     });
   }
 
-
-
   @override
   void initState() {
     super.initState();
@@ -76,7 +110,7 @@ class _SearchPageState extends State<SearchPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text("Project"), centerTitle: true, backgroundColor: Colors.lightBlueAccent,),
-      drawer: (loggedInEmail == null) ? MyDrawer() : LoggedInDrawer(),
+      drawer: (loggedInEmail == null) ? MyDrawer() : const LoggedInDrawer(),
       body:SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(14.0),
@@ -84,22 +118,6 @@ class _SearchPageState extends State<SearchPage>{
             TextFormField(decoration: const InputDecoration(hintText: "Search..."), onFieldSubmitted: (value){
               searchData(value);
             },),
-
-            // SearchAnchor(
-            //   viewOnSubmitted: (value){
-            //     searchData(value);
-            //   },
-            //   builder: ((BuildContext context, SearchController searchController )=>  
-            // 
-            // SearchBar(controller: searchController,
-            // onTap: (){searchController.openView();}, )
-            // ), 
-            // suggestionsBuilder: (context, controller) => List<ListTile>.generate(searchedData.length, 
-            // (int index){
-            //   return ListTile(
-            //     leading: Image.network(searchedDataDetails.elementAt(index).basicInfo.profileImage.imagePath),
-            //     title: Text(searchedData.elementAt(index).name),);
-            //   })),
 
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -122,9 +140,21 @@ class _SearchPageState extends State<SearchPage>{
                             const SizedBox(width: 12,),
                             Text(searchedData.elementAt(index).name),
                             const SizedBox(height: 12,),
+                            const Spacer(),
                             Align(
                               alignment: Alignment.centerLeft,
-                              child: OutlinedButton(onPressed: (){}, child: const Text("Add Friend")))
+                              child: FutureBuilder(
+                                future: getFriendStateWidget(searchedDataDetails.elementAt(index).id),
+                                builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+                                  if(snapshot.connectionState == ConnectionState.waiting){
+                                    return const CircularProgressIndicator();
+                                  }
+                                  else if(snapshot.hasError){
+                                    return Text('${snapshot.error}');
+                                  }
+                                  return snapshot.data ?? Container();
+                                }
+                              ))
                           ],),
                         ),
                       )

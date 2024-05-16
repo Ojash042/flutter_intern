@@ -58,7 +58,7 @@ class WorkExperiences{
   WorkExperiences();
   // WorkExperiences({required this.id, required this.jobTitle, required this.summary, 
   // required this.organizationName, required this.startDate, required this.endDate});
-  late int id;
+  int id = -1;
   String jobTitle = "";
   String summary ="";
   String organizationName  = "";
@@ -156,7 +156,7 @@ class SocialMedia{
   // SocialMedia({required this.id, required this.title, required this.url, required this.type});
 
   SocialMedia();
-  late int id;  
+  int id = -1;  
   late String title;
   late String url;
   late String type;

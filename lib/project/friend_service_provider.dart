@@ -8,25 +8,33 @@ import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-enum FriendState {notFriend, pending, requested, friend, }
+enum FriendState {notFriend, pending, requested, friend, isUser }
 class FriendServiceProvider with ChangeNotifier{
+  late SharedPreferences sharedPreferences;
   final BuildContext context;
+
+  Future<void> getSharedPref() async{
+    sharedPreferences = await SharedPreferences.getInstance();
+  }
 
   
   FriendServiceProvider(this.context);
 
   Future<FriendState> getFriendState(int friendId) async{
-
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-
+    sharedPreferences = await SharedPreferences.getInstance();
     String? userFriendJson = sharedPreferences.getString("user_friend");
     Iterable decoder = jsonDecode(userFriendJson!);
     UserData? userData = await Provider.of<AuthProvider>(context, listen: false).getLoggedInUser(); 
     TModels.UserFriend? userFriend =  decoder.map((e) => TModels.UserFriend.fromJson(e))
-    .firstWhereOrNull((element) => element.userListId > 0 && (element.friendId == friendId || element.userId == friendId));
+    .firstWhereOrNull((element) => element.userListId > 0 && (element.friendId == friendId || element.userId == friendId) && (userData!.id == element.userId || element.userId == friendId));
+
 
     if(userFriend == null || userFriend.hasRemoved == true){
       return FriendState.notFriend;
+    }
+
+    if(friendId == userData!.id){
+      return FriendState.isUser;
     }
 
     if(userFriend.requestedBy == userData!.id && userFriend.hasRemoved == false && userFriend.hasNewRequest == true){
@@ -43,12 +51,60 @@ class FriendServiceProvider with ChangeNotifier{
     return FriendState.notFriend; 
   }
 
-  Future<void> addFriend() async{
+  void addFriend(int friendId) async {
+    String? userFriendJson = sharedPreferences.getString("user_friend");
+    UserData? userData = await Provider.of<AuthProvider>(context,listen: false).getLoggedInUser();
+    Iterable decoder = jsonDecode(userFriendJson!);
+    List<TModels.UserFriend> userFriendList = decoder.map((e) => TModels.UserFriend.fromJson(e)).toList();
+    // TModels.UserFriend? userFriend = decoder.map((e) => TModels.UserFriend.fromJson(e)).
+    // firstWhereOrNull((element) => element.userListId>0  && (element.userId == friendId || element.friendId == friendId) && (element.requestedBy == friendId) );
+    // if(userFriend == null){
+    //   return;
+    // } 
+    TModels.UserFriend userFriend = TModels.UserFriend();
+    userFriend.userListId = userFriendList.length +1;
+    userFriend.createdAt = DateTime.now().toIso8601String();
+    userFriend.friendId = friendId;
+    userFriend.requestedBy = userData!.id;
+    userFriend.userId = userData.id;
+    userFriend.hasNewRequest = true;
+    userFriend.hasNewRequestAccepted = false;
+    userFriend.hasRemoved = false;
+    userFriendList.add(userFriend);
 
+    String editedJson = jsonEncode(userFriendList.map((e) => e.toJson()).toList());
+    sharedPreferences.setString("user_friend", editedJson);
   }
 
-  Future<void> removeFriend() async{
+  void removeFriend(int id) async{
+    String? userFriendJson = sharedPreferences.getString("user_friend");
+    UserData? userData = await Provider.of<AuthProvider>(context, listen: false).getLoggedInUser();
+    Iterable decoder = jsonDecode(userFriendJson!);
+    List<TModels.UserFriend> userFriendList = decoder.map((e) => TModels.UserFriend.fromJson(e)).toList();
+    var userFriend  = userFriendList.firstWhere((element) => element.userListId> 0 && (element.friendId == id || element.userId == id) &&
+    (element.friendId == userData!.id || element.userId == userData!.id) && (element.hasNewRequestAccepted));
+
+    userFriend.hasRemoved = true;
+
+    String editedJson = jsonEncode(userFriendList.map((e) => e.toJson()).toList());
+
+    sharedPreferences.setString("user_friend", editedJson);
+  }
+  
+  void acceptRequest(int id) async{
+    String? userFriendJson = sharedPreferences.getString("user_friend");
+    UserData? userData = await Provider.of<AuthProvider>(context, listen: false).getLoggedInUser();
+    Iterable decoder = jsonDecode(userFriendJson!);
+    List<TModels.UserFriend> userFriendList = decoder.map((e) => TModels.UserFriend.fromJson(e)).toList();
+
+    var userFriend = userFriendList.firstWhere((element) => element.userListId>0 && 
+    (element.friendId == id || element.userId == id) && (element.friendId == userData!.id || element.userId == userData.id ) && (element.hasNewRequest == true));
     
+    userFriend.hasNewRequest = false;
+    userFriend.hasNewRequestAccepted = true;
+  
+    String editedJson = jsonEncode(userFriendList.map((e) => e.toJson()).toList());
+    sharedPreferences.setString("user_friend", editedJson);
   }
 
 }

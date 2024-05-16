@@ -102,6 +102,26 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
           Navigator.of(context).pushNamed('/profileInfo/${loggedInUser!.id}');
           },
           ),
+          ListTile(title: const Text("Friends"),
+          onTap: (){
+            if(ModalRoute.of(context)?.settings.name!='/friendLists'){
+              Navigator.of(context).pushNamed('/friendLists');
+            }
+            else{
+              Scaffold.of(context).openEndDrawer();
+            }
+          },
+          ),
+          ListTile(title: const Text("My Posts"),
+          onTap: (){
+            if(ModalRoute.of(context)?.settings.name!='/myPosts'){
+              Navigator.of(context).pushNamed('/myPosts');
+            }
+            else {
+              Scaffold.of(context).openEndDrawer();
+            }
+          },
+          ),
           ListTile(title: const Text("Friend Requests"),
           onTap: (){
             if(ModalRoute.of(context)?.settings.name != '/friendRequests'){
@@ -125,7 +145,7 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
           ListTile(title: const Text("Log out"),
           onTap: (){
             Provider.of<AuthProvider>(context, listen: false).logout(); 
-            Navigator.of(context).popAndPushNamed("/");
+            Navigator.of(context).pushNamedAndRemoveUntil( "/",(Route<dynamic> route) =>false );
           },
           ),
           ],
