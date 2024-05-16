@@ -91,20 +91,23 @@ class _CoursesPageState extends State<CoursesPage>{
               scrollDirection: Axis.horizontal,
               child: Row(children: 
                 popularCourse.map((e) => 
-                Column(children: [
-                  const SizedBox(height: 5,),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Image.network(e.image,height: 124, width: 124,),
-                  ),
-                  const SizedBox(height: 5,),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(e.title),
-                  ),
-                  const SizedBox(height: 5,),
-                  ],
-                  )).toList()
+                GestureDetector(
+                onTap: ()=> {Navigator.of(context).pushNamed('/courses/${e.id}')},
+                  child: Column(children: [
+                    const SizedBox(height: 5,),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.network(e.image,height: 124, width: 124,),
+                    ),
+                    const SizedBox(height: 5,),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(e.title),
+                    ),
+                    const SizedBox(height: 5,),
+                    ],
+                    ),
+                )).toList()
               )
             ),
             const SizedBox(height: 20,),
@@ -112,14 +115,17 @@ class _CoursesPageState extends State<CoursesPage>{
             SingleChildScrollView(
               scrollDirection: Axis.horizontal ,
               child: Row(children: recentlyViewedCourse.map((e) => 
-              Column(children: [
-                const SizedBox(height: 5,),
-                Image.network(e.image, height: 124, width: 124,),
-                const SizedBox(height: 5,),
-                Text(e.title),
-                const SizedBox(height: 5,),
-              ]
-                ),
+              GestureDetector(
+                onTap: ()=> {Navigator.of(context).pushNamed('/courses/${e.id}')},
+                child: Column(children: [
+                  const SizedBox(height: 5,),
+                  Image.network(e.image, height: 124, width: 124,),
+                  const SizedBox(height: 5,),
+                  Text(e.title),
+                  const SizedBox(height: 5,),
+                ]
+                  ),
+              ),
               ).toList()
               ),
             ),

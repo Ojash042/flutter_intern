@@ -726,9 +726,21 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                     const SizedBox(height: 15,),
                     Column(
                     children: currentUserDetails!.educations.map((e) => Column(children: [
-                      Text(e.organizationName ?? ""), 
+                      Text(e.organizationName), 
                       Text(e.level, style: const TextStyle(fontWeight: FontWeight.w100),), 
-                      Text('${e.startDate!=null? DateFormat("yMMM").format(e.startDate!) :""} - ${e.endDate!=null? DateFormat("yMMM").format(e.endDate!): ""}')],)).toList()
+                      Text('${e.startDate!=null? DateFormat("yMMM").format(e.startDate!) :""} - ${e.endDate!=null? DateFormat("yMMM").format(e.endDate!): ""}'),
+                      const SizedBox(height: 5,),
+                      ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: e.accomplishments.length,
+                        itemBuilder: (context, index)=> Column(children: [
+                          Text(e.accomplishments.elementAt(index).title),
+                          Text(e.accomplishments.elementAt(index).description),
+                          Text('Achieved on ${DateFormat("yMMMM").format(e.accomplishments.elementAt(index).dateTime!)}'),
+                        ],))
+                      ],)).toList()
+                      
                     )
                   ],),
                 ),
