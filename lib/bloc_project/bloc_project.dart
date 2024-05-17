@@ -64,10 +64,12 @@ class InitialContainer extends StatelessWidget{
    },
     child: BlocBuilder<AuthenticationBloc, AuthenticationStates>(builder: (context, state) => 
       (state is LoggedInState)?
-      Column(children: [
-        Text('Logged In as User ${state.user.userFullName}'),
-        OutlinedButton(onPressed: (){context.read<AuthenticationBloc>().add(AuthenticationRequestLogout());}, child: const Text("Log Out"))
-      ],): Container(child:const Text("Hello Child"),)
+      Center(
+        child: Column(children: [
+          Text('Logged In as User ${state.user.userFullName}'),
+          OutlinedButton(onPressed: (){context.read<AuthenticationBloc>().add(AuthenticationRequestLogout());}, child: const Text("Log Out"))
+        ],),
+      ): Container()
     ,), 
    ); 
   }
@@ -80,7 +82,6 @@ class LoginPage extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthenticationBloc, AuthenticationStates>(listener: (BuildContext context, state){
-      print(state);
       if(state is LoggedInState){
         Navigator.popAndPushNamed(context, '/'); 
       }

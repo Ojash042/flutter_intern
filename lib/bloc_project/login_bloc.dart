@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 part 'authentication_events.dart';
 part 'authentication_states.dart';
-//import '';
 
 class LoginObserver extends BlocObserver{
   const LoginObserver();
@@ -78,14 +77,12 @@ class AuthenticationBloc extends Bloc<AuthenticationEvents, AuthenticationStates
     List<User> userList = userJsonDecoder.map((e) => User.fromJson(e)).toList();
     User? user = userList.firstWhereOrNull((element) => element.userEmail == event.userEmail && element.userPassword == event.password);
     if(user!=null){
-      print("loggedIn");
       sharedPreferences.setString("loggedInEmail", user.userEmail!);
       emit(LoggedInState(isLoggedIn: true, loggedInEmail: event.userEmail, user: user));
       return;
     }
     else{
-      print('1${userList.first.userEmail}, 2 ${event.userEmail} 33 ${event.password} 4 ${userList.first.userPassword}}');
-      emit(UnauthenticatedState(logInError: true));
+      emit(const UnauthenticatedState(logInError: true));
       return;
     }
   }
@@ -93,10 +90,10 @@ class AuthenticationBloc extends Bloc<AuthenticationEvents, AuthenticationStates
   void logoutEvent(AuthenticationRequestLogout event, Emitter<AuthenticationStates> emit) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.remove("loggedInEmail");
-    emit(UnauthenticatedState(logInError: false));
+    emit(const UnauthenticatedState(logInError: false));
   }
   
   void unauthenticatedEvent(AuthenticationUnauthenticatedEvent event, Emitter<UnauthenticatedState> emit) async{
-    emit(UnauthenticatedState(logInError: false));
+    emit(const UnauthenticatedState(logInError: false));
   }
 }
