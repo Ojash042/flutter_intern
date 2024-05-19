@@ -10,9 +10,7 @@ class PostPageDetails extends StatefulWidget{
   const PostPageDetails({super.key, required this.postId});
 
   @override
-  State<StatefulWidget> createState() {
-    return _PostPageDetailsState();
-  }
+  State<StatefulWidget> createState() => _PostPageDetailsState();
 
 }
 
@@ -21,6 +19,7 @@ class _PostPageDetailsState extends State<PostPageDetails>{
   late Posts post = Posts();
   late List<Comment> comments = List.empty(growable: true);
   late Users user;
+  bool contentLoaded = false;
   void fetchPost() async{
     http.Response responsePost = await http.get(Uri.parse('https://dummyjson.com/posts/${widget.postId}'));
     if(responsePost.statusCode == 200){
@@ -33,10 +32,11 @@ class _PostPageDetailsState extends State<PostPageDetails>{
         setState(() {
           Iterable decoderComments = jsonDecode(responseComment.body)["comments"];
           comments = decoderComments.map((e) => Comment.fromJson(e)).toList();
+          contentLoaded = true;
         });
       }
       else{
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(responseComment.statusCode.toString())));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${responseComment.statusCode.toString()}')));
       }
     }
   }
@@ -49,10 +49,9 @@ class _PostPageDetailsState extends State<PostPageDetails>{
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+  Widget build(BuildContext context) => Scaffold(
       appBar: const CommonAppBar(),
-      body: SingleChildScrollView(child: Column(
+      body: !contentLoaded ? const Center(child: CircularProgressIndicator()) : SingleChildScrollView(child: Column(
         children: [
           Card(
             child: Column(children: [
@@ -82,7 +81,6 @@ class _PostPageDetailsState extends State<PostPageDetails>{
         ],
       ),),
     );
-  }
 
 }
 

@@ -55,6 +55,7 @@ class HomePage extends StatefulWidget{
 class _HomePageState extends State<HomePage>{
 
   List<Posts> posts = List.empty(growable: true);
+  bool contentLoaded = false;
 
   Future<void> getAllPosts() async{
    var response = await http.get(Uri.parse("https://dummyjson.com/posts"));
@@ -62,6 +63,7 @@ class _HomePageState extends State<HomePage>{
     setState(() {
       Iterable decoderPosts = jsonDecode(response.body)["posts"];
       posts = decoderPosts.map((e) => Posts.fromJson(e)).toList();
+      contentLoaded = true;
     });
    }
    return; 
@@ -77,7 +79,7 @@ class _HomePageState extends State<HomePage>{
   Widget build(BuildContext context) {
     return  Scaffold(
       appBar: const CommonAppBar(),
-      body: SingleChildScrollView(
+      body: !contentLoaded ? const Center(child: CircularProgressIndicator()): SingleChildScrollView(
         child: Column(
         children: posts.map((e) => GestureDetector(
         onTap: (){

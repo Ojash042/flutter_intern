@@ -18,6 +18,7 @@ class UserDetailsPage extends StatefulWidget{
 
 class _UserDetailsPageState extends State<UserDetailsPage>{
   late Users user = Users();
+  bool contentLoaded = false;
 
   void fetchUserProfile() async{
     http.Response response = await http.get(Uri.parse("https://dummyjson.com/users/${widget.id}"));
@@ -25,6 +26,7 @@ class _UserDetailsPageState extends State<UserDetailsPage>{
       Map<String, dynamic> userJson = json.decode(response.body);
       setState(() { 
         user = Users.fromJson(userJson);
+        contentLoaded = true;
       });
     }
   }
@@ -39,7 +41,9 @@ class _UserDetailsPageState extends State<UserDetailsPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: const CommonAppBar(),
-      body: SingleChildScrollView(
+      body: 
+       !contentLoaded ? const Center(child: CircularProgressIndicator()) :
+       SingleChildScrollView(
         child: Column(children: [
           Center(
             child: Padding(
@@ -48,7 +52,8 @@ class _UserDetailsPageState extends State<UserDetailsPage>{
                 child: Column(children: [
                   Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: CircleAvatar(backgroundImage: NetworkImage(user.image!),),
+                    child: CircleAvatar(backgroundImage: NetworkImage(user.image ?? 
+                    "https://www.kindpng.com/picc/m/451-4517876_default-profile-hd-png-download.png"),),
                   ),
                   const SizedBox(height: 30,),
                   Padding(
