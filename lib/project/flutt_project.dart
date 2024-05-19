@@ -250,7 +250,12 @@ class _BasicDetailsState extends State<BasicDetails>{
     widget.userData.name = fullNameController.text;
     widget.userData.password =passwordController.text;
     widget.userData.email = emailController.text;
-    widget.incrementPhase();
+    if(widget.formKey.currentState!.validate()){
+      widget.incrementPhase();
+    }
+    else{
+      return;
+    }
   }
 
   @override
@@ -268,7 +273,7 @@ class _BasicDetailsState extends State<BasicDetails>{
               const SizedBox(height: 30,),
               TextFormField(controller: emailController, decoration: const InputDecoration(hintText: "Enter your email address"), validator: (value) => (!_emailRegex.hasMatch(value!)? "Invalid Email Fomrat": null)),
               const SizedBox(height: 30,),
-              TextFormField(controller: passwordController, decoration: const InputDecoration(hintText: "Enter password",), obscureText: true,),
+              TextFormField(controller: passwordController, decoration: const InputDecoration(hintText: "Enter password",), obscureText: true, validator: (value) => (value == null || value.isEmpty)? "Password cannot be empty" : null),
               const SizedBox(height: 30,),
               SizedBox(height: MediaQuery.of(context).size.width - 100.0 ),
               Row(
@@ -300,9 +305,11 @@ class PersonalDetails extends StatefulWidget{
 class _PersonalDetailsState extends State<PersonalDetails>{
   Gender? _gender = Gender.Male;
   MaritalStatus? _maritalStatus = MaritalStatus.single;
+  TextEditingController birthDateController = TextEditingController();
   TextEditingController summaryController = TextEditingController();
   File? coverImage;
   File? profileImage;
+  bool isDoBEmpty = false;
 
   Future<void> pickImage(bool isProfileImage) async{
     ImagePicker _imagePicker = ImagePicker();
@@ -341,6 +348,7 @@ class _PersonalDetailsState extends State<PersonalDetails>{
 
   void addData(){   
     widget.basicInfo.summary = summaryController.text;
+
     widget.basicInfo.gender = (_gender == Gender.Male)? "Male": "Female";
     widget.basicInfo.maritalStatus = (_maritalStatus == MaritalStatus.married) ? "Married": "Single";
     if(profileImage==null){
@@ -350,6 +358,14 @@ class _PersonalDetailsState extends State<PersonalDetails>{
     if(coverImage == null){
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Cover Image cannot be empty!"))); 
       return; 
+    }
+    
+    if(birthDateController.text.isEmpty || birthDateController.text == null){
+      setState(() {
+        
+        isDoBEmpty = true;
+      });
+      return;
     }
     // if(widget.basicInfo.dob == ""){
     //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Date of Birth cannot be empty")));
@@ -432,7 +448,7 @@ class _PersonalDetailsState extends State<PersonalDetails>{
             ],
           ),
           const SizedBox(height: 30,),
-          TextFormField(maxLines: null, controller: summaryController,decoration: const InputDecoration(hintText: "Describe yourself..."),),
+          TextFormField(maxLines: null, controller: summaryController, decoration: const InputDecoration(hintText: "Describe yourself..."),),
           const SizedBox(height: 30,),
           Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
           RadioListTile(value: Gender.Male, groupValue: _gender, title: const Text("Male"), onChanged: (Gender? value) {
@@ -458,8 +474,10 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           Text("Date of Birth", style: Theme.of(context).textTheme.headlineSmall,),
           const SizedBox(height: 10,),
           TextFormField(
-            validator: (value) => (value == null || value.isEmpty)? "Date of Birth cannot be empty": null,
+            // validator: (value) => (value == null || value.isEmpty)? "Date of Birth cannot be empty": null,
+            controller: birthDateController,
             decoration: InputDecoration(icon: const Icon(Icons.calendar_month, ),
+            error: isDoBEmpty? Text("Date of birth cant be empty",style: TextStyle(color: Theme.of(context).colorScheme.error),): null,
           label: Text(((widget.basicInfo.dob=="") ?"Enter Date of Birth":
            widget.basicInfo.dob)), ),
           readOnly: true,
@@ -469,6 +487,7 @@ class _PersonalDetailsState extends State<PersonalDetails>{
             setState(() {
               if(pickedDate!=null){
                 widget.basicInfo.dob = DateFormat("yyyy-MM-dd").format(pickedDate);
+                birthDateController.text = widget.basicInfo.dob;
               }
             });
           }

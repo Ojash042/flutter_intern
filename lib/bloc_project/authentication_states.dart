@@ -40,4 +40,3 @@ class UnauthenticatedState extends AuthenticationStates{
   @override
   List<Object> get props => [logInError, loggedInEmail];
 }
-
