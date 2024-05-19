@@ -97,6 +97,7 @@ class _MyAppState extends State<MyApp>{
     loadAssets();
   }
 
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
