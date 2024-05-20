@@ -31,6 +31,7 @@ class PostBloc extends Bloc<PostEvents, PostsState>{
   PostBloc():super(const PostsState()){
     on<PostFetched>((event,emit) => _onPostFetched(event,emit));
     on<PostAdded>((event, emit) =>_onPostAdded(event,emit));
+    on<PostRemoved>((event, emit) => _onPostDeleted(event, emit),);
   }
   
   Future<List<Posts>> _fetchPosts() async {
@@ -67,8 +68,6 @@ class PostBloc extends Bloc<PostEvents, PostsState>{
     List<Posts> currentListOfPosts = List.of(state.posts)..add(events.post);
     http.Response addPostResponse = await http.post(Uri.parse("https://dummyjson.com/posts/add",),
     headers: {'Content-Type': 'application/json'},
-    body: jsonEncode(events.post),
-    // body: {
     //   'id': events.post.id,
     //   'title': events.post.title,
     //   'userId': events.post.userId,
@@ -83,6 +82,13 @@ class PostBloc extends Bloc<PostEvents, PostsState>{
       hasReachedMax: false,
     ));
     return;
+  }
+  
+  Future<void> _onPostDeleted(PostRemoved event, Emitter<PostsState> emit) async{
+    List<Posts> currentListOfPosts = List.of(state.posts)..removeWhere((element) => element.id == event.post.id);
+
+    http.Response removePostResponse = await http.delete(Uri.parse('https://dummyjson.com/posts/${event.post.id}'));
+    emit(state.copyWith(postStatus: LoadingStatus.success, posts: currentListOfPosts, hasReachedMax: false));
   }
 }
 

@@ -13,13 +13,21 @@ class PostEvents extends Equatable{
 class PostFetched extends PostEvents{}
 
 class PostAdded extends PostEvents{
+
   final Posts post;
   PostAdded({required this.post});
+
 }
 
 class PostEdited extends PostEvents{}
 
-class PostRemoved extends PostEvents{}
+class PostRemoved extends PostEvents{
+
+  final Posts post;
+
+  PostRemoved({required this.post});
+
+}
 
 class SingularPostEvents extends Equatable{
   @override

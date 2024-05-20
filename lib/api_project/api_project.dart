@@ -98,91 +98,12 @@ class _HomePageState extends State<HomePage>{
         child: Column(
           children: [
               OutlinedButton(onPressed: (){
-                showDialog(context: context, builder: (context){
-
-                List<String> tags = List.empty(growable: true);
-                TextEditingController tagController = TextEditingController();
-                TextEditingController titleController = TextEditingController();
-                TextEditingController bodyController = TextEditingController();
-
-                return StatefulBuilder(
-                  builder: (context, setState) {
-                    return Scaffold(
-                      body: SingleChildScrollView(
-                      child: 
-                      Padding(
-                        padding: const EdgeInsets.all(14.0),
-                        child: authState.isLoggedIn ? Column(children: [
-                          Align(alignment: Alignment.topRight, child: Icon(Icons.close, color: Theme.of(context).colorScheme.error,),),
-                          const SizedBox(height: 30,),
-                          Row(children: tags.map((e) => Card(child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(e),
-                          ),)).toList(),),
-                          const SizedBox(height: 30,),
-                          TextField(decoration: InputDecoration(
-                            hintText: "Enter tags",
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(color: Colors.grey),),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: const BorderSide(
-                                color: Colors.blue,
-                                width: 2.0,))),
-                            controller: tagController,
-                            onSubmitted: (value){
-                              setState(() {  
-                                tags.add(value);
-                               });
-                               tagController.clear();
-                               
-                               },
-                            ),
-                          const SizedBox(height: 30,),
-                          TextField(
-                            controller: titleController,
-                            decoration: const InputDecoration(hintText: "Enter title"),),
-                          const SizedBox(height: 30,),
-                          TextField(controller: bodyController,
-                          maxLines: null,
-                          minLines: 5,
-                          decoration: const InputDecoration(hintText: "Enter body",),
-                          ),
-                          const SizedBox(height: 30,),
-                          OutlinedButton(onPressed: (){
-                    
-                          Posts post = Posts(
-                            id: Random().nextInt(10000) +1000,
-                            userId: authState.user!.id, 
-                            reactions: 0,
-                            title: titleController.text,
-                            body: bodyController.text,
-                            tags: tags,
-                           );
-                    
-                            BlocProvider.of<PostBloc>(context).add(PostAdded(post: post));
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [const Text("Post submitted successfully"), OutlinedButton(onPressed: (){Navigator.pop(context);}, child: const Text("Go back!"))],
-                            )));
-                          }, child: const Text("Submit")),
-                        ],):Column(children: [
-                          Align(alignment: Alignment.topRight, child: Icon(Icons.close, color: Theme.of(context).colorScheme.error,),),
-                          const SizedBox(height: 30,),
-                          const Center(child: Text("You need to be logged in to post"),),
-                        ],),
-                      ),
-                    ),
-                                  );
-                  }
-                );
-            });
+                showAddPostModal(context, authState);
           }, child: 
           const Row(children: [
             Icon(Icons.add_card), 
             SizedBox(width: 10,), 
             Text("Add a post")],)),
-
             Column(
             children: state.posts.map((e) => GestureDetector(
             onTap: (){
@@ -204,7 +125,16 @@ class _HomePageState extends State<HomePage>{
                     const SizedBox(height: 10,),
                     Text(e.body?? ""),
                     const SizedBox(height: 10,),
-                    Row(children: [Icon(Icons.thumb_up_alt_sharp, color: Theme.of(context).highlightColor,), const SizedBox(height: 10,), Text("${e.reactions > 0 ? e.reactions : "No one"} ${e.reactions == 0 ? "" : e.reactions == 1 ? "Person" : "People"} liked this")],),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                      Icon(Icons.thumb_up_alt_sharp, color: Theme.of(context).highlightColor,),
+                      const SizedBox(height: 10,), Text("${e.reactions > 0 ? e.reactions : "No one"} ${e.reactions == 0 ? "" : e.reactions == 1 ? "Person" : "People"} liked this"),
+                      (authState.isLoggedIn && authState.user!.id == e.userId)? 
+                      IconButton(
+                        onPressed: (){BlocProvider.of<PostBloc>(context).add(PostRemoved(post: e));},
+                        icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error,)): Container(),
+                       ],),
                     const SizedBox(height: 20)
                   ],),
                 ),
@@ -220,5 +150,86 @@ class _HomePageState extends State<HomePage>{
       );},)
       
       ); 
+  }
+
+  Future<dynamic> showAddPostModal(BuildContext context, AuthorizedUserState authState) {
+    return showDialog(context: context, builder: (context){
+
+              List<String> tags = List.empty(growable: true);
+              TextEditingController tagController = TextEditingController();
+              TextEditingController titleController = TextEditingController();
+              TextEditingController bodyController = TextEditingController();
+
+              return StatefulBuilder(
+                builder: (context, setState) {
+                  return Scaffold(
+                    body: SingleChildScrollView(
+                    child: 
+                    Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: authState.isLoggedIn ? Column(children: [
+                        Align(alignment: Alignment.topRight, child: Icon(Icons.close, color: Theme.of(context).colorScheme.error,),),
+                        const SizedBox(height: 30,),
+                        Row(children: tags.map((e) => Card(child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(e),
+                        ),)).toList(),),
+                        const SizedBox(height: 30,),
+                        TextField(decoration: InputDecoration(
+                          hintText: "Enter tags",
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(color: Colors.grey),),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(
+                              color: Colors.blue,
+                              width: 2.0,))),
+                          controller: tagController,
+                          onSubmitted: (value){
+                            setState(() {  
+                              tags.add(value);
+                             });
+                             tagController.clear(); 
+                             },
+                          ),
+                        const SizedBox(height: 30,),
+                        TextField(
+                          controller: titleController,
+                          decoration: const InputDecoration(hintText: "Enter title"),),
+                        const SizedBox(height: 30,),
+                        TextField(controller: bodyController,
+                        maxLines: null,
+                        minLines: 5,
+                        decoration: const InputDecoration(hintText: "Enter body",),
+                        ),
+                        const SizedBox(height: 30,),
+                        OutlinedButton(onPressed: (){
+                  
+                        Posts post = Posts(
+                          id: Random().nextInt(10000) +1000,
+                          userId: authState.user!.id, 
+                          reactions: 0,
+                          title: titleController.text,
+                          body: bodyController.text,
+                          tags: tags,
+                         );
+                  
+                          BlocProvider.of<PostBloc>(context).add(PostAdded(post: post));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [const Text("Post submitted successfully"), OutlinedButton(onPressed: (){Navigator.pop(context);}, child: const Text("Go back!"))],
+                          )));
+                        }, child: const Text("Submit")),
+                      ],):Column(children: [
+                        Align(alignment: Alignment.topRight, child: Icon(Icons.close, color: Theme.of(context).colorScheme.error,),),
+                        const SizedBox(height: 30,),
+                        const Center(child: Text("You need to be logged in to post"),),
+                      ],),
+                    ),
+                  ),
+                                );
+                }
+              );
+          });
   } 
 }
