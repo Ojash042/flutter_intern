@@ -1,14 +1,28 @@
-import 'dart:convert';
+
+import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_intern/api_project/bloc_provider.dart';
+import 'package:flutter_intern/api_project/events.dart';
 import 'package:flutter_intern/api_project/misc.dart';
 import 'package:flutter_intern/api_project/models.dart';
 import 'package:flutter_intern/api_project/posts_details_page.dart';
+import 'package:flutter_intern/api_project/states.dart';
 import 'package:flutter_intern/api_project/user_details.dart';
-import 'package:http/http.dart' as http;
+//import 'package:http/http.dart' as http;
 
 void main(List<String> args) {
-  runApp(App());
+  Bloc.observer = const APIObserver();
+  runApp(
+    MultiBlocProvider(providers:
+    [
+      BlocProvider(create: (_) => AuthorizationProvider()..add(AuthorizedUserLogin())),
+      BlocProvider(create: (_) => PostBloc()..add(PostFetched()))
+    ], 
+      child: const App(),
+     )
+    );
 }
 
 class App extends StatelessWidget{
@@ -25,8 +39,19 @@ class App extends StatelessWidget{
     onGenerateRoute: (settings){
       if(settings.name!.startsWith('/posts/')){
         var postId = settings.name!.split('/').last;
-        return MaterialPageRoute(builder: (context) => PostPageDetails(postId: int.parse(postId),));
-      }
+        final postBloc = BlocProvider.of<PostBloc>(context);
+        return MaterialPageRoute(builder: (context) => 
+        MultiBlocProvider(providers: [
+          BlocProvider(create: (_) => SingularPostBloc(postBloc)..add(SingularPostFetched(postId: int.parse(postId)))),
+          BlocProvider(create: (_) => CommentBloc()..add(CommentsFetched(postId: int.parse(postId))))
+        ], 
+        child: PostPageDetails(postId: int.parse(postId),))
+        // MultiBlocProvider(
+        //   providers: [BlocProvider(
+        //     create: (_) => SingularPostBloc(postBloc)..add(SingularPostEvents()),
+        //     child: PostPageDetails(postId: int.parse(postId),)),
+        // ));
+    );}
       else if(settings.name!.startsWith('/users/')){
         var userId = settings.name!.split('/').last;
         return MaterialPageRoute(builder: (context) => UserDetailsPage(id: userId));
@@ -34,7 +59,6 @@ class App extends StatelessWidget{
       else{
         return null;
       }
-
     },
     );
   }
@@ -49,66 +73,152 @@ class HomePage extends StatefulWidget{
   State<StatefulWidget> createState() {
     return _HomePageState();
   }
-
 }
 
 class _HomePageState extends State<HomePage>{
 
-  List<Posts> posts = List.empty(growable: true);
-  bool contentLoaded = false;
-
-  Future<void> getAllPosts() async{
-   var response = await http.get(Uri.parse("https://dummyjson.com/posts"));
-   if(response.statusCode == 200){
-    setState(() {
-      Iterable decoderPosts = jsonDecode(response.body)["posts"];
-      posts = decoderPosts.map((e) => Posts.fromJson(e)).toList();
-      contentLoaded = true;
-    });
-   }
-   return; 
-  }
-
   @override
   void initState() {
     super.initState();
-    getAllPosts();
   }
+
 
   @override
   Widget build(BuildContext context) {
     return  Scaffold(
       appBar: const CommonAppBar(),
-      body: !contentLoaded ? const Center(child: CircularProgressIndicator()): SingleChildScrollView(
+      body: 
+      BlocBuilder<AuthorizationProvider, AuthorizedUserState>(builder: (context, authState){
+       return BlocBuilder<PostBloc, PostsState>(builder: (context, state){
+        if(state.postStatus == LoadingStatus.initial){
+          return const Center(child: CircularProgressIndicator());
+        }
+        else{
+        return SingleChildScrollView(
         child: Column(
-        children: posts.map((e) => GestureDetector(
-        onTap: (){
-          Navigator.pushNamed(context, '/posts/${e.id}');
-        },
-          child: Card(
-            child: Container(
-            padding: const EdgeInsets.all(8.0),
-              child: Column(children: [
-                Text(e.title ?? "", style: Theme.of(context).textTheme.bodyLarge,),
-                const SizedBox(height: 10,),
-                Row(children: e.tags!.map((tag) => Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Card(child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(tag ?? ""),
-                  ),),
-                )).toList(),),
-                const SizedBox(height: 10,),
-                Text(e.body ?? ""),
-                const SizedBox(height: 10,),
-                Row(children: [Icon(Icons.thumb_up_alt_sharp, color: Theme.of(context).highlightColor,), const SizedBox(height: 10,), Text("${e.reactions > 0 ? e.reactions : "No one"} ${e.reactions == 0 ? "" : e.reactions == 1 ? "Person" : "People"} liked this")],),
-                const SizedBox(height: 20)
-              ],),
+          children: [
+              OutlinedButton(onPressed: (){
+                showDialog(context: context, builder: (context){
+
+                List<String> tags = List.empty(growable: true);
+                TextEditingController tagController = TextEditingController();
+                TextEditingController titleController = TextEditingController();
+                TextEditingController bodyController = TextEditingController();
+
+                return StatefulBuilder(
+                  builder: (context, setState) {
+                    return Scaffold(
+                      body: SingleChildScrollView(
+                      child: 
+                      Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: authState.isLoggedIn ? Column(children: [
+                          Align(alignment: Alignment.topRight, child: Icon(Icons.close, color: Theme.of(context).colorScheme.error,),),
+                          const SizedBox(height: 30,),
+                          Row(children: tags.map((e) => Card(child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(e),
+                          ),)).toList(),),
+                          const SizedBox(height: 30,),
+                          TextField(decoration: InputDecoration(
+                            hintText: "Enter tags",
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Colors.grey),),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: const BorderSide(
+                                color: Colors.blue,
+                                width: 2.0,))),
+                            controller: tagController,
+                            onSubmitted: (value){
+                              setState(() {  
+                                tags.add(value);
+                               });
+                               tagController.clear();
+                               
+                               },
+                            ),
+                          const SizedBox(height: 30,),
+                          TextField(
+                            controller: titleController,
+                            decoration: const InputDecoration(hintText: "Enter title"),),
+                          const SizedBox(height: 30,),
+                          TextField(controller: bodyController,
+                          maxLines: null,
+                          minLines: 5,
+                          decoration: const InputDecoration(hintText: "Enter body",),
+                          ),
+                          const SizedBox(height: 30,),
+                          OutlinedButton(onPressed: (){
+                    
+                          Posts post = Posts(
+                            id: Random().nextInt(10000) +1000,
+                            userId: authState.user!.id, 
+                            reactions: 0,
+                            title: titleController.text,
+                            body: bodyController.text,
+                            tags: tags,
+                           );
+                    
+                            BlocProvider.of<PostBloc>(context).add(PostAdded(post: post));
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [const Text("Post submitted successfully"), OutlinedButton(onPressed: (){Navigator.pop(context);}, child: const Text("Go back!"))],
+                            )));
+                          }, child: const Text("Submit")),
+                        ],):Column(children: [
+                          Align(alignment: Alignment.topRight, child: Icon(Icons.close, color: Theme.of(context).colorScheme.error,),),
+                          const SizedBox(height: 30,),
+                          const Center(child: Text("You need to be logged in to post"),),
+                        ],),
+                      ),
+                    ),
+                                  );
+                  }
+                );
+            });
+          }, child: 
+          const Row(children: [
+            Icon(Icons.add_card), 
+            SizedBox(width: 10,), 
+            Text("Add a post")],)),
+
+            Column(
+            children: state.posts.map((e) => GestureDetector(
+            onTap: (){
+              Navigator.pushNamed(context, '/posts/${e.id}');
+            },
+              child: Card(
+                child: Container(
+                padding: const EdgeInsets.all(8.0),
+                  child: Column(children: [
+                    Text(e.title ?? "", style: Theme.of(context).textTheme.bodyLarge,),
+                    const SizedBox(height: 10,),
+                    Row(children: e.tags!.map((tag) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Card(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(tag),
+                      ),),
+                    )).toList(),),
+                    const SizedBox(height: 10,),
+                    Text(e.body?? ""),
+                    const SizedBox(height: 10,),
+                    Row(children: [Icon(Icons.thumb_up_alt_sharp, color: Theme.of(context).highlightColor,), const SizedBox(height: 10,), Text("${e.reactions > 0 ? e.reactions : "No one"} ${e.reactions == 0 ? "" : e.reactions == 1 ? "Person" : "People"} liked this")],),
+                    const SizedBox(height: 20)
+                  ],),
+                ),
+              ),
+            )).toList()
             ),
-          ),
-        )).toList()
+                    ],
         ),
-      ),
-    );
+      );
+
+        }
+      }
+      );},)
+      
+      ); 
   } 
 }

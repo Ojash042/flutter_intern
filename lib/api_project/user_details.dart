@@ -17,7 +17,7 @@ class UserDetailsPage extends StatefulWidget{
 }
 
 class _UserDetailsPageState extends State<UserDetailsPage>{
-  late Users user = Users();
+  late Users user = Users(id: -1,age: -1);
   bool contentLoaded = false;
 
   void fetchUserProfile() async{
