@@ -1,7 +1,10 @@
 
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/api_project/bloc_provider.dart';
 import 'package:flutter_intern/api_project/events.dart';
@@ -18,7 +21,7 @@ void main(List<String> args) {
   runApp(
     MultiBlocProvider(providers:
     [
-      BlocProvider(create: (_) => AuthorizationProvider()..add(AuthorizedUserLogin(loginError: false))),
+      BlocProvider(create: (_) => AuthorizationProvider()..add(UnknownAuth())),
       BlocProvider(create: (_) => PostBloc()..add(PostFetched()))
     ], 
       child: const App(),
@@ -74,8 +77,8 @@ class InitialContainer extends StatefulWidget{
   return _InitialContainerState();
   }
 }
-class _InitialContainerState extends State<InitialContainer>{
 
+class _InitialContainerState extends State<InitialContainer>{
   @override
   void initState() {
     super.initState();
@@ -84,11 +87,10 @@ class _InitialContainerState extends State<InitialContainer>{
     final initialState = authorizationProvider.state;
     if (initialState is LoggedInState) {
       Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false);
-    } else {
+    } if(initialState is UnauthorizedState) {
       Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
     }
-    });
-    
+    }); 
   }
 
   @override
@@ -97,7 +99,7 @@ class _InitialContainerState extends State<InitialContainer>{
       if(state is LoggedInState){
         Navigator.popAndPushNamed(context, "/");
       }
-      else{
+      if(state is UnauthorizedState) {
         Navigator.popAndPushNamed(context, "/login");
       }
     },
@@ -117,10 +119,18 @@ class HomePage extends StatefulWidget{
 }
 
 class _HomePageState extends State<HomePage>{
-
+  ScrollController controller = ScrollController();
   @override
   void initState() {
     super.initState();
+    controller.addListener(() { 
+      if(controller.position.pixels == controller.position.maxScrollExtent){
+        BlocProvider.of<PostBloc>(context).add(PostExtraRetrieved());
+      }
+    if (controller.position.userScrollDirection == ScrollDirection.reverse) {
+      controller.position.didEndScroll();
+    }
+    });
   }
 
 
@@ -131,61 +141,80 @@ class _HomePageState extends State<HomePage>{
       drawer: LoggedInDrawer(),
       body: 
       BlocBuilder<AuthorizationProvider, AuthorizedUserState>(builder: (context, authState){
-       return BlocBuilder<PostBloc, PostsState>(builder: (context, state){
+       return BlocBuilder<PostBloc, PostsState>(
+        builder: (context, state){
         if(state.postStatus == LoadingStatus.initial){
           return const Center(child: CircularProgressIndicator());
         }
         else{
-        return SingleChildScrollView(
-        child: Column(
-          children: [
-              OutlinedButton(onPressed: (){
-                showAddPostModal(context, authState);
-          }, child: 
-          const Row(children: [
-            Icon(Icons.add_card), 
-            SizedBox(width: 10,), 
-            Text("Add a post")],)),
-            Column(
-            children: state.posts.map((e) => GestureDetector(
-            onTap: (){
-              Navigator.pushNamed(context, '/posts/${e.id}');
-            },
-              child: Card(
-                child: Container(
-                padding: const EdgeInsets.all(8.0),
-                  child: Column(children: [
-                    Text(e.title ?? "", style: Theme.of(context).textTheme.bodyLarge,),
-                    const SizedBox(height: 10,),
-                    Row(children: e.tags!.map((tag) => Padding(
+        return RefreshIndicator(
+        onRefresh: (){
+          BlocProvider.of<PostBloc>(context).add(PostFetched());
+          return Future.delayed(Duration.zero);},
+          child: Stack(
+            children: [ 
+              SingleChildScrollView(
+              controller: controller,
+              child: Column(
+                children: [
+                    OutlinedButton(onPressed: (){
+                      showAddPostModal(context, authState);
+                }, child: 
+                const Row(children: [
+                  Icon(Icons.add_card), 
+                  SizedBox(width: 10,), 
+                  Text("Add a post")],)),
+                  Column(
+                  children: state.posts.map((e) => GestureDetector(
+                  onTap: (){
+                    Navigator.pushNamed(context, '/posts/${e.id}');
+                  },
+                    child: Card(
+                      child: Container(
                       padding: const EdgeInsets.all(8.0),
-                      child: Card(child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(tag),
-                      ),),
-                    )).toList(),),
-                    const SizedBox(height: 10,),
-                    Text(e.body?? ""),
-                    const SizedBox(height: 10,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                      Icon(Icons.thumb_up_alt_sharp, color: Theme.of(context).highlightColor,),
-                      const SizedBox(height: 10,), Text("${e.reactions > 0 ? e.reactions : "No one"} ${e.reactions == 0 ? "" : e.reactions == 1 ? "Person" : "People"} liked this"),
-                      (authState.isLoggedIn && authState.user!.id == e.userId)? 
-                      IconButton(
-                        onPressed: (){BlocProvider.of<PostBloc>(context).add(PostRemoved(post: e));},
-                        icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error,)): Container(),
-                       ],),
-                    const SizedBox(height: 20)
-                  ],),
+                        child: Column(children: [
+                          Text(e.title ?? "", style: Theme.of(context).textTheme.bodyLarge,),
+                          const SizedBox(height: 10,),
+                          Row(children: e.tags!.map((tag) => Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Card(child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(tag),
+                            ),),
+                          )).toList(),),
+                          const SizedBox(height: 10,),
+                          Text(e.body?? ""),
+                          const SizedBox(height: 10,),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                            Icon(Icons.thumb_up_alt_sharp, color: Theme.of(context).highlightColor,),
+                            const SizedBox(height: 10,), Text("${e.reactions > 0 ? e.reactions : "No one"} ${e.reactions == 0 ? "" : e.reactions == 1 ? "Person" : "People"} liked this"),
+                            (authState.isLoggedIn && authState.user!.id == e.userId)? 
+                            IconButton(
+                              onPressed: (){BlocProvider.of<PostBloc>(context).add(PostRemoved(post: e));},
+                              icon: Icon(Icons.delete, color: Theme.of(context).colorScheme.error,)): Container(),
+                             ],),
+                          const SizedBox(height: 20)
+                        ],),
+                      ),
+                    ),
+                  )).toList()
+                  ),
+                          ],
+              ),
+                    ),
+              if(state.postStatus == LoadingStatus.loading)
+                const Center(
+                child: Card(
+                elevation: 5,
+                color: Colors.white,
+                child: CircularProgressIndicator(),
                 ),
               ),
-            )).toList()
-            ),
-                    ],
-        ),
-      );
+            ],
+          ),
+        );
 
         }
       }

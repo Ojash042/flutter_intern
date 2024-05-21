@@ -19,7 +19,7 @@ class PostAdded extends PostEvents{
 
 }
 
-class PostEdited extends PostEvents{}
+class PostExtraRetrieved extends PostEvents{}
 
 class PostRemoved extends PostEvents{
 
@@ -86,4 +86,8 @@ class AuthorizedUserLogin extends AuthorizedUserEvents{
 
 class AuthorizedUserLogout extends AuthorizedUserEvents{
   AuthorizedUserLogout();
+}
+
+class UnknownAuth extends AuthorizedUserEvents{
+  UnknownAuth();
 }

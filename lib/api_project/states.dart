@@ -1,30 +1,34 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_intern/api_project/models.dart';
-import 'package:http/http.dart';
 
-enum LoadingStatus{initial, success, failure}
+enum LoadingStatus{initial, loading, success, failure}
 
 class PostsState extends Equatable{
 
   const PostsState({
     this.postStatus = LoadingStatus.initial,
     this.posts = const [],
-    this.hasReachedMax =false});
+    this.hasReachedMax =false,
+    required this.pageNo,
+    });
 
   PostsState copyWith({
     LoadingStatus? postStatus,
     List<Posts>? posts,
     bool? hasReachedMax,
+    int pageNo = 0,
   }){
     return PostsState(
       postStatus: postStatus?? this.postStatus,
       posts: posts?? this.posts,
-      hasReachedMax: hasReachedMax?? this.hasReachedMax
+      hasReachedMax: hasReachedMax?? this.hasReachedMax,
+      pageNo: pageNo,
     );
   }
   final LoadingStatus postStatus; 
   final List<Posts> posts;
   final bool hasReachedMax;
+  final int pageNo;
   
   @override
   List<Object> get props => [postStatus, posts, hasReachedMax];
@@ -94,4 +98,10 @@ class LoggedInState extends AuthorizedUserState{
 class UnauthorizedState extends AuthorizedUserState{
   final bool loginError;
   const UnauthorizedState({required this.loginError}):super(user: null, isLoggedIn: false, authToken: null, loginError: loginError);
+}
+
+class UnknownAuthState extends AuthorizedUserState{ }
+
+class LoadingLogInState extends AuthorizedUserState{
+  const LoadingLogInState():super(user: null, isLoggedIn: false, authToken: null, loginError: false,);
 }

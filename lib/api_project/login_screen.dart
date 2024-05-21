@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/api_project/bloc_provider.dart';
 import 'package:flutter_intern/api_project/events.dart';
@@ -22,45 +25,63 @@ class LoginPage extends StatelessWidget{
    Scaffold(
       appBar: const CommonAppBar(),
       body: SingleChildScrollView(child: 
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              logginError? Container(
-                padding: const EdgeInsets.all(16.0),
-                  margin: const EdgeInsets.symmetric(vertical: 10.0),
-                decoration: BoxDecoration(
-          color: Colors.red,
-          borderRadius: BorderRadius.circular(8.0),
-                ),
-                child: const Row(
+        Stack(
           children: [
-            Icon(Icons.error, color: Colors.white),
-            SizedBox(width: 10.0),
-            Expanded(
-              child: Text(
-                "Error! Could not log in",
-                style: TextStyle(color: Colors.white, fontSize: 16.0),
+            if(state is LoadingLogInState)
+            Center(
+              child: Container(
+                color: Colors.white,
+                //width: MediaQuery.of(context).size.width/4.0, height: MediaQuery.of(context).size.height / 4.0,
+              child: const CircularProgressIndicator(),
+              ),
+            ),
+            BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: (state is LoadingLogInState)? 0.0 : 1.0, sigmaY: (state is LoadingLogInState)? 0.0 : 1.0),
+              child: Container(
+              color: (state is LoadingLogInState)? Colors.black54: Colors.white ,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      (logginError && state is! LoadingLogInState && !state.isLoggedIn )? Container(
+                        padding: const EdgeInsets.all(16.0),
+                          margin: const EdgeInsets.symmetric(vertical: 10.0),
+                        decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        child: const Row(
+                  children: [
+                    Icon(Icons.error, color: Colors.white),
+                    SizedBox(width: 10.0),
+                    Expanded(
+                      child: Text(
+                        "Error! Could not log in",
+                        style: TextStyle(color: Colors.white, fontSize: 16.0),
+                      ),
+                    ),
+                  ],
+                        ),
+                      ) : Container(),
+                      Text("Login", style: Theme.of(context).textTheme.headlineSmall,),
+                      TextFormField(controller: usernameController, decoration: const InputDecoration(hintText: "Enter username"),),
+                      TextFormField(controller: passwordController, decoration: const InputDecoration(hintText: "Enter password"),),
+                      OutlinedButton(onPressed: (){
+                      BlocProvider.of<AuthorizationProvider>(context).add(AuthorizedUserLogin(username: usernameController.text, password: passwordController.text, loginError: true));
+                      if(state is LoggedInState){
+                        Navigator.of(context).popAndPushNamed('/');
+                      }
+                      else{
+                        logginError = true;
+                      }
+                  
+                      }, child: const Text("Login")),
+                  ],),
+                ),
               ),
             ),
           ],
-                ),
-              ) : Container(),
-              Text("Login", style: Theme.of(context).textTheme.headlineSmall,),
-              TextFormField(controller: usernameController, decoration: const InputDecoration(hintText: "Enter username"),),
-              TextFormField(controller: passwordController, decoration: const InputDecoration(hintText: "Enter password"),),
-              OutlinedButton(onPressed: (){
-              BlocProvider.of<AuthorizationProvider>(context).add(AuthorizedUserLogin(username: usernameController.text, password: passwordController.text, loginError: true));
-              if(state is LoggedInState){
-                Navigator.of(context).popAndPushNamed('/');
-              }
-              else{
-                logginError = true;
-              }
-          
-              }, child: const Text("Login")),
-          ],),
         )
       ,),
     )  ,
