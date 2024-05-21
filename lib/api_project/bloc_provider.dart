@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_intern/api_project/events.dart';
 import 'package:flutter_intern/api_project/models.dart';
 import 'package:flutter_intern/api_project/states.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class APIObserver extends BlocObserver{
   const APIObserver();
@@ -129,26 +131,80 @@ class SingularPostBloc extends Bloc<SingularPostEvents, SingularPostState>{
 } 
 
 class AuthorizationProvider extends Bloc<AuthorizedUserEvents, AuthorizedUserState>{
-  AuthorizationProvider():super(const UnauthorizedState()){
-    on<AuthorizedUserLogin>((event, emit) =>getAuthorization(event, emit));
-  }
+  AuthorizationProvider():super(const UnauthorizedState(loginError: false)){
+    on<AuthorizedUserLogin>((event, emit) =>_loginUser(event, emit));
+    on<AuthorizedUserLogout>((event, emit) =>  _logoutUser(event, emit));
+  }  
 
-  void getAuthorization(AuthorizedUserLogin event, Emitter<AuthorizedUserState> emit) async{
-    String jsonString = await rootBundle.loadString('assets/api_data.json');
-    String authToken = json.decode(jsonString)["user_token"];
-    final authResponse = await http.get(
+  Future<Map<String, dynamic>> generateToken(String? username, String? password) async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    LoginUserModel userRequest = const LoginUserModel(username: "", password: "", expiresInMins: 30);
+    if(username != null && password !=null){
+      userRequest = LoginUserModel(username: username, password: password, expiresInMins: 540);
+    }
+
+    String requestBody = jsonEncode(userRequest);
+    http.Response response = await http.post(Uri.parse("https://dummyjson.com/auth/login"), 
+    headers:{
+      'Content-Type': "application/json", 
+    },
+    body: jsonEncode({
+      "username": username,
+      "password": password,
+      "expiresInMins": 540,
+    })
+    );
+    if(response.statusCode == 200){
+      String token = json.decode(response.body)["token"];
+      sharedPreferences.setString("validTime", DateTime.now().add(const Duration(minutes: 540)).toIso8601String());
+      sharedPreferences.setString("username", username!);
+      sharedPreferences.setString("password", password!); 
+      sharedPreferences.setString("token", token);
+      final authResponse = await http.get(
       Uri.parse("https://dummyjson.com/auth/me"),
       headers: {
-        'Authorization': '$authToken',
+        'Authorization': token,
       }
       );
     if(authResponse.statusCode == 200){
       final Map<String,dynamic> data = json.decode(authResponse.body);
       Users user = Users.fromJson(data);
-      emit(LoggedInState(user: user, authToken: authToken));
+      return {"user": user,
+        "authToken": token,
+      };
+    }
+  }
+      sharedPreferences.remove("validTime");
+      sharedPreferences.remove("username");
+      sharedPreferences.remove("password");
+      sharedPreferences.remove("token");
+      return {
+        "user": null,
+        "authToken": "",
+      };
+  
+  }
+
+  void _loginUser(AuthorizedUserLogin event, Emitter<AuthorizedUserState> emit) async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    DateTime? validTime =  sharedPreferences.getString("validTime") != null ? DateTime.parse(sharedPreferences.getString("validTime")!) : null;
+    Map<String, dynamic> result;
+    if(validTime == null || DateTime.now().millisecondsSinceEpoch> validTime.millisecondsSinceEpoch){
+     result = await generateToken(event.username, event.password);
+    }    
+    else{
+      String? username = sharedPreferences.getString("username");
+      String? password = sharedPreferences.getString("password");
+      result =  await generateToken(username, password);
+    }
+    if(result["user"] != null){
+      emit(LoggedInState(user: result["user"], authToken: result["authToken"]));
       return;
     }
-    emit(const UnauthorizedState());
-  }  
-  
+    emit(UnauthorizedState(loginError: event.loginError));
+    } 
+    
+    void _logoutUser(AuthorizedUserLogout event, Emitter<AuthorizedUserState> emit) async{
+      emit(const UnauthorizedState(loginError: false));
+    }
 }

@@ -77,4 +77,13 @@ class AuthorizedUserEvents extends Equatable{
   List<Object?> get props => [];
 }
 
-class AuthorizedUserLogin extends AuthorizedUserEvents{}
+class AuthorizedUserLogin extends AuthorizedUserEvents{
+  final String? username;
+  final String? password;
+  final bool loginError;
+  AuthorizedUserLogin({this.username, this.password, required this.loginError});
+}
+
+class AuthorizedUserLogout extends AuthorizedUserEvents{
+  AuthorizedUserLogout();
+}

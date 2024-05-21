@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_intern/api_project/models.dart';
+import 'package:http/http.dart';
 
 enum LoadingStatus{initial, success, failure}
 
@@ -71,13 +72,15 @@ class AuthorizedUserState extends Equatable{
     this.user,
     this.isLoggedIn = false,
     this.authToken,
+    this.loginError = false,
     }); 
   final String? authToken;
   final bool isLoggedIn;
   final Users? user;
+  final bool loginError;
   
   @override
-  List<Object?> get props => [authToken,user, isLoggedIn];
+  List<Object?> get props => [loginError,authToken,user, isLoggedIn];
 
 }
 
@@ -85,9 +88,10 @@ class LoggedInState extends AuthorizedUserState{
   final Users user;
   final String authToken;
   const LoggedInState({required this.user, required this.authToken}):
-  super(authToken: authToken,user: user, isLoggedIn: true);
+  super(authToken: authToken,user: user, isLoggedIn: true, loginError: false);
 }
 
 class UnauthorizedState extends AuthorizedUserState{
-  const UnauthorizedState():super(user: null, isLoggedIn: false, authToken: null);
+  final bool loginError;
+  const UnauthorizedState({required this.loginError}):super(user: null, isLoggedIn: false, authToken: null, loginError: loginError);
 }

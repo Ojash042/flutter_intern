@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/api_project/bloc_provider.dart';
 import 'package:flutter_intern/api_project/events.dart';
+import 'package:flutter_intern/api_project/login_screen.dart';
 import 'package:flutter_intern/api_project/misc.dart';
 import 'package:flutter_intern/api_project/models.dart';
 import 'package:flutter_intern/api_project/posts_details_page.dart';
@@ -17,7 +18,7 @@ void main(List<String> args) {
   runApp(
     MultiBlocProvider(providers:
     [
-      BlocProvider(create: (_) => AuthorizationProvider()..add(AuthorizedUserLogin())),
+      BlocProvider(create: (_) => AuthorizationProvider()..add(AuthorizedUserLogin(loginError: false))),
       BlocProvider(create: (_) => PostBloc()..add(PostFetched()))
     ], 
       child: const App(),
@@ -34,8 +35,10 @@ class App extends StatelessWidget{
     return MaterialApp(theme: ThemeData(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent)),
     routes: {
       "/": (context) => const HomePage(),
+      "/init": (context) => const InitialContainer(),
+      "/login": (context) => LoginPage(),
     },
-    initialRoute: '/',
+    initialRoute: '/init',
     onGenerateRoute: (settings){
       if(settings.name!.startsWith('/posts/')){
         var postId = settings.name!.split('/').last;
@@ -64,6 +67,44 @@ class App extends StatelessWidget{
   }
 }
 
+class InitialContainer extends StatefulWidget{
+  const InitialContainer({super.key});
+  @override
+  State<InitialContainer> createState() {
+  return _InitialContainerState();
+  }
+}
+class _InitialContainerState extends State<InitialContainer>{
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, (){
+    final authorizationProvider = BlocProvider.of<AuthorizationProvider>(context);
+    final initialState = authorizationProvider.state;
+    if (initialState is LoggedInState) {
+      Navigator.pushNamedAndRemoveUntil(context, "/", (route) => false);
+    } else {
+      Navigator.pushNamedAndRemoveUntil(context, "/login", (route) => false);
+    }
+    });
+    
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AuthorizationProvider, AuthorizedUserState>(listener:(context, state) {
+      if(state is LoggedInState){
+        Navigator.popAndPushNamed(context, "/");
+      }
+      else{
+        Navigator.popAndPushNamed(context, "/login");
+      }
+    },
+    child: const Scaffold(body: Center(child: CircularProgressIndicator()),),
+    );
+  }
+}
 
 class HomePage extends StatefulWidget{
 
@@ -87,6 +128,7 @@ class _HomePageState extends State<HomePage>{
   Widget build(BuildContext context) {
     return  Scaffold(
       appBar: const CommonAppBar(),
+      drawer: LoggedInDrawer(),
       body: 
       BlocBuilder<AuthorizationProvider, AuthorizedUserState>(builder: (context, authState){
        return BlocBuilder<PostBloc, PostsState>(builder: (context, state){

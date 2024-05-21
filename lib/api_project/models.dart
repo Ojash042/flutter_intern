@@ -1,5 +1,16 @@
 import 'package:equatable/equatable.dart';
 
+class LoginUserModel extends Equatable{ 
+  const LoginUserModel({required this.username, required this.password, required this.expiresInMins});
+  
+  final String username;
+  final String password;
+  final int expiresInMins; 
+  List<Object> get props => [username, password, expiresInMins];
+  
+  Map<String, dynamic> toJson() => {"username": username, "password": password, "expiresInMins": expiresInMins};
+}
+
 class Posts extends Equatable{
   const Posts({this.id = -1, this.title, this.body, this.userId, this.tags, this.reactions = 0});
 
