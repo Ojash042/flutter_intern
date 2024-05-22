@@ -132,7 +132,7 @@ class _FriendListPageState extends State<FriendListPage>{
                   Text(userFriendData.elementAt(index).name)
                   ],),
                 const Spacer(),
-                FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id), builder: (context, AsyncSnapshot<Widget> snapshot){
+                FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id!), builder: (context, AsyncSnapshot<Widget> snapshot){
                             if(snapshot.connectionState == ConnectionState.waiting){
                               return const CircularProgressIndicator();
                             }

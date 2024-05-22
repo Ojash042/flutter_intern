@@ -135,7 +135,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                   Text("Skills", style: Theme.of(context).textTheme.headlineMedium,),
                   Wrap(children: currentUserDetails.skills.map((e) => Card(child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(e.title),
+                    child: Text(e.title!),
                   ),)).toList(),),
                   const SizedBox(height: 30,),
                   TextFormField(
@@ -520,7 +520,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
     List<TextEditingController> socialMediaTypeController = List.generate(growable: true, currentUserDetails.contactInfo.socialMedias.length, (index) => TextEditingController());
     List<TextEditingController> socialMediaUrlController = List.generate(growable: true, currentUserDetails.contactInfo.socialMedias.length, (index) => TextEditingController());
     List<TextEditingController> socialMediaTitleController = List.generate(growable: true, currentUserDetails.contactInfo.socialMedias.length, (index) => TextEditingController());
-    mobileNoController.text = currentUserDetails.contactInfo.mobileNo;
+    mobileNoController.text = currentUserDetails.contactInfo.mobileNo!;
 
     for(int i=0; i< currentUserDetails.contactInfo.socialMedias.length; i++){
       socialMediaTitleController.elementAt(i).text = currentUserDetails.contactInfo.socialMedias.elementAt(i).title;      
@@ -686,7 +686,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                       Container(),
                       const Text("Skills", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),),
                       const SizedBox(height: 15,),
-                      Wrap(children: currentUserDetails!.skills.map((e) => Card(child: Padding(padding: const EdgeInsets.all(8), child: Text(e.title),),)).toList(),),
+                      Wrap(children: currentUserDetails!.skills.map((e) => Card(child: Padding(padding: const EdgeInsets.all(8), child: Text(e.title!),),)).toList(),),
                     ],),),),
                   Card(child: Padding(padding: const EdgeInsets.all(16.0),
                 child: Column(children: [
@@ -790,7 +790,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                   Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditContactInfoModal(userDetailsList, currentUser!.id));},),): Container(),
                   const Text("Contact Info", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),),
                   const SizedBox(height: 15,),
-                   Row(children: [const Text("Mobile No.", style: TextStyle(fontWeight: FontWeight.bold),), const  SizedBox(width: 5,),Text(currentUserDetails!.contactInfo.mobileNo)],),
+                   Row(children: [const Text("Mobile No.", style: TextStyle(fontWeight: FontWeight.bold),), const  SizedBox(width: 5,),Text(currentUserDetails!.contactInfo.mobileNo!)],),
                   const SizedBox(height: 5,),
                   Column(children: currentUserDetails!.contactInfo.socialMedias.map((e) =>
                    Row(

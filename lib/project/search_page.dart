@@ -144,7 +144,7 @@ class _SearchPageState extends State<SearchPage>{
                             Align(
                               alignment: Alignment.centerLeft,
                               child: FutureBuilder(
-                                future: getFriendStateWidget(searchedDataDetails.elementAt(index).id),
+                                future: getFriendStateWidget(searchedDataDetails.elementAt(index).id!),
                                 builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
                                   if(snapshot.connectionState == ConnectionState.waiting){
                                     return const CircularProgressIndicator();

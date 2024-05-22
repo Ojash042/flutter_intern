@@ -15,10 +15,11 @@ class LandingPage extends StatefulWidget{
 }
 
 class _LandingPageState extends State<LandingPage>{
-  late List<UserData> userList;
-  late List<TModels.UserPost> userPosts = List.empty(growable: true);
+  List<UserData> userList = [];
+  List<TModels.UserPost> userPosts = List.empty(growable: true);
   String? loggedInEmail;
   bool isLoggedIn = false;
+  int minUser = 3;
   Future<void> getDataFromSharedPrefs() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.getString("user_post");
@@ -69,13 +70,10 @@ Future<void> addPost(TModels.UserPost userPost) async{
     List<TModels.Image> images = List.empty(growable: true);
     userPost.postLikedBys = postLikedBy;
     userPost.images = images;
-    FToast fToast = FToast();
     bool posted = false;
-
     List<TextEditingController> imageUrlControllers = List.empty(growable: true);
     TextEditingController titleController = TextEditingController();
-    TextEditingController descriptionController = TextEditingController();
-    
+    TextEditingController descriptionController = TextEditingController(); 
       return Scaffold(
           body: Center(
             child: StatefulBuilder(
@@ -147,7 +145,6 @@ Future<void> addPost(TModels.UserPost userPost) async{
                         controller.clear();
                       }
                       });
-                      fToast.init(context);
                       
                       },
                        child: const Text("Add Post"))
@@ -159,9 +156,15 @@ Future<void> addPost(TModels.UserPost userPost) async{
           );
   }
 
+  void clearShared() async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    // sharedPreferences.clear();
+  }
+
   @override
   void initState() {
     super.initState();
+    clearShared();
     getDataFromSharedPrefs();
   } 
 
@@ -184,9 +187,7 @@ Future<void> addPost(TModels.UserPost userPost) async{
       sharedPreferences.setString("user_post", editedJson);
       });
   } 
-
-
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(
@@ -199,9 +200,9 @@ Future<void> addPost(TModels.UserPost userPost) async{
         showDialog(context: context, builder:(BuildContext buildContext) => createPostModal(buildContext));
       }, child: const Row(children: [Icon(Icons.add), Text("Create Post")],)) : Container()],
       ),
-      drawer: isLoggedIn? LoggedInDrawer() : MyDrawer(),
+      drawer: isLoggedIn? const LoggedInDrawer() : MyDrawer(),
       body: SingleChildScrollView(
-        child: Padding(
+        child: userList.length < minUser? Container(): Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [

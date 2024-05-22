@@ -215,6 +215,7 @@ class _BasicDetailsState extends State<BasicDetails>{
   TextEditingController fullNameController = TextEditingController();
   TextEditingController passwordController = TextEditingController(); 
   TextEditingController emailController =  TextEditingController();
+  TextEditingController rePasswordController = TextEditingController(); 
 
   void addData() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -276,6 +277,7 @@ class _BasicDetailsState extends State<BasicDetails>{
               const SizedBox(height: 30,),
               TextFormField(controller: passwordController, decoration: const InputDecoration(hintText: "Enter password",), obscureText: true, validator: (value) => (value == null || value.isEmpty)? "Password cannot be empty" : null),
               const SizedBox(height: 30,),
+              TextFormField(controller: rePasswordController, decoration: const InputDecoration(hintText: "Reenter Password"), obscureText: true, validator: (value) => (value == null || value.isEmpty || passwordController.text != value)? "Passwords do not match": null,),
               SizedBox(height: MediaQuery.of(context).size.width - 100.0 ),
               Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -361,9 +363,8 @@ class _PersonalDetailsState extends State<PersonalDetails>{
       return; 
     }
     
-    if(birthDateController.text.isEmpty || birthDateController.text == null){
-      setState(() {
-        
+    if(birthDateController.text.isEmpty){
+      setState(() { 
         isDoBEmpty = true;
       });
       return;
@@ -452,11 +453,16 @@ class _PersonalDetailsState extends State<PersonalDetails>{
           TextFormField(maxLines: null, controller: summaryController, decoration: const InputDecoration(hintText: "Describe yourself..."),),
           const SizedBox(height: 30,),
           Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
-          RadioListTile(value: Gender.Male, groupValue: _gender, title: const Text("Male"), onChanged: (Gender? value) {
-            _gender = value;
+          RadioListTile(value: Gender.Male, groupValue: _gender, title: const Text("Male"), 
+          onChanged: (Gender? value) {
+            setState(() { 
+              _gender = value;
+            });
           }),
           RadioListTile(value: Gender.Female, title: const Text("Female"), groupValue: _gender, onChanged: (Gender? value){
-          _gender = value;
+          setState(() { 
+            _gender = value;
+          });
           }), 
 
           const SizedBox(height: 30,),
@@ -827,13 +833,11 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    widget.contactInfo.mobileNo = "";
   }
 
   void validate(){
-    if(widget.contactInfo.mobileNo != "" || phoneNoRegex.hasMatch(widget.contactInfo.mobileNo)){
+    if(widget.contactInfo.mobileNo != "" || phoneNoRegex.hasMatch(widget.contactInfo.mobileNo!)){
       widget.incrementPhase();
     }
     else{
@@ -856,7 +860,7 @@ class _ContactDetailsState extends State<ContactDetailsPage>{
             TextFormField(
               onChanged: (value) => {
                 setState(() {
-                  widget.contactInfo.mobileNo = value;
+                  widget.contactInfo.copyWith(value, null);
                 })
               },
               decoration: InputDecoration(
@@ -971,7 +975,7 @@ class _MiscelleneousPageState extends State<MiscelleneousPage> {
                   itemBuilder: (context, index)=>
                     Card(
                     elevation: 3,
-                    child: Text(widget.skills.elementAt(index).title, textAlign: TextAlign.center,),
+                    child: Text(widget.skills.elementAt(index).title!, textAlign: TextAlign.center,),
                     )
                   ),
               ),
@@ -1100,7 +1104,7 @@ class _SignUpFormState extends State<SignUpForm>{
   late List<Widget> formPhases;
 
   List<Education> educationFields = List.empty(growable: true);
-  
+  List<Accomplishment> accomplishmentFields = List.empty(growable: true);
   List<SocialMedia> socialMedias = List.empty(growable: true); 
   ContactInfo contactInfo = ContactInfo();
 
@@ -1128,9 +1132,8 @@ class _SignUpFormState extends State<SignUpForm>{
   Future<void> storeUserDatatoPreferences() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     userData.id = await getNextId();
-    UserDetails userDetails = UserDetails();
+    UserDetails userDetails = UserDetails(basicInfo: basicInfo);
     userDetails.id= await getNextId();
-    userDetails.basicInfo = basicInfo;
     userDetails.workExperiences = workExperiences;
     userDetails.skills = skills;
     userDetails.hobbies = hobbies;
@@ -1171,17 +1174,16 @@ class _SignUpFormState extends State<SignUpForm>{
   @override
   void initState() {
     super.initState();
-    contactInfo.socialMedias = socialMedias;
-    formPhases = [
+      formPhases = [
       BasicDetails(formKey: formStateList.first, userData: userData, incrementPhase: _incrementPhase,),
-      PersonalDetails(formKey: formStateList.elementAt(1), basicInfo: basicInfo, incrementPhase: _incrementPhase,),
+      PersonalDetails(formKey: formStateList.elementAt(1), basicInfo: basicInfo, incrementPhase: storeUserDatatoPreferences,),
+      FinishedSignupPage(),
       WorkPlaceDetails(formKey: formStateList.elementAt(2), incrementPhase: _incrementPhase,workplaceData: workExperiences,),
       EducationForm(formKey: formStateList.elementAt(3), incrementPhase: _incrementPhase, educations: educationFields,),
       ContactDetailsPage(formKey: formStateList.elementAt(4), incrementPhase: _incrementPhase, contactInfo: contactInfo,),
       MiscelleneousPage(formKey: formStateList.elementAt(5), incrementPhase: storeUserDatatoPreferences,
        skills: skills, languages: languages, hobbies: hobbies,
        ),
-       FinishedSignupPage()
       ];      
   }
 
