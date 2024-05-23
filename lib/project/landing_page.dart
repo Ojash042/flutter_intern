@@ -158,7 +158,7 @@ Future<void> addPost(TModels.UserPost userPost) async{
 
   void clearShared() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    // sharedPreferences.clear();
+    //sharedPreferences.clear();
   }
 
   @override

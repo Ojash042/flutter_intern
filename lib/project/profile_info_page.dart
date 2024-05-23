@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:intl/intl.dart';
@@ -10,25 +12,31 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileInfoPage extends StatefulWidget{
   final String id;
-  const ProfileInfoPage({super.key, required this.id});
+  ProfileInfoPage({super.key, required this.id});
+  final GlobalKey<_ProfileInfoPageState> profileInfoKey = GlobalKey<_ProfileInfoPageState>();
 
 @override
   State<StatefulWidget> createState() {
-    return _ProfileInfoPageState();
+    return _ProfileInfoPageState(profileInfoKey);
   }
 }
 enum UserGender{male, female}
 
 class _ProfileInfoPageState extends State<ProfileInfoPage>{
 
+  GlobalKey<_ProfileInfoPageState> profileInfoKey = GlobalKey<_ProfileInfoPageState>();
+  _ProfileInfoPageState(profileInfoKey);
   UserData? currentUser;
   UserDetails? currentUserDetails;
   late List<UserData> userDataList;
   late List<UserDetails> userDetailsList;
   bool isCurrentUserLoggedInUser = false;
 
+
+
   void saveData(List<UserDetails> userDetailsList) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    print(userDetailsList);
     String? encodedString = jsonEncode(userDetailsList.map((e) => e.toJson()).toList()); 
     setState(() { 
       sharedPreferences.setString("user_details", encodedString);
@@ -76,38 +84,44 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
         padding: const EdgeInsets.all(16.0),
         child: StatefulBuilder(
           builder: (context, StateSetter setState) {
-            return Center(
-              child: Form(child: 
-                  Column(children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
-                    const SizedBox(height: 30,),
-                    Text("Edit Basic Info", style: Theme.of(context).textTheme.headlineMedium,),
-                    const SizedBox(height: 30,),
-                    TextFormField(
-                      controller: summaryController,
-                      decoration: InputDecoration(labelText: currentUserDetails.basicInfo.summary,hintText: "Enter summary"),
-                      //initialValue: currentUserDetails.basicInfo.summary,
-                      ),
-                    const SizedBox(height: 30,),
-                    Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
-                  RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
-                  currentUserDetails.basicInfo.gender = "Male";
-                  _gender = value;
-                }),
-                RadioListTile(value: UserGender.female, title: const Text("Female"), groupValue: _gender, onChanged: (UserGender? value){
-                currentUserDetails.basicInfo.gender = "Female";
-                _gender = value;
-                }), 
-                const SizedBox(height: 30,),
-                OutlinedButton(onPressed: (){
-                  currentUserDetails.basicInfo.summary = summaryController.text;
-                  saveData(userDetailsList);
-                  Navigator.of(context).pop();
-                  }, child: const Text("Submit"))
-                  ],)
-              ,),
+            return SingleChildScrollView(
+              child: Center(
+                child: Form(child: 
+                    Column(children: [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
+                      const SizedBox(height: 30,),
+                      Text("Edit Basic Info", style: Theme.of(context).textTheme.headlineMedium,),
+                      const SizedBox(height: 30,),
+                      TextFormField(
+                        controller: summaryController,
+                        decoration: InputDecoration(labelText: currentUserDetails.basicInfo.summary,hintText: "Enter summary"),
+                        //initialValue: currentUserDetails.basicInfo.summary,
+                        ),
+                      const SizedBox(height: 30,),
+                      Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
+                    RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
+                    setState((){
+                      currentUserDetails.basicInfo.gender = "Male";
+                      _gender = value; 
+                    });
+                    }),
+                  RadioListTile(value: UserGender.female, title: const Text("Female"), groupValue: _gender, onChanged: (UserGender? value){
+                  setState((){
+                    currentUserDetails.basicInfo.gender = "Female";
+                    _gender = value; 
+                    });
+                  }), 
+                  const SizedBox(height: 30,),
+                  OutlinedButton(onPressed: (){
+                    currentUserDetails.basicInfo.summary = summaryController.text;
+                    saveData(userDetailsList);
+                    Navigator.of(context).pop();
+                    }, child: const Text("Submit"))
+                    ],)
+                ,),
+              ),
             );
           }
         ),
@@ -130,7 +144,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                 children: [
                     Align(
                       alignment: Alignment.topRight,
-                      child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
+          child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
                   const SizedBox(height: 30,),
                   Text("Skills", style: Theme.of(context).textTheme.headlineMedium,),
                   Wrap(children: currentUserDetails.skills.map((e) => Card(child: Padding(
@@ -571,6 +585,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
               }, child: const Text("Add More")),
               const SizedBox(height: 30,),
               OutlinedButton(onPressed: (){
+              currentUserDetails.contactInfo = currentUserDetails.contactInfo.copyWith(mobileNoController.text, null);
                 for(int i=0; i< socialMediaTitleController.length - currentUserDetails.contactInfo.socialMedias.length; i++){
                   SocialMedia sm = SocialMedia();
                   sm.id = Random().nextInt(10000) + 1000;
@@ -585,6 +600,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                   currentUserDetails.contactInfo.socialMedias.elementAt(i).type = socialMediaTypeController.elementAt(i).text;
                 }
                 saveData(userDetailsList);
+                setState((){});
                 Navigator.of(context).pop();
                 }, child: const Text("Submit")),
             ],
@@ -595,8 +611,21 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    getDataFromSharedPrefs().then((value) => setState(() { }));
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileInfoPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    getDataFromSharedPrefs().then((value) => setState(() { }));
+  }
+
+  @override
   void initState() {
     super.initState();
+    setState(() {});
     getDataFromSharedPrefs().then((value) => setState(() { 
     }));   
   }

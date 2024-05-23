@@ -33,7 +33,12 @@ class _FriendListPageState extends State<FriendListPage>{
       case FriendState.notFriend:
         friendStateString = "Add Friend";
         ico = Icons.group_add;
-        onPressed = () => Provider.of<FriendServiceProvider>(context,listen: false).addFriend(id);
+        onPressed = (){
+           Provider.of<FriendServiceProvider>(context,listen: false).addFriend(id);
+           setState(() {
+             
+           });
+           };
         break;
 
       case FriendState.friend:
@@ -50,12 +55,20 @@ class _FriendListPageState extends State<FriendListPage>{
       case FriendState.requested:
         friendStateString = "Requested";
         ico = Icons.group;
-        onPressed = () => {Provider.of<FriendServiceProvider>(context, listen: false).acceptRequest(id)};
+        onPressed = () {
+        {
+        Provider.of<FriendServiceProvider>(context, listen: false).acceptRequest(id);
+         setState(() { 
+        }); 
+        }          
+        };
         break;
       case FriendState.isUser:
         return Container();
     }
-    return OutlinedButton(onPressed: (){onPressed(); setState(() {
+    return OutlinedButton(onPressed: (){
+      print("woooooooooooo");
+      onPressed(); setState(() {
       
     });},child: Row(children: [Icon(ico), Text(friendStateString)],));
   }
@@ -78,7 +91,7 @@ class _FriendListPageState extends State<FriendListPage>{
 
     setState(() {
       usersFriends = userFriendList.where((element) => (element.userListId>0) &&
-      (element.userId == loggedInUser!.id || element.friendId == loggedInUser.id ) && (element.hasNewRequestAccepted) && (!element.hasRemoved)).toList();
+      (element.userId == loggedInUser!.id || element.friendId == loggedInUser.id ) && (element.hasNewRequest == true) && (!element.hasRemoved)).toList();
     });
 
     for(var item in usersFriends){
@@ -97,6 +110,20 @@ class _FriendListPageState extends State<FriendListPage>{
       });
     }
     
+  }
+  
+  @override
+  void didChangeDependencies() {
+    // TODO: implement didChangeDependencies
+    super.didChangeDependencies();
+    getDataFromSharedPrefs();
+  }
+  
+  @override
+  void didUpdateWidget(covariant FriendListPage oldWidget) {
+    // TODO: implement didUpdateWidget
+    super.didUpdateWidget(oldWidget);
+    getDataFromSharedPrefs();
   }
   
   @override
@@ -122,28 +149,31 @@ class _FriendListPageState extends State<FriendListPage>{
           ListView.builder(
             shrinkWrap: true,
             itemCount: usersFriends.length,
-            itemBuilder: (context, index)=> GestureDetector(onTap: (){
-              Navigator.of(context).pushNamed('/profileInfo/${usersFriends.elementAt(index).userId}');},
-            child: Row(
-              children: [
-                CircleAvatar(backgroundImage: FileImage(File(userFriendDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
-                const SizedBox(width: 20,),
-                Column(children: [
-                  Text(userFriendData.elementAt(index).name)
-                  ],),
-                const Spacer(),
-                FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id!), builder: (context, AsyncSnapshot<Widget> snapshot){
-                            if(snapshot.connectionState == ConnectionState.waiting){
-                              return const CircularProgressIndicator();
-                            }
-                            else if(snapshot.hasError){
-                              return Text('${snapshot.error}');
-                            }
-                            return snapshot.data ?? Container();
-                          })
-              ],
-            ),
-            
+            itemBuilder: (context, index)=> Padding(
+              padding: const EdgeInsets.all(14.0),
+              child: GestureDetector(onTap: (){
+                Navigator.of(context).pushNamed('/profileInfo/${usersFriends.elementAt(index).userId}');},
+              child: Row(
+                children: [
+                  CircleAvatar(backgroundImage: FileImage(File(userFriendDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
+                  const SizedBox(width: 20,),
+                  Column(children: [
+                    Text('${userFriendData.elementAt(index).name} ${userFriendData.elementAt(index).id}')
+                    ],),
+                  const Spacer(),
+                  FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id!), builder: (context, AsyncSnapshot<Widget> snapshot){
+                              if(snapshot.connectionState == ConnectionState.waiting){
+                                return const CircularProgressIndicator();
+                              }
+                              else if(snapshot.hasError){
+                                return Text('${snapshot.error}');
+                              }
+                              return snapshot.data ?? Container();
+                            })
+                ],
+              ),
+              
+              ),
             ))
           ]
         ),),);

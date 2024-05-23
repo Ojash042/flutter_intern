@@ -275,7 +275,7 @@ class UserDetails{
     UserDetails userDetails = UserDetails(basicInfo: BasicInfo.fromJson(json["basic_info"]));
     var we = json["work_experiences"] as List;
     var sk = json["skills"] as List;
-    var hb = json["skills"] as List;
+    var hb = json["hobbies"] as List;
     var langs = json["languages"] as List;
     var educ = json["education"] as List;
 
