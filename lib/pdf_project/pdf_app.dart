@@ -29,6 +29,8 @@ class _AppState extends State<App>{
 }
 
 class HomePage extends StatefulWidget{
+  const HomePage({super.key});
+
   @override
   State<HomePage> createState() {
     return _HomePageState();
@@ -111,7 +113,8 @@ class _HomePageState extends State<HomePage>{
     setState(() {
       isLoading = LoadingStates.success;
     }); 
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) => PDFViewPage(filePath: urlFile.path, isNetwork: true,)));
+    mounted?
+    Navigator.of(context).push(MaterialPageRoute(builder: (context) => PDFViewPage(filePath: urlFile.path, isNetwork: true,))): null;
   } 
 
   @override
@@ -135,8 +138,7 @@ class _HomePageState extends State<HomePage>{
                 errorStyle: TextStyle(color: Theme.of(context).colorScheme.error),
                 error: urlError ? const Text("Error! Url is not valid"): null,
                 hintText: "Enter url of pdf file"), controller: urlController,)),
-            const SizedBox(height: 30,),
-        
+            const SizedBox(height: 30,), 
             ElevatedButton(onPressed: (){
               if(!pdfRegex.hasMatch(urlController.text)){
                 urlError = true;

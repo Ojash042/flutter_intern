@@ -11,17 +11,29 @@ class MyDrawer extends StatelessWidget{
         padding: EdgeInsets.zero,
         children: [
           const DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blue),
-            child: Text("Project App")
+            decoration: BoxDecoration(gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
+             child:  Text("Project App")
             ),
-        ListTile(title: const Text("Home"),
+        ListTile(title:const Row(
+          children: [
+            Icon(Icons.home_outlined),
+            SizedBox(width: 10,),
+            Text("Home"),
+          ],
+        ),
         onTap: (){
           if(ModalRoute.of(context)?.settings.name != "/home"){
             Navigator.of(context).pushNamed('/home');
           }
           else{Scaffold.of(context).openEndDrawer();}
         },),
-        ListTile(title: const Text("Courses Info"),
+        ListTile(title: const Row(
+          children: [
+            Icon(Icons.folder_open_outlined),
+            SizedBox(width: 10,),
+            Text("Courses Info"),
+          ],
+        ),
         onTap: (){
           if(ModalRoute.of(context)?.settings.name != '/courses'){
             Navigator.of(context).pushNamed("/courses"); 
@@ -30,7 +42,13 @@ class MyDrawer extends StatelessWidget{
             Scaffold.of(context).openEndDrawer();
           }
           },),
-          ListTile(title: const Text("Login"),
+          ListTile(title: const Row(
+            children: [
+              Icon(Icons.account_circle_outlined),
+              SizedBox(width: 10,),
+              Text("Login"),
+            ],
+          ),
           onTap: (){
             if(ModalRoute.of(context)?.settings.name != "/login"){
               Navigator.of(context).pushNamed("/login");
@@ -39,11 +57,35 @@ class MyDrawer extends StatelessWidget{
               Scaffold.of(context).openEndDrawer();
             }
           },
-          ),
-          
-          ],
+          ), ],
         ),
     );
+  }
+}
+
+class BackgroundWaveClipper extends CustomClipper<Path>{
+  double heightFactor;
+  double widthFactor;
+  double secondHeightFactor;
+  BackgroundWaveClipper({this.heightFactor = 0.75, this.widthFactor = 0.5, this.secondHeightFactor = 0.5});
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    final double p0 = size.height * heightFactor;
+    path.lineTo(0.0, p0); 
+    final controlPoint = Offset(size.width * widthFactor, size.height);
+    final endPoint = Offset(size.width, size.height * secondHeightFactor);
+    path.quadraticBezierTo(controlPoint.dx, controlPoint.dy, endPoint.dx, endPoint.dy);
+    //path.lineTo(0.0, size.height);
+    //path.lineTo(size.width, size.height - 80);
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+  
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) {
+    return oldClipper != this;
   }
 }
 
@@ -84,8 +126,8 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(color: Colors.blue),
+          DrawerHeader(
+            decoration: BoxDecoration(gradient:SweepGradient(colors: [Colors.purple[100]!, Colors.purpleAccent[600]!])),
             child: Text("Project App")
             ),
         ListTile(title: const Text("Courses Info"),
@@ -153,3 +195,4 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
     );
   }
 }
+
