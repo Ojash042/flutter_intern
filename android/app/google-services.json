@@ -1,0 +1,90 @@
+{
+  "project_info": {
+    "project_number": "271563123010",
+    "project_id": "notificationproject-adae6",
+    "storage_bucket": "notificationproject-adae6.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271563123010:android:687a184c97d9731f7480db",
+        "android_client_info": {
+          "package_name": "com.example.flutter_intern"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "271563123010-5door68h87k8u3f04eaebupudrpeoje4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOT-TQodcRDah-jmfCnf1eZqGiwLe2HTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "271563123010-5door68h87k8u3f04eaebupudrpeoje4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "271563123010-0vhpamj9lsi6mvm439t0p2vthi0v0clo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.ntfyApplication"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:271563123010:android:df73c0c1f67cf9837480db",
+        "android_client_info": {
+          "package_name": "com.example.ntfy_application"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "271563123010-i8ftujkjb8hvopskbl83pjh1fac1rmes.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ntfy_application",
+            "certificate_hash": "06307a817b14c82e4278b7b901998cf766a8f225"
+          }
+        },
+        {
+          "client_id": "271563123010-5door68h87k8u3f04eaebupudrpeoje4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAOT-TQodcRDah-jmfCnf1eZqGiwLe2HTw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "271563123010-5door68h87k8u3f04eaebupudrpeoje4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "271563123010-0vhpamj9lsi6mvm439t0p2vthi0v0clo.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.ntfyApplication"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
