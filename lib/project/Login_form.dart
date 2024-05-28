@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
+// ignore: file_names
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:provider/provider.dart';
@@ -14,26 +13,71 @@ class LoginForm extends StatefulWidget{
 
 
 class _LoginFormState extends State<LoginForm>{
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
+  final FocusNode _emailFocusNode = FocusNode();
+  final FocusNode _passwordFocusNode = FocusNode();
+
+  final ScrollController _scrollController = ScrollController();
+
+  double heightFactor = 0.75;
+  double originalHeightFactor = 0.75;
+  double widthFactor = 0.5;
+  double originaWidthFactor = 0.5;
+  double secondHeightFactor = 0.5;
+  double originaSecondHeightFactor = 0.5;
+
   bool passwordObscure = true;
 
   void checkLoggedIn() async{
+
   if(await Provider.of<AuthProvider>(context, listen: false).isLoggedIn()){
-      Navigator.of(context).popAndPushNamed("/home");
+      mounted? Navigator.of(context).popAndPushNamed("/home") : null;
     }
   }
+
   @override
   void initState(){
     super.initState(); 
     checkLoggedIn();
+    _emailFocusNode.addListener(() {_onLostFocus();});
+    _passwordFocusNode.addListener(() {_onLostFocus();});
   }
 
   void loginUser() async {
     Provider.of<AuthProvider>(context, listen: false).login(context, _emailController.text, _passwordController.text);
     if(await Provider.of<AuthProvider>(context, listen: false).isLoggedIn()){
-      Navigator.of(context).popAndPushNamed("/home");
+      mounted ? Navigator.of(context).popAndPushNamed("/home") : null;
     }
+  }
+  
+  void _onTapChangeClipPath(){
+    setState(() {
+      heightFactor = 0.4;
+      widthFactor = 0.25;
+      secondHeightFactor = -0.35;
+    });
+    return;
+  }
+ 
+  void _onLostFocus(){
+    if(! _emailFocusNode.hasFocus && !_passwordFocusNode.hasFocus){
+      setState(() {
+       heightFactor = originalHeightFactor; 
+       widthFactor = originaWidthFactor;
+       secondHeightFactor = originaSecondHeightFactor;
+      }); 
+    }
+    if(_emailFocusNode.hasFocus || _passwordFocusNode.hasFocus){
+        setState(() {
+          heightFactor = 0.1;
+          widthFactor = -2.0;
+          secondHeightFactor = 0.1;
+        });
+      }
+    return;
   }
   
 
@@ -47,7 +91,7 @@ class _LoginFormState extends State<LoginForm>{
           Align(
             alignment: Alignment.topLeft,
             child: ClipPath(
-            clipper: BackgroundWaveClipper(),
+            clipper: BackgroundWaveClipper(heightFactor: heightFactor, widthFactor: widthFactor, secondHeightFactor: heightFactor),
             child: Container(width: MediaQuery.of(context).size.width,
             height: 280, decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
                   ),
@@ -55,27 +99,35 @@ class _LoginFormState extends State<LoginForm>{
               ),
           Center(
             child: Form(
-              child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-                children: [ 
-                  Text("Login", style: Theme.of(context).textTheme.headlineMedium),
-                  const SizedBox(height: 240,),
-                  SizedBox(width: MediaQuery.of(context).size.width - 100, child: TextFormField(decoration: const InputDecoration(hintText: "Enter Email"), controller: _emailController,),),
-                  const SizedBox(height: 30,),
-                  SizedBox(width: MediaQuery.of(context).size.width -100 , child: TextFormField(obscureText: passwordObscure, decoration: InputDecoration(
-                    suffixIcon: IconButton(onPressed:() =>
-                     setState(() {
-                      passwordObscure = !passwordObscure; 
-                     }),
-                    icon: Icon(passwordObscure ? Icons.visibility_off : Icons.visibility)),
-                    hintText: "Enter password"),controller: _passwordController,),),
-                  const SizedBox(height: 30,), 
-                  SizedBox(child: OutlinedButton(onPressed: loginUser,child: const Text("Login"),)),
-                  const SizedBox(height: 40,),
-                  SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, '/forgotPassword');}, child: const Text("Forgot Password"),),),
-                  const SizedBox(height: 30,),
-                  SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, "/signup");}, child: const Text("Sign Up"),),)
-                ],
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                  children: [ 
+                    Text("Login", style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 40,),
+                    SizedBox(width: MediaQuery.of(context).size.width - 100, child: TextFormField(decoration: const InputDecoration(hintText: "Enter Email"),
+                    focusNode: _emailFocusNode,controller: _emailController,),),
+                    const SizedBox(height: 30,),
+                    SizedBox(width: MediaQuery.of(context).size.width -100 , child: TextFormField(
+                      controller: _passwordController,
+                      focusNode: _passwordFocusNode,
+                      onTap:() => _onTapChangeClipPath,
+                      obscureText: passwordObscure, decoration: InputDecoration(
+                      suffixIcon: IconButton(onPressed:() =>
+                       setState(() {
+                        passwordObscure = !passwordObscure; 
+                       }),
+                      icon: Icon(passwordObscure ? Icons.visibility_off : Icons.visibility)),
+                      hintText: "Enter password"),),),
+                    const SizedBox(height: 30,), 
+                    SizedBox(child: OutlinedButton(onPressed: loginUser,child: const Text("Login"),)),
+                    const SizedBox(height: 40,),
+                    SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, '/forgotPassword');}, child: const Text("Forgot Password"),),),
+                    const SizedBox(height: 30,),
+                    SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, "/signup");}, child: const Text("Sign Up"),),)
+                  ],
+                ),
               ),
             ),
           ),

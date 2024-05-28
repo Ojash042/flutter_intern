@@ -20,6 +20,7 @@ import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/my_posts_page.dart';
 import 'package:flutter_intern/project/profile_info_page.dart';
 import 'package:flutter_intern/project/search_page.dart';
+import 'package:flutter_intern/project/todo.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -62,43 +63,21 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> loadAssets() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    var courseCategoriesJson =
-        await rootBundle.loadString('assets/course_categories.json');
-    var courseByCategoriesJson =
-        await rootBundle.loadString('assets/courses_by_categories.json');
+    var courseCategoriesJson = await rootBundle.loadString('assets/course_categories.json');
+    var courseByCategoriesJson = await rootBundle.loadString('assets/courses_by_categories.json');
     var coursesJson = await rootBundle.loadString('assets/courses.json');
     var instructorJson = await rootBundle.loadString('assets/instructor.json');
     var userPost = await rootBundle.loadString('assets/user_post.json');
 
-    var userFriendJson =
-        await rootBundle.loadString('assets/user_friend_list.json');
-    //var userPostJson =await rootBundle.loadString('assets/user_friend_list.json');
-
-    //List<TModels.CourseByCategories> courseCategories =  courseCategoriesJson.map((e) => TModels.CourseByCategories.fromJson(e)).toList();
+    var userFriendJson = await rootBundle.loadString('assets/user_friend_list.json');
 
     sharedPreferences.setString("course_categories", courseCategoriesJson);
     sharedPreferences.setString("course_by_categories", courseByCategoriesJson);
     sharedPreferences.setString("courses", coursesJson);
     sharedPreferences.setString("instructor", instructorJson);
-    sharedPreferences.setString(
-        "user_post", jsonEncode(jsonDecode(userPost)["user_post"]));
-    sharedPreferences.setString("user_friend",
-        jsonEncode(jsonDecode(userFriendJson)["user_friend_list"]));
-    // List<dynamic> decoderCourseCategories = jsonDecode(courseCategoriesJson)["course_categories"];
-    // List<dynamic> decoderCourseByCategories = jsonDecode(courseByCategoriesJson)["courses_by_categories"];
-    // List<dynamic> decoderCourses = jsonDecode(coursesJson)["courses"];
-    // List<dynamic> decoderInstructor = jsonDecode(instructorJson)["instructor"];
-    // List<dynamic> decoderUserFriend = jsonDecode(userFriendJson)["user_friend_list"];
-
-    //List<dynamic> decoderUserPost = jsonDecode(userPostJson)["user_post"];
-
-    // List<TModels.CourseCategories> courseCategories = decoderCourseCategories.map((e) => TModels.CourseCategories.fromJson(e)).toList();
-    // List<TModels.CourseByCategories> courseByCategories = decoderCourseByCategories.map((e) => TModels.CourseByCategories.fromJson(e)).toList();
-    // List<TModels.Courses> courses = decoderCourses.map((e) => TModels.Courses.fromJson(e)).toList();
-    // List<TModels.Instructor> instructors = decoderInstructor.map((e) => TModels.Instructor.fromJson(e)).toList();
-    // List<TModels.UserFriend> userFriends = decoderUserFriend.map((e) => TModels.UserFriend.fromJson(e)).toList();
-    // List<TModels.UserPost> userPost = decoderUserPost.map((e) => TModels.UserPost.fromJson(e)).toList();
-  }
+    sharedPreferences.setString("user_post", jsonEncode(jsonDecode(userPost)["user_post"]));
+    sharedPreferences.setString("user_friend", jsonEncode(jsonDecode(userFriendJson)["user_friend_list"]));
+    }
 
   @override
   void initState() {
@@ -111,9 +90,7 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(
-            create: (context) => FriendServiceProvider(context)),
-      ],
+        ChangeNotifierProvider(create: (context) => FriendServiceProvider(context)),],
       child: MaterialApp(
         theme: ThemeData(
             textTheme: GoogleFonts.quicksandTextTheme(),
@@ -121,23 +98,23 @@ class _MyAppState extends State<MyApp> {
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.blue,
             )),
-        // theme: ThemeData.from(useMaterial3: true, colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue,)),
         initialRoute: "/",
         routes: {
           "/": (context) => const MyHomePage(child: LoginForm()),
           "/login": (context) => const LoginForm(),
           "/signup": (context) => const SignUpForm(),
-          "/courses": (context) => CoursesPage(),
-          "/home": (context) => LandingPage(),
+          "/courses": (context) => const CoursesPage(),
+          "/home": (context) => const LandingPage(),
           "/changePassword": (context) => const ChangePasswordPage(),
           "/profileInfo": (context) => ProfileInfoPage(
                 id: currentUserId.toString(),
               ),
           "/search": (context) => const SearchPage(),
           "/friendRequests": (context) => FriendRequests(),
-          "/friendLists": (context) => FriendListPage(),
+          "/friendLists": (context) => const FriendListPage(),
           "/forgotPassword": (context) => const ForgotPasswordPage(),
           "/myPosts": (context) => MyPostsPage(),
+          "/todos": (context) => const ToDoPage(),
         },
 
         onGenerateRoute: (settings) {
@@ -146,11 +123,12 @@ class _MyAppState extends State<MyApp> {
             return MaterialPageRoute(
                 builder: (context) => CoursesDetailsPage(courseId: courseId));
           }
+
           if (settings.name!.startsWith('/profileInfo/')) {
             var profileId = settings.name!.split('/').last;
             return MaterialPageRoute(
-                builder: (context) => ProfileInfoPage(id: profileId));
-          }
+              builder: (context) => ProfileInfoPage(id: profileId));
+          } 
           return null;
         },
       ),
@@ -220,16 +198,28 @@ class BasicDetails extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   UserData userData;
   final VoidCallback incrementPhase;
+  final FocusNode fullNameFocusNode; 
+  final FocusNode passwordFocusNode;
+  final FocusNode emailFocusNode;
+  final FocusNode rePasswordFocusNode;
+  final VoidCallback onChangeFocus; 
+
   BasicDetails(
       {super.key,
       required this.formKey,
       required this.userData,
-      required this.incrementPhase});
+      required this.incrementPhase,
+      required this.fullNameFocusNode, required this.passwordFocusNode, required this.emailFocusNode, required this.rePasswordFocusNode,
+      required this.onChangeFocus, 
+      });
+
   @override
   State<BasicDetails> createState() => _BasicDetailsState();
+
 }
 
 class _BasicDetailsState extends State<BasicDetails> {
+  
   final RegExp _fullNameRegex = RegExp(r'[A-Za-z]+');
   final RegExp _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
   TextEditingController fullNameController = TextEditingController();
@@ -256,7 +246,7 @@ class _BasicDetailsState extends State<BasicDetails> {
         (retrievedUserData.firstWhereOrNull(
                 (element) => element.email == emailController.text) !=
             null)) {
-      showDialog(
+      mounted ?showDialog(
           context: context,
           builder: (BuildContext context) {
             context = scaffoldContext;
@@ -273,16 +263,15 @@ class _BasicDetailsState extends State<BasicDetails> {
                     child: const Text("Ok!")),
               ],
             );
-          });
+          }) : null;
       return;
     }
+
     widget.userData.name = fullNameController.text;
     widget.userData.password = passwordController.text;
     widget.userData.email = emailController.text;
     if (widget.formKey.currentState!.validate()) {
       widget.incrementPhase();
-    } else {
-      return;
     }
   }
 
@@ -291,7 +280,7 @@ class _BasicDetailsState extends State<BasicDetails> {
     return Form(
       key: widget.formKey,
       child: Padding(
-        padding: const EdgeInsets.all(2.0),
+        padding: const EdgeInsets.symmetric(horizontal: 18.0),
         child: Center(
           child: Column(
             children: [
@@ -304,9 +293,10 @@ class _BasicDetailsState extends State<BasicDetails> {
               ),
               TextFormField(
                 controller: fullNameController,
+                focusNode: widget.fullNameFocusNode,
                 decoration: const InputDecoration(hintText: "Enter Full Name "),
                 validator: (value) => (!_fullNameRegex.hasMatch(value!))
-                    ? "Invalid Name Format"
+                    ? null /*"Invalid Name Format"*/
                     : null,
               ),
               const SizedBox(
@@ -314,34 +304,37 @@ class _BasicDetailsState extends State<BasicDetails> {
               ),
               TextFormField(
                   controller: emailController,
+                  focusNode: widget.emailFocusNode,
                   decoration: const InputDecoration(
                       hintText: "Enter your email address"),
                   validator: (value) => (!_emailRegex.hasMatch(value!)
-                      ? "Invalid Email Fomrat"
+                      ? null /*"Invalid Email Fomrat"*/
                       : null)),
               const SizedBox(
                 height: 30,
               ),
               TextFormField(
                   controller: passwordController,
+                  focusNode: widget.passwordFocusNode,
                   decoration: const InputDecoration(
                     hintText: "Enter password",
                   ),
                   obscureText: true,
                   validator: (value) => (value == null || value.isEmpty)
-                      ? "Password cannot be empty"
+                      ? null /*"Password cannot be empty"*/
                       : null),
               const SizedBox(
                 height: 30,
               ),
               TextFormField(
                 controller: rePasswordController,
+                focusNode: widget.rePasswordFocusNode,
                 decoration: const InputDecoration(hintText: "Reenter Password"),
                 obscureText: true,
                 validator: (value) => (value == null ||
                         value.isEmpty ||
                         passwordController.text != value)
-                    ? "Passwords do not match"
+                    ? null/*"Passwords do not match"*/
                     : null,
               ),
               const SizedBox(
@@ -474,93 +467,98 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         key: widget.formKey,
         child: Padding(
           padding: const EdgeInsets.all(9),
-          child: Column(children: [
-            Stack(
-              alignment: Alignment.bottomLeft,
-              clipBehavior: Clip.antiAlias,
-              children: [
-                coverImage == null
-                    ? InkWell(
-                        onTap: () => pickImage(false),
-                        child: Container(
-                          color: Colors.blueGrey,
-                          width: MediaQuery.of(context).size.width - 40,
-                          height: 210,
-                          child: const Padding(
-                            padding: EdgeInsets.all(16.0),
-                            child: Center(child: Text("Upload cover image")),
-                          ),
-                        ),
-                      )
-                    : InkWell(
-                        onTap: () => pickImage(false),
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 40,
-                          height: 210,
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Image.file(coverImage!),
-                          ),
-                        ),
-                      ),
-                profileImage == null
-                    ? Padding(
-                        padding: const EdgeInsets.all(12.0),
-                        child: InkWell(
-                          onTap: () => pickImage(true),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+            Align(
+              alignment: Alignment.topCenter,
+              child: Stack(
+                alignment: Alignment.bottomLeft,
+                clipBehavior: Clip.antiAlias,
+                children: [
+                  coverImage == null
+                      ? InkWell(
+                          onTap: () => pickImage(false),
                           child: Container(
-                            decoration: const BoxDecoration(
-                              border: Border(
-                                top:
-                                    BorderSide(color: Colors.white, width: 1.5),
-                                bottom:
-                                    BorderSide(color: Colors.white, width: 1.5),
-                                left:
-                                    BorderSide(color: Colors.white, width: 1.5),
-                                right:
-                                    BorderSide(color: Colors.white, width: 1.5),
-                              ),
-                              color: Colors.blueGrey,
-                              shape: BoxShape.circle,
+                            color: Colors.blueGrey,
+                            width: MediaQuery.of(context).size.width - 40,
+                            height: 210,
+                            child: const Padding(
+                              padding: EdgeInsets.all(16.0),
+                              child: Center(child: Text("Upload cover image")),
                             ),
-                            width: 120,
-                            height: 120,
-                            child: const Center(
-                                child: Text("Upload profile image")),
+                          ),
+                        )
+                      : InkWell(
+                          onTap: () => pickImage(false),
+                          child: SizedBox(
+                            width: MediaQuery.of(context).size.width - 40,
+                            height: 210,
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Image.file(coverImage!),
+                            ),
                           ),
                         ),
-                      )
-                    : Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: InkWell(
-                          onTap: () => pickImage(true),
-                          child: Container(
+                  profileImage == null
+                      ? Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: InkWell(
+                            onTap: () => pickImage(true),
+                            child: Container(
                               decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border(
-                                    top: BorderSide(
-                                        color: Colors.white, width: 1.5),
-                                    bottom: BorderSide(
-                                        color: Colors.white, width: 1.5),
-                                    left: BorderSide(
-                                        color: Colors.white, width: 1.5),
-                                    right: BorderSide(
-                                        color: Colors.white, width: 1.5),
-                                  )),
-                              height: 120,
-                              width: 120,
-                              child: CircleAvatar(
-                                radius: 60,
-                                backgroundImage: FileImage(profileImage!),
-                              )
-                              //child: Image.file(profileImage!),
+                                border: Border(
+                                  top:
+                                      BorderSide(color: Colors.white, width: 1.5),
+                                  bottom:
+                                      BorderSide(color: Colors.white, width: 1.5),
+                                  left:
+                                      BorderSide(color: Colors.white, width: 1.5),
+                                  right:
+                                      BorderSide(color: Colors.white, width: 1.5),
+                                ),
+                                color: Colors.blueGrey,
+                                shape: BoxShape.circle,
                               ),
+                              width: 120,
+                              height: 120,
+                              child: const Center(
+                                  child: Text("Upload profile image")),
+                            ),
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: InkWell(
+                            onTap: () => pickImage(true),
+                            child: Container(
+                                decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border(
+                                      top: BorderSide(
+                                          color: Colors.white, width: 1.5),
+                                      bottom: BorderSide(
+                                          color: Colors.white, width: 1.5),
+                                      left: BorderSide(
+                                          color: Colors.white, width: 1.5),
+                                      right: BorderSide(
+                                          color: Colors.white, width: 1.5),
+                                    )),
+                                height: 120,
+                                width: 120,
+                                child: CircleAvatar(
+                                  radius: 60,
+                                  backgroundImage: FileImage(profileImage!),
+                                )
+                                //child: Image.file(profileImage!),
+                                ),
+                          ),
                         ),
-                      ),
-              ],
+                ],
+              ),
             ),
             const SizedBox(
-              height: 30,
+              height: 40,
             ),
             TextFormField(
               maxLines: null,
@@ -571,9 +569,13 @@ class _PersonalDetailsState extends State<PersonalDetails> {
             const SizedBox(
               height: 30,
             ),
-            Text(
-              "Gender",
-              style: Theme.of(context).textTheme.headlineSmall,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8),
+              child: Text(
+                "Gender",
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.start,
+              ),
             ),
             RadioListTile(
                 value: Gender.Male,
@@ -596,9 +598,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
             const SizedBox(
               height: 30,
             ),
-            Text(
-              "Marital Status",
-              style: Theme.of(context).textTheme.headlineSmall,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0,vertical :8.0),
+              child: Text(
+                "Marital Status",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
             ),
             RadioListTile(
                 value: MaritalStatus.married,
@@ -621,9 +626,12 @@ class _PersonalDetailsState extends State<PersonalDetails> {
             const SizedBox(
               height: 30,
             ),
-            Text(
-              "Date of Birth",
-              style: Theme.of(context).textTheme.headlineSmall,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14.0,vertical :8.0),
+              child: Text(
+                "Date of Birth",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
             ),
             const SizedBox(
               height: 10,
@@ -1515,7 +1523,7 @@ class SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<SignUpForm> {
   TextEditingController mobileNoController = TextEditingController();
   List<GlobalKey<FormState>> formStateList =
-      List.generate(6, (index) => GlobalKey<FormState>());
+  List.generate(6, (index) => GlobalKey<FormState>());
   UserData userData = UserData();
   RegExp phoneRegex = RegExp(r'[0-9]{10}');
   RegExp emailRegex = RegExp(r'^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$');
@@ -1536,6 +1544,30 @@ class _SignUpFormState extends State<SignUpForm> {
   List<Languages> languages = List.empty(growable: true);
   List<WorkExperiences> workExperiences = List.empty(growable: true);
 
+  FocusNode fullNameFocusNode = FocusNode();
+  FocusNode emailFocusNode = FocusNode();
+  FocusNode passwordFocusNode = FocusNode();
+  FocusNode rePasswordFocusNode = FocusNode();
+  
+
+
+  void _onFocusChangedBasic(){
+    print("focus changed");
+    if(fullNameFocusNode.hasFocus || emailFocusNode.hasFocus || passwordFocusNode.hasFocus || rePasswordFocusNode.hasFocus){
+      setState(() {
+        heightFactor = 0.3;
+        widthFactor = -1.0;
+        secondHeightFactor = -0.1;
+      });
+    }
+    if(!fullNameFocusNode.hasFocus && !emailFocusNode.hasFocus && !passwordFocusNode.hasFocus && !rePasswordFocusNode.hasFocus){
+      heightFactor = originalHeightFactor;
+      widthFactor = originaWidthFactor;
+      secondHeightFactor = originaSecondHeightFactor;
+    }
+    return;
+  }
+
   Future<int> getNextId() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
@@ -1550,6 +1582,8 @@ class _SignUpFormState extends State<SignUpForm> {
     userDataList = decoded.map((e) => UserData.fromJson(e)).toList();
     return userDataList.length + 1;
   }
+  
+  
 
   Future<void> storeUserDatatoPreferences() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -1582,10 +1616,8 @@ class _SignUpFormState extends State<SignUpForm> {
 
     retrievedUserDetails.add(userDetails);
     retrievedUserData.add(userData);
-    String jsonUserDetails =
-        jsonEncode(retrievedUserDetails.map((e) => e.toJson()).toList());
-    String jsonUserData =
-        jsonEncode(retrievedUserData.map((e) => e.toJson()).toList());
+    String jsonUserDetails =jsonEncode(retrievedUserDetails.map((e) => e.toJson()).toList());
+    String jsonUserData =jsonEncode(retrievedUserData.map((e) => e.toJson()).toList());
 
     sharedPreferences.setString("user_details", jsonUserDetails);
     sharedPreferences.setString("user_data", jsonUserData);
@@ -1598,17 +1630,24 @@ class _SignUpFormState extends State<SignUpForm> {
     });
   }
 
-
   ScrollController scrollController = ScrollController();
-  double heightFactor = 0.55;
+  double heightFactor = 0.60;
+  double originalHeightFactor = 0.60;
   double widthFactor = 0.7;
+  double originaWidthFactor = 0.7;
   double secondHeightFactor = 0.45;
+  double originaSecondHeightFactor = 0.45;
 
   void _onscrollReducePath(){
     setState(() {
-      heightFactor = min(heightFactor - scrollController.position.pixels, 0.5);
-      widthFactor = min(widthFactor - scrollController.position.pixels, 0.5);
-      secondHeightFactor = min(secondHeightFactor - scrollController.position.pixels, 0.4);
+      print("${scrollController.position.pixels/2.5 }");
+      heightFactor = min(0.45, max(originalHeightFactor - (scrollController.position.pixels * (0.0625 / 4)), -1.0));
+      print(heightFactor);
+      widthFactor = min(0.7,max(0.7 - (scrollController.position.pixels * (0.00625 /4)), -0.25)); //0.5 
+      //widthFactor = min(widthFactor,max(widthFactor - scrollController.position.pixels/40, 0.05));
+      secondHeightFactor = min(0.45, max(0.45 - (scrollController.position.pixels * (0.0625/4)), -1.0));
+
+      //widthFactor = (heightFactor+secondHeightFactor) *0.5;
     });
   } 
 
@@ -1616,17 +1655,29 @@ class _SignUpFormState extends State<SignUpForm> {
   void initState() {
     super.initState();
     scrollController.addListener(_onscrollReducePath);
+    fullNameFocusNode.addListener( _onFocusChangedBasic);
+    emailFocusNode.addListener( _onFocusChangedBasic);
+    passwordFocusNode.addListener( _onFocusChangedBasic);
+    rePasswordFocusNode.addListener( _onFocusChangedBasic);
+
     formPhases = [
       BasicDetails(
         formKey: formStateList.first,
         userData: userData,
         incrementPhase: _incrementPhase,
+        fullNameFocusNode: fullNameFocusNode,
+        emailFocusNode: emailFocusNode,
+        passwordFocusNode: passwordFocusNode,
+        rePasswordFocusNode: rePasswordFocusNode,
+        onChangeFocus: _onFocusChangedBasic,
       ),
+
       PersonalDetails(
         formKey: formStateList.elementAt(1),
         basicInfo: basicInfo,
         incrementPhase: storeUserDatatoPreferences,
       ),
+
       FinishedSignupPage(),
       WorkPlaceDetails(
         formKey: formStateList.elementAt(2),
@@ -1653,8 +1704,7 @@ class _SignUpFormState extends State<SignUpForm> {
     ];
   }
 
-  
-
+ 
   @override
   Widget build(BuildContext context) {
     return (Scaffold(
@@ -1688,7 +1738,7 @@ class _SignUpFormState extends State<SignUpForm> {
                 Padding(
                   padding: const EdgeInsets.all(14.0),
                   child: Text(
-                    "Sign Up form",
+                    "Sign Up",
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                 ),

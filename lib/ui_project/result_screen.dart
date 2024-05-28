@@ -30,11 +30,11 @@ class SubjectWiseReport extends StatefulWidget{
 }
 
 class ResultBlock extends StatelessWidget{
-  String titleText;
-  String descriptionText;
-  Color gradientColour;
-  Color textColor;
-  ResultBlock({super.key, required this.titleText, required this.descriptionText, required this.gradientColour, required this.textColor});
+  final String titleText;
+  final String descriptionText;
+  final Color gradientColour;
+  final Color textColor;
+  const ResultBlock({super.key, required this.titleText, required this.descriptionText, required this.gradientColour, required this.textColor});
   @override
   Widget build(BuildContext context) {
     return Container(

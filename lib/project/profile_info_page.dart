@@ -633,15 +633,8 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Project"),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-        actions: [
-          IconButton(onPressed: (){Navigator.pushNamed(context, "/changePassword");}, icon: const Icon(Icons.settings))
-        ],
-      ),
-      drawer: LoggedInDrawer(),
+      appBar: CommonAppBar(),
+      drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
@@ -691,7 +684,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                   Align(alignment: Alignment.topRight,
                   child: IconButton(icon: const Icon(Icons.edit),onPressed: (){showDialog(context: context, builder: (context) => showEditBasicInfoModal(userDetailsList, currentUser!.id));},),):
                   Container(),
-                  const Text("About Me", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),),
+                  const Text("About Me", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
                   const SizedBox(height: 15,),
                   Text(currentUserDetails!.basicInfo.summary),
                   Row(
@@ -713,7 +706,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                       isCurrentUserLoggedInUser?
                       Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditSkillsModal(userDetailsList, currentUser!.id));},),):
                       Container(),
-                      const Text("Skills", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),),
+                      const Text("Skills", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
                       const SizedBox(height: 15,),
                       Wrap(children: currentUserDetails!.skills.map((e) => Card(child: Padding(padding: const EdgeInsets.all(8), child: Text(e.title!),),)).toList(),),
                     ],),),),
@@ -722,7 +715,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                   isCurrentUserLoggedInUser?
                   Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditHobbiesModal(userDetailsList, currentUser!.id));},),):
                   Container(),
-                  const Text("Hobbies", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),),
+                  const Text("Hobbies", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
                   const SizedBox(height: 15,),
                   Wrap(children: currentUserDetails!.hobbies.map((e) => Card(child: Padding(padding: const EdgeInsets.all(8), child: Text(e.title),),)).toList(),),
                 ],),),),
@@ -731,7 +724,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                   isCurrentUserLoggedInUser?
                   Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditLanguagesModal(userDetailsList, currentUser!.id));},),)
                   : Container(),
-                  const Text("Languages", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),),
+                  const Text("Languages", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
                   const SizedBox(height: 15,),
                   Wrap(children: currentUserDetails!.languages.map((e) => Card(child: Padding(padding: const EdgeInsets.all(8), child: Text(e.title),),)).toList(),),
                 ],),),)

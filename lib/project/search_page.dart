@@ -109,7 +109,7 @@ class _SearchPageState extends State<SearchPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Project"), centerTitle: true, backgroundColor: Colors.lightBlueAccent,),
+      appBar: CommonAppBar() ,
       drawer: (loggedInEmail == null) ? MyDrawer() : const LoggedInDrawer(),
       body:SingleChildScrollView(
         child: Padding(

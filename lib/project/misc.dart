@@ -3,6 +3,24 @@ import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_intern/project/models.dart';
 
+class CommonAppBar extends StatelessWidget implements PreferredSizeWidget{
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])
+        ),
+      ),
+    centerTitle: true,
+    title: const Text("Project"),
+    );
+  }
+  
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
 class MyDrawer extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
@@ -57,7 +75,8 @@ class MyDrawer extends StatelessWidget{
               Scaffold.of(context).openEndDrawer();
             }
           },
-          ), ],
+          ),
+           ],
         ),
     );
   }
@@ -121,16 +140,21 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(gradient:SweepGradient(colors: [Colors.purple[100]!, Colors.purpleAccent[600]!])),
+          const DrawerHeader(
+            decoration: BoxDecoration(gradient:LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
             child: Text("Project App")
             ),
-        ListTile(title: const Text("Courses Info"),
+        ListTile(title:const Row(
+          children: [
+            Icon(Icons.folder_open_outlined),
+            SizedBox(width: 10,),
+            Text("Courses Info"),
+          ],
+        ),
         onTap: (){
           if(ModalRoute.of(context)?.settings.name != '/courses'){
             Navigator.of(context).pushNamed("/courses"); 
@@ -139,12 +163,24 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
             Scaffold.of(context).openEndDrawer();
           }
           },),
-          ListTile(title: const Text("Profile Info"),
+          ListTile(title: const Row(
+            children: [
+              Icon(Icons.account_circle_outlined),
+              SizedBox(width: 10,),
+              Text("Profile Info"),
+            ],
+          ),
           onTap: (){ 
           Navigator.of(context).pushNamed('/profileInfo/${loggedInUser!.id}');
           },
           ),
-          ListTile(title: const Text("Friends"),
+          ListTile(title: const Row(
+            children: [
+              Icon(Icons.group_outlined),
+              SizedBox(width: 10,),
+              Text("Friends"),
+            ],
+          ),
           onTap: (){
             if(ModalRoute.of(context)?.settings.name!='/friendLists'){
               Navigator.of(context).pushNamed('/friendLists');
@@ -154,7 +190,13 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
             }
           },
           ),
-          ListTile(title: const Text("My Posts"),
+          ListTile(title:const Row(
+            children: [
+              Icon(Icons.bookmarks_outlined),
+              SizedBox(width: 10,),
+              Text("My Posts"),
+            ],
+          ),
           onTap: (){
             if(ModalRoute.of(context)?.settings.name!='/myPosts'){
               Navigator.of(context).pushNamed('/myPosts');
@@ -164,7 +206,13 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
             }
           },
           ),
-          ListTile(title: const Text("Friend Requests"),
+          ListTile(title: const Row(
+            children: [
+              Icon(Icons.group_add_outlined),
+              SizedBox(width: 10,),
+              Text("Friend Requests"),
+            ],
+          ),
           onTap: (){
             if(ModalRoute.of(context)?.settings.name != '/friendRequests'){
               Navigator.of(context).pushNamed("/friendRequests");
@@ -174,20 +222,47 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
             }
           }
           ),
+
+          ListTile(title: const Row(children: [
+            Icon(Icons.check_box_outlined),
+            SizedBox(width: 10,),
+            Text("ToDos")
+            ],),
+            onTap: (){
+              if(ModalRoute.of(context)?.settings.name != '/todos'){
+                Navigator.of(context).pushNamed('/todos');
+              }
+              else{
+                Scaffold.of(context).openEndDrawer();
+              }
+            },
+            ),
           // ListTile(title: const Text("Change Password"),
           // onTap: (){
           //   Navigator.pushNamed(context, '/changePassword');
           // },),
 
-          ListTile(title: const Text("Search"),
+          ListTile(title: const Row(
+            children: [
+              Icon(Icons.search_outlined),
+              SizedBox(width: 10,),
+              Text("Search"),
+            ],
+          ),
             onTap: (){
               Navigator.of(context).pushNamed("/search");
             },
           ),
-          ListTile(title: const Text("Log out"),
+          ListTile(title:const Row(
+            children: [
+              Icon(Icons.exit_to_app_outlined),
+              SizedBox(width: 10,),
+              Text("Log out"),
+            ],
+          ),
           onTap: (){
             Provider.of<AuthProvider>(context, listen: false).logout(); 
-            Navigator.of(context).pushNamedAndRemoveUntil( "/",(Route<dynamic> route) =>false );
+            Navigator.of(context).pushNamedAndRemoveUntil( "/",(Route<dynamic> route) => false);
           },
           ),
           ],

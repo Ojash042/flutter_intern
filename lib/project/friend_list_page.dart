@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -10,6 +11,8 @@ import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:flutter_intern/project/friend_service_provider.dart';
 
 class FriendListPage extends StatefulWidget{
+  const FriendListPage({super.key});
+
   @override
   State<FriendListPage> createState() {
     return _FriendListPageState();
@@ -35,8 +38,7 @@ class _FriendListPageState extends State<FriendListPage>{
         ico = Icons.group_add;
         onPressed = (){
            Provider.of<FriendServiceProvider>(context,listen: false).addFriend(id);
-           setState(() {
-             
+           setState(() {             
            });
            };
         break;
@@ -114,21 +116,18 @@ class _FriendListPageState extends State<FriendListPage>{
   
   @override
   void didChangeDependencies() {
-    // TODO: implement didChangeDependencies
     super.didChangeDependencies();
     getDataFromSharedPrefs();
   }
   
   @override
   void didUpdateWidget(covariant FriendListPage oldWidget) {
-    // TODO: implement didUpdateWidget
     super.didUpdateWidget(oldWidget);
     getDataFromSharedPrefs();
   }
   
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     getDataFromSharedPrefs();
   }
@@ -136,11 +135,7 @@ class _FriendListPageState extends State<FriendListPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Project"),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
+      appBar: CommonAppBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -158,7 +153,7 @@ class _FriendListPageState extends State<FriendListPage>{
                   CircleAvatar(backgroundImage: FileImage(File(userFriendDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
                   const SizedBox(width: 20,),
                   Column(children: [
-                    Text('${userFriendData.elementAt(index).name} ${userFriendData.elementAt(index).id}')
+                    Text(userFriendData.elementAt(index).name),
                     ],),
                   const Spacer(),
                   FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id!), builder: (context, AsyncSnapshot<Widget> snapshot){

@@ -7,11 +7,14 @@ import 'dart:convert';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 
 class CoursesPage extends StatefulWidget{
+  const CoursesPage({super.key});
+
   @override
   State<CoursesPage> createState()=> _CoursesPageState();
 }
 
 class _CoursesPageState extends State<CoursesPage>{ 
+
   List<TModels.CourseCategories> courseCategories = List.empty(growable: true);
   List<TModels.CourseByCategories> courseByCategories = List.empty(growable: true);
   List<TModels.Courses> courses = List.empty(growable: true);
@@ -73,12 +76,8 @@ class _CoursesPageState extends State<CoursesPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        centerTitle: true,
-        title: const Text("Project"),
-      ),
-      drawer: checkLoggedIn() ? LoggedInDrawer(): MyDrawer(),
+      appBar: CommonAppBar(),
+      drawer: checkLoggedIn() ? const LoggedInDrawer(): MyDrawer(),
       body: SingleChildScrollView(
         child: Column(children: [
           Text("Courses", style: Theme.of(context).textTheme.headlineMedium,),
@@ -117,14 +116,17 @@ class _CoursesPageState extends State<CoursesPage>{
               child: Row(children: recentlyViewedCourse.map((e) => 
               GestureDetector(
                 onTap: ()=> {Navigator.of(context).pushNamed('/courses/${e.id}')},
-                child: Column(children: [
-                  const SizedBox(height: 5,),
-                  Image.network(e.image, height: 124, width: 124,),
-                  const SizedBox(height: 5,),
-                  Text(e.title),
-                  const SizedBox(height: 5,),
-                ]
-                  ),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(children: [
+                    const SizedBox(height: 5,),
+                    Image.network(e.image, height: 124, width: 124,),
+                    const SizedBox(height: 5,),
+                    Text(e.title),
+                    const SizedBox(height: 5,),
+                  ]
+                    ),
+                ),
               ),
               ).toList()
               ),

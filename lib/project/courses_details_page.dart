@@ -210,11 +210,7 @@ Future<void> getDataFromSharedPrefs() async{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Project"),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
+      appBar: CommonAppBar(),
     drawer: MyDrawer(),
     body:
     // Center(child: Text(int.parse(widget.courseId).toString()),)

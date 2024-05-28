@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
@@ -6,28 +7,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class LandingPage extends StatefulWidget{
+  const LandingPage({super.key});
+
   @override
   State<LandingPage> createState()=> _LandingPageState();
+
 }
 
 class _LandingPageState extends State<LandingPage>{
   List<UserData> userList = [];
+  List<UserDetails> userDetailsList = [];
   List<TModels.UserPost> userPosts = List.empty(growable: true);
   String? loggedInEmail;
   bool isLoggedIn = false;
+  int postIndex = 0;
   int minUser = 3;
+  UserData? currentLoggedInUser;
   Future<void> getDataFromSharedPrefs() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.getString("user_post");
     String? userDataJson = sharedPreferences.getString("user_data");
     String? userPostJson = sharedPreferences.getString("user_post");
+    String? userDetailsJson = sharedPreferences.getString("user_details");
 
     Iterable decoderUserData =  jsonDecode(userDataJson!);
+    Iterable decoderUserDetails = jsonDecode(userDetailsJson!);
     Iterable decoderUserPost = jsonDecode(userPostJson!);
+
 
     setState(() {  
 
@@ -39,6 +48,8 @@ class _LandingPageState extends State<LandingPage>{
 
     userList =  decoderUserData.map((e) => UserData.fromJson(e)).toList();
     userPosts = decoderUserPost.map((e) => TModels.UserPost.fromJson(e)).toList();
+    userDetailsList = decoderUserDetails.map((e) => UserDetails.fromJson(e)).toList();
+    currentLoggedInUser = userList.firstWhereOrNull((element) => element.email == loggedInEmail);
     });
   }
 
@@ -158,14 +169,14 @@ Future<void> addPost(TModels.UserPost userPost) async{
 
   void clearShared() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    //sharedPreferences.clear();
+    sharedPreferences.clear();
   }
 
   @override
   void initState() {
     super.initState();
-    clearShared();
     getDataFromSharedPrefs();
+    postIndex = 0;
   } 
 
   Future<void> pressedLikeOperation(int postId) async{
@@ -182,16 +193,20 @@ Future<void> addPost(TModels.UserPost userPost) async{
     else{
       postLikedBys.remove(postLikedBys.firstWhere((element) => element.userId == currentUserId));
     }
-      setState(() { 
+    setState(() { 
       String? editedJson = jsonEncode(userPosts.map((e) => e.toJson()).toList());
       sharedPreferences.setString("user_post", editedJson);
-      });
+    });
   } 
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: AppBar(
-      backgroundColor: Colors.blueAccent,
+      flexibleSpace: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])
+        ),
+      ),
       centerTitle: true,
       title: const Text("Project"),
       actions: [
@@ -201,67 +216,142 @@ Future<void> addPost(TModels.UserPost userPost) async{
       }, child: const Row(children: [Icon(Icons.add), Text("Create Post")],)) : Container()],
       ),
       drawer: isLoggedIn? const LoggedInDrawer() : MyDrawer(),
-      body: SingleChildScrollView(
-        child: userList.length < minUser? Container(): Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Column(
-            children: [
-              // Title(title:"Hello World", color: Colors.blueGrey, child: Text(userPosts.length.toString()),),
-              Column(
-                children: userPosts.where((element) => element.postId>0).map((e) => SizedBox(
-                  width: MediaQuery.of(context).size.width - 40,
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.only(left: 25.0, top: 5.0),
-                      child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-                          const SizedBox(height: 5,),
-                          GestureDetector(
-                            onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
-                            child: Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 12),)),
-                          const SizedBox(height: 10,), 
-                          SizedBox(
-                            height: 156 * min(4, e.images.length.toDouble()) / 3,
-                            width: MediaQuery.of(context).size.height - 40,
-                            child: Center(
-                              child: GridView.builder(
-                                itemCount: e.images.length,
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5.0, mainAxisSpacing: 4.0),
-                              physics: const NeverScrollableScrollPhysics(),           
-                              itemBuilder:(context, index)=> Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Image.network(e.images.elementAt(index).url, fit: BoxFit.cover,),
-                              ),),
-                            )),
-                          // Wrap(
-                          // spacing: 10,
-                          //   children: 
-                          // e.images.map((e) => Image.network(e.url, fit: BoxFit.contain,)).toList(),
-                          // )
-                        const SizedBox(height: 10,),
-                        Row(children: [
-                          IconButton(onPressed: (){
-                            if(!isLoggedIn){
-                              return;
-                            }
-                            pressedLikeOperation(e.postId);
-                            }, 
-                            icon: const Icon(Icons.thumb_up_alt_outlined, color: Colors.lightBlue,)),
-                          const SizedBox(width: 5,),
-                          e.postLikedBys.length >= 2?
-                          Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.')
-                          : e.postLikedBys.length ==1 ? 
-                          Text("${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} liked this")
-                           : Container(),
-                        ],),
-                        const SizedBox(height: 10,)
-                        ],),
-                    ),
-                  ))).toList(),
-              ),
-            ],
+      body: Container(
+      color: Colors.grey[200],
+        child: SingleChildScrollView(
+          child: userList.length < minUser? Container(): Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: userPosts.where((element) => element.postId>0).length,
+                  itemBuilder: (context, index){
+                  var e = userPosts.elementAt(index);
+                  return SizedBox(
+                    width: MediaQuery.of(context).size.width - 40,
+                    child: Card(
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 14.0, top: 5.0),
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 10,),
+                            GestureDetector(
+                              onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(backgroundImage: FileImage(File(userDetailsList.firstWhereOrNull((element) => element.id == e.userId)!.basicInfo.profileImage.imagePath)),),
+                                  const SizedBox(width: 10,),
+                                  Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 16, color: Color(0xffabb5ff)),),
+                                ],
+                              )),
+                            Center(child: SizedBox(width: MediaQuery.of(context).size.width * 0.7 ,child: const Divider())),
+                            const SizedBox(height: 10,),
+                            Text(e.title, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),),
+                            const SizedBox(height: 5,),
+                            SizedBox(
+                              height: 156 * min(4, e.images.length.toDouble()) / 3,
+                              width: MediaQuery.of(context).size.height - 40,
+                              child: Center(
+                                child: GridView.builder(
+                                  itemCount: e.images.length,
+                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5.0, mainAxisSpacing: 4.0),
+                                physics: const NeverScrollableScrollPhysics(),           
+                                itemBuilder:(context, index)=> Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Image.network(e.images.elementAt(index).url, fit: BoxFit.cover,),
+                                ),),
+                              )),
+            
+                            // Wrap(
+                            // spacing: 10,
+                            //   children: 
+                            // e.images.map((e) => Image.network(e.url, fit: BoxFit.contain,)).toList(),
+                            // )
+            
+                          const SizedBox(height: 10,),
+                          Row(children: [
+                            IconButton(onPressed: (){
+                              if(!isLoggedIn){
+                                return;
+                              }
+                              pressedLikeOperation(e.postId);
+                              }, 
+                              icon: Icon(e.postLikedBys.map((e) => e.userId).toList().contains(currentLoggedInUser!.id)? Icons.thumb_up : Icons.thumb_up_alt_outlined, color: const Color(0xffabb5ff),)),
+                            const SizedBox(width: 5,),
+                            e.postLikedBys.length >= 2?
+                            Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.')
+                            : e.postLikedBys.length == 1 ? 
+                            Text("${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} liked this")
+                             : Container(),
+                          ],),
+                          const SizedBox(height: 10,)
+                          ],),
+                      ),
+                    ));
+                }),
+                // Column(
+                //   children: userPosts.where((element) => element.postId>0).map((e) => SizedBox(
+                //     width: MediaQuery.of(context).size.width - 40,
+                //     child: Card(
+                //       child: Padding(
+                //         padding: const EdgeInsets.only(left: 25.0, top: 5.0),
+                //         child: Column(
+                //         crossAxisAlignment: CrossAxisAlignment.start,
+                //           children: [
+                //             Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
+                //             const SizedBox(height: 5,),
+                //             GestureDetector(
+                //               onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
+                //               child: Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 12),)),
+                //             const SizedBox(height: 10,),
+                //             SizedBox(
+                //               height: 156 * min(4, e.images.length.toDouble()) / 3,
+                //               width: MediaQuery.of(context).size.height - 40,
+                //               child: Center(
+                //                 child: GridView.builder(
+                //                   itemCount: e.images.length,
+                //                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5.0, mainAxisSpacing: 4.0),
+                //                 physics: const NeverScrollableScrollPhysics(),           
+                //                 itemBuilder:(context, index)=> Padding(
+                //                   padding: const EdgeInsets.all(8.0),
+                //                   child: Image.network(e.images.elementAt(index).url, fit: BoxFit.cover,),
+                //                 ),),
+                //               )),
+                //
+                //             // Wrap(
+                //             // spacing: 10,
+                //             //   children: 
+                //             // e.images.map((e) => Image.network(e.url, fit: BoxFit.contain,)).toList(),
+                //             // )
+                //
+                //           const SizedBox(height: 10,),
+                //           Row(children: [
+                //             IconButton(onPressed: (){
+                //               if(!isLoggedIn){
+                //                 return;
+                //               }
+                //               pressedLikeOperation(e.postId);
+                //               }, 
+                //               icon: const Icon(Icons.thumb_up_alt_outlined, color: Colors.lightBlue,)),
+                //             const SizedBox(width: 5,),
+                //             e.postLikedBys.length >= 2?
+                //             Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.')
+                //             : e.postLikedBys.length ==1 ? 
+                //             Text("${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} liked this")
+                //              : Container(),
+                //           ],),
+                //           const SizedBox(height: 10,)
+                //           ],),
+                //       ),
+                //     ))
+                //     ).toList(),
+                // ),
+              ],
+            ),
           ),
         ),
       ),

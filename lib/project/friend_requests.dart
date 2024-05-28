@@ -106,7 +106,7 @@ class _FriendRequestsState extends State<FriendRequests>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(centerTitle: true, title: const Text("Project"), backgroundColor: Colors.blueAccent, ),
+      appBar: CommonAppBar(),
       drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(
         child: userDataList.length < minUser ? Container(child: Text(userDataList.length.toString()),):Column(
