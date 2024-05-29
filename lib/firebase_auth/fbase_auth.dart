@@ -299,8 +299,10 @@ class _HomePageState extends State<HomePage>{
             Text('Logged In As: ${widget.user!.email}'),
             const SizedBox(height: 30,),
             OutlinedButton.icon(onPressed: () async{
+              GoogleSignIn _googleSignIn = GoogleSignIn();
+              _googleSignIn.disconnect();
               await FirebaseAuth.instance.signOut();
-              Navigator.of(context).pushNamedAndRemoveUntil('/', (route)=> false);
+              Navigator.of(context).pushNamedAndRemoveUntil('/init', (route)=> false);
             }, label: const Text("Logout"), icon:const Icon(Icons.exit_to_app_outlined),),
           ],
         ): Container()),
