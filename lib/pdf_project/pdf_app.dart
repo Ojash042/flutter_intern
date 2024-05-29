@@ -23,6 +23,7 @@ class _AppState extends State<App>{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       home: HomePage() ,
     );
   }
@@ -47,38 +48,87 @@ class PDFViewPage extends StatefulWidget{
 }
 
 class _PDFViewPageState extends State<PDFViewPage>{
-  int? page;
-  int? total;
+  int page = 0;
+  int total = 0;
   bool isReady = false;
+  late PDFViewController _controller;
+
+
+  @override
+  void initState() {
+    super.initState();
+  } 
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: Stack(
+    return Scaffold(
+      
+      body: Stack(
       children: [
-        Scrollbar(
-          thickness: 5.0,
-          interactive: true,
-          thumbVisibility: true,
-          trackVisibility: true,
-          child: SingleChildScrollView(
-            child: PDFView(
-              filePath: widget.filePath,
-              enableSwipe: true,
-              autoSpacing: true,
-              pageSnap: false,
-              onRender: (_pages){ setState(() {
-               isReady = true;
-               page = _pages;
-              });},
-              onPageChanged: (_page, _total){
-                setState(() {
-                  setState(() {
-                    page = _page!+1; 
-                    total = _total;
-                  });
-                });
-              } ,
-            ),
-          ),
+        LayoutBuilder(
+          builder: (builder, context) {
+            final sliderWidth = context.maxWidth /10;
+            return Stack(
+              children: [
+                Positioned.fill(
+                  child: PDFView(
+                    filePath: widget.filePath,
+                    enableSwipe: true,
+                    autoSpacing: true,
+                    pageSnap: false,
+                    onRender: (_pages){ setState(() {
+                     isReady = true;
+                     page = _pages!;
+                    });},
+                    onViewCreated: (controller) => _controller = controller,
+                    onPageChanged: (_page, _total){
+                      setState(() {
+                        setState(() {
+                          page = _page!+1; 
+                          total = _total ?? 0;
+                        });
+                      });
+                    } ,
+                  ),
+                ),
+              Align(alignment: Alignment.bottomLeft,
+              child: Container(
+                padding: const EdgeInsets.only(left: 8),
+                height: 30, width: 60,
+              child:Text('$page / $total'), 
+              ),),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 60.0),
+                child: Align(
+                  alignment: Alignment.topRight,
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: sliderWidth ),
+                      child: Slider(
+                      thumbColor: Colors.white,
+                      label: page.toString(),
+                      activeColor: Colors.transparent,
+                      inactiveColor: Colors.transparent,
+                        min: 0.0,
+                        value: page.toDouble(),
+                        max: total.toDouble(),
+                        onChanged: (val){
+                          setState((){
+                          page = val.toInt();
+                        }); 
+                        Future.delayed(const Duration(milliseconds: 100), (){
+                          _controller.setPage(page);
+                        });
+                        } 
+                      ),
+                    ),
+                  ),
+                ),
+              )
+              ],
+            );
+          }
         ),
 
         // Align(alignment: Alignment.bottomRight, child: Container(
@@ -103,7 +153,9 @@ class _HomePageState extends State<HomePage>{
     FilePickerResult? picker = await FilePicker.platform.pickFiles( type: FileType.custom, allowedExtensions: ['pdf']);
     if(picker !=null){
       file = File(picker.files.single.path!);
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  PDFView(filePath: file.path,)));
+      print("EEEEEEREJRKKJRKR");
+      Navigator.of(context).push(MaterialPageRoute(builder: (context)=> PDFViewPage(filePath: file.path,)));
+      //Navigator.of(context).push(MaterialPageRoute(builder: (context) =>  PDFView(filePath: file.path,)));
     }
   }
 
