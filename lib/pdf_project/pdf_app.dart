@@ -54,22 +54,31 @@ class _PDFViewPageState extends State<PDFViewPage>{
   Widget build(BuildContext context) {
     return Scaffold(body: Stack(
       children: [
-        PDFView(
-          filePath: widget.filePath,
-          enableSwipe: true,
-          autoSpacing: true,
-          onRender: (_pages){ setState(() {
-           isReady = true;
-           page = _pages;
-          });},
-          onPageChanged: (_page, _total){
-            setState(() {
-              setState(() {
-                page = _page!+1; 
-                total = _total;
-              });
-            });
-          } ,
+        Scrollbar(
+          thickness: 5.0,
+          interactive: true,
+          thumbVisibility: true,
+          trackVisibility: true,
+          child: SingleChildScrollView(
+            child: PDFView(
+              filePath: widget.filePath,
+              enableSwipe: true,
+              autoSpacing: true,
+              pageSnap: false,
+              onRender: (_pages){ setState(() {
+               isReady = true;
+               page = _pages;
+              });},
+              onPageChanged: (_page, _total){
+                setState(() {
+                  setState(() {
+                    page = _page!+1; 
+                    total = _total;
+                  });
+                });
+              } ,
+            ),
+          ),
         ),
 
         // Align(alignment: Alignment.bottomRight, child: Container(
