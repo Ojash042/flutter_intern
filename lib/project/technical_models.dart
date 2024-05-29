@@ -50,7 +50,7 @@ class PostLikedBy{
   factory PostLikedBy.fromJson(Map<String, dynamic> json){
     PostLikedBy postLikedBy = PostLikedBy();
     postLikedBy.userId = json["user_id"];
-    postLikedBy.dateTime = json["date_time"];
+    postLikedBy.dateTime = json["dateTime"] ?? json["date_time"];
     return postLikedBy;
   } 
 }

@@ -18,13 +18,17 @@ class _FriendRequestsState extends State<FriendRequests>{
 
   List<UserData> requestedByUsers = List.empty(growable: true);
   List<UserDetails> requestedByUserDetails = List.empty(growable: true);
+  List<UserData> userDataList =List.empty(growable: true);
+
+  int minUser = 3;
 
   Future<Widget> getFriendStateWidget(int id) async{
     String friendStateString;
     FriendState friendState = await Provider.of<FriendServiceProvider>(context,listen: false).getFriendState(id);
     IconData ico;
     VoidCallback onPressed;
-    switch(friendState){
+
+    switch(friendState) {
       case FriendState.notFriend:
         friendStateString = "Add Friend";
         ico = Icons.group_add;
@@ -66,16 +70,22 @@ class _FriendRequestsState extends State<FriendRequests>{
     Iterable decoderUserData = jsonDecode(userDataJson!);
     Iterable decoderUserDetails = jsonDecode(userDetailsJson!);
 
-    List<TModels.UserFriend> userFriendsList = decoderUserFriend.map((e) => TModels.UserFriend.fromJson(e)).toList();
-    List<UserData> userDataList = decoderUserData.map((e) => UserData.fromJson(e)).toList();
-    List<UserDetails> userDetailsList = decoderUserDetails.map((e) => UserDetails.fromJson(e)).toList();
+    List<TModels.UserFriend> userFriendsList = List.empty(growable: true);
+    List<UserDetails> userDetailsList = List.empty(growable: true);
+    List<TModels.UserFriend> filteredFriendList = List.empty(growable: true);
+    setState(() {
+    userFriendsList = decoderUserFriend.map((e) => TModels.UserFriend.fromJson(e)).toList();
+    userDataList = decoderUserData.map((e) => UserData.fromJson(e)).toList();
+    userDetailsList = decoderUserDetails.map((e) => UserDetails.fromJson(e)).toList();
 
 
-    List<TModels.UserFriend> filteredFriendList =  userFriendsList.where((element) => 
+     filteredFriendList =  userFriendsList.where((element) => 
     (element.friendId == userData!.id || element.userId == userData.id) && (element.hasNewRequestAccepted == false) &&
     element.requestedBy != userData.id && element.userListId>0).toList();
 
-
+  
+    });
+    
     for(var item in filteredFriendList){
       var user = userDataList.firstWhere((element) => element.id == item.requestedBy); 
       var userDetails = userDetailsList.firstWhere((element) => element.id == user.id);
@@ -96,10 +106,10 @@ class _FriendRequestsState extends State<FriendRequests>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(centerTitle: true, title: const Text("Project"), backgroundColor: Colors.blueAccent, ),
+      appBar: CommonAppBar(),
       drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(
-        child: Column(
+        child: userDataList.length < minUser ? Container(child: Text(userDataList.length.toString()),):Column(
           children: [
             const SizedBox(height: 30,),
             Center(child: Text("Requests", style: Theme.of(context).textTheme.headlineSmall,)),
@@ -125,7 +135,7 @@ class _FriendRequestsState extends State<FriendRequests>{
                               ],
                             ),
                             Spacer(),
-                          FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id), builder: (context, AsyncSnapshot<Widget> snapshot){
+                          FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!), builder: (context, AsyncSnapshot<Widget> snapshot){
                             if(snapshot.connectionState == ConnectionState.waiting){
                               return const CircularProgressIndicator();
                             }

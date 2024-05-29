@@ -109,7 +109,7 @@ class _SearchPageState extends State<SearchPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Project"), centerTitle: true, backgroundColor: Colors.lightBlueAccent,),
+      appBar: CommonAppBar() ,
       drawer: (loggedInEmail == null) ? MyDrawer() : const LoggedInDrawer(),
       body:SingleChildScrollView(
         child: Padding(
@@ -144,7 +144,7 @@ class _SearchPageState extends State<SearchPage>{
                             Align(
                               alignment: Alignment.centerLeft,
                               child: FutureBuilder(
-                                future: getFriendStateWidget(searchedDataDetails.elementAt(index).id),
+                                future: getFriendStateWidget(searchedDataDetails.elementAt(index).id!),
                                 builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
                                   if(snapshot.connectionState == ConnectionState.waiting){
                                     return const CircularProgressIndicator();
