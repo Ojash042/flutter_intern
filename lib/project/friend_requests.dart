@@ -107,7 +107,7 @@ class _FriendRequestsState extends State<FriendRequests>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(),
-      drawer: const LoggedInDrawer(),
+      // drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(
         child: userDataList.length < minUser ? Container(child: Text(userDataList.length.toString()),):Column(
           children: [

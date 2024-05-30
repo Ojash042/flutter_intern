@@ -44,6 +44,7 @@ class _MyPostsPageState extends State<MyPostsPage>{
       sharedPreferences.setString("user_post", editedJson);
       });
   }
+
   void getDataFromSharedPrefs() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.getString("user_post");
@@ -77,7 +78,7 @@ class _MyPostsPageState extends State<MyPostsPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(),
-      drawer: const LoggedInDrawer(),
+      // drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(child: 
       Padding(
         padding: const EdgeInsets.all(8.0),

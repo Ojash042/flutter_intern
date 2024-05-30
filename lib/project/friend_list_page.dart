@@ -27,6 +27,8 @@ class _FriendListPageState extends State<FriendListPage>{
   List<UserData> userFriendData = List.empty(growable: true);
   List<UserDetails> userFriendDetails = List.empty(growable: true);
 
+  List<Widget> action = List.empty(growable: true);
+
   Future<Widget> getFriendStateWidget(int id) async{
     String friendStateString;
     FriendState friendState = await Provider.of<FriendServiceProvider>(context,listen: false).getFriendState(id);
@@ -130,15 +132,23 @@ class _FriendListPageState extends State<FriendListPage>{
   void initState() {
     super.initState();
     getDataFromSharedPrefs();
+    IconButton searchButton = IconButton(onPressed: (){
+      Navigator.of(context).pushNamed('/search');
+    }, icon: const Icon(Icons.search));
+    action = [searchButton];
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(),
+      appBar: CommonAppBar(actions: action,),
+      bottomNavigationBar: CommonNavigationBar(),
       body: SingleChildScrollView(
         child: Column(
           children: [
+          Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.group_add_outlined), onPressed: (){
+            Navigator.of(context).pushNamed("/friendRequests");
+          },),),
           const SizedBox(height: 30,),
           Text("Friend List", style: Theme.of(context).textTheme.headlineSmall,),
           ListView.builder(
@@ -166,8 +176,7 @@ class _FriendListPageState extends State<FriendListPage>{
                               return snapshot.data ?? Container();
                             })
                 ],
-              ),
-              
+              ), 
               ),
             ))
           ]

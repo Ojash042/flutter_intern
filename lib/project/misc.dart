@@ -1,12 +1,123 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:flutter_intern/project/landing_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_intern/project/models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class CommonNavigationBar extends StatefulWidget{
+
+  @override
+  State<CommonNavigationBar> createState() {
+    return _CommonNavigationBarState();
+  }
+}
+
+class _CommonNavigationBarState extends State<CommonNavigationBar>{
+
+  List<Widget> widgets = List.empty(growable: true);
+  UserData? loggedInUser;
+  List<String> routes = []; 
+  int _selectedIndex = 0;
+
+  getLoggedInUser() async{
+    UserData? userData;
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? loggedInEmail = sharedPreferences.getString("loggedInEmail");
+    if(loggedInEmail == null ){
+      return null;
+    }
+    String? userDataString = sharedPreferences.getString("user_data");
+    Iterable decoder = jsonDecode(userDataString!);
+    List<UserData> userDataList = decoder.map((e) => UserData.fromJson(e)).toList();
+    userData = userDataList.firstWhere((element) => element.email == loggedInEmail);
+
+    setState(() {
+      loggedInUser = userData;
+      routes = ["/home", "/friendLists", "/profileInfo/${loggedInUser!.id}", "/courses", "/settings"];
+    }); 
+  }
+
+  @override
+  void didUpdateWidget(covariant CommonNavigationBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    Future.delayed(const Duration(milliseconds: 100), (){
+      var route = ModalRoute.of(context);
+      if(route!=null){
+        setState(() {
+          if(routes.isNotEmpty){ 
+            print('1 $routes ${routes.contains(route.settings.name)} ${route.settings.name}');
+          _selectedIndex =  routes.indexOf(route.settings.name ?? '/home');
+        }
+      });
+    }     
+    }); 
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Future.delayed(const Duration(milliseconds: 100), (){
+      var route = ModalRoute.of(context);
+      if(route!=null){
+      setState(() {
+        if(routes.isNotEmpty){  
+          //print('2 $routes ${routes.indexOf(route.settings.name!)} ${routes.contains(route.settings.name)} ${route.settings.name}');
+          //print(routes);
+          _selectedIndex =  max(0,routes.indexOf(route.settings.name ?? '/home'));
+        }
+      });
+    }     
+    }); 
+  }
+
+    void initState(){
+      super.initState(); 
+      getLoggedInUser();
+      //print(st);
+    }
+
+  @override
+  Widget build(BuildContext context) {
+
+    void _onItemTapped(int value){
+      setState(() {  
+        _selectedIndex = value;
+      });
+      if(_selectedIndex == 2){
+        Navigator.of(context).pushNamed(routes[_selectedIndex]);
+      }
+      else{
+        Navigator.of(context).popAndPushNamed(routes[_selectedIndex]);
+      }
+      return;
+    }
+
+    return  routes.isNotEmpty ? BottomNavigationBar(items:[
+      BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home $_selectedIndex"),
+      BottomNavigationBarItem(icon: Icon(Icons.group_outlined), label: "Friends $_selectedIndex"),
+      BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined), label: "Profile Info $_selectedIndex"),
+      BottomNavigationBarItem(icon: Icon(Icons.folder_open_outlined), label: "Courses $_selectedIndex"),
+      BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Logout"),
+    ],
+      onTap: (value) => _onItemTapped(value),
+      currentIndex: _selectedIndex,
+      unselectedItemColor: const Color(0xff80546f),
+      selectedItemColor: const Color(0xffabb5ff),
+    ) : const BottomAppBar();
+  }  
+}
 
 class CommonAppBar extends StatelessWidget implements PreferredSizeWidget{
+  final List<Widget>? actions;
+  const CommonAppBar({super.key, this.actions});
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      actions: actions,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])
@@ -146,8 +257,9 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
         children: [
           const DrawerHeader(
             decoration: BoxDecoration(gradient:LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
-            child: Text("Project App")
+            child: Center(child: Text("Project App"))
             ),
+
         ListTile(title:const Row(
           children: [
             Icon(Icons.folder_open_outlined),
@@ -270,4 +382,3 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
     );
   }
 }
-

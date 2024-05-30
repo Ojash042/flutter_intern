@@ -7,6 +7,9 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_intern/project/auth_bloc.dart';
+import 'package:flutter_intern/project/auth_events.dart';
 import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
@@ -16,6 +19,7 @@ import 'package:flutter_intern/project/friend_list_page.dart';
 import 'package:flutter_intern/project/friend_requests.dart';
 import 'package:flutter_intern/project/friend_service_provider.dart';
 import 'package:flutter_intern/project/landing_page.dart';
+import 'package:flutter_intern/project/logout_page.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/my_posts_page.dart';
 import 'package:flutter_intern/project/profile_info_page.dart';
@@ -44,22 +48,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late List<UserData> userDataList;
-  late int currentUserId;
-
-  Future<void> getDataFromSharedPrefs() async {
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    setState(() {
-      String? userDataJson = sharedPreferences.getString("user_data");
-      String? loggedInEmail = sharedPreferences.getString("loggedInEmail");
-
-      Iterable decoder = jsonDecode(userDataJson!);
-
-      userDataList = decoder.map((e) => UserData.fromJson(e)).toList();
-      UserData userData =
-          userDataList.firstWhere((element) => element.email == loggedInEmail);
-      currentUserId = userData.id;
-    });
-  }
+  late int currentUserId; 
 
   Future<void> loadAssets() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -78,7 +67,8 @@ class _MyAppState extends State<MyApp> {
     sharedPreferences.getString("instructor") == null ? sharedPreferences.setString("instructor", instructorJson): null;
     sharedPreferences.getString("user_post") == null ? sharedPreferences.setString("user_post", jsonEncode(jsonDecode(userPost)["user_post"])) : null;
     sharedPreferences.getString("user_friend_list") == null?  sharedPreferences.setString("user_friend", jsonEncode(jsonDecode(userFriendJson)["user_friend_list"])) : null;
-    }
+
+  }
 
   @override
   void initState() {
@@ -90,7 +80,8 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        BlocProvider(create: (_) => AuthBloc()..add(UnauthorizedAuthEvent())),
+        //ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => FriendServiceProvider(context)),],
       child: MaterialApp(
         theme: ThemeData(
@@ -107,9 +98,8 @@ class _MyAppState extends State<MyApp> {
           "/courses": (context) => const CoursesPage(),
           "/home": (context) => const LandingPage(),
           "/changePassword": (context) => const ChangePasswordPage(),
-          "/profileInfo": (context) => ProfileInfoPage(
-                id: currentUserId.toString(),
-              ),
+          "/profileInfo": (context) => ProfileInfoPage(id: currentUserId.toString(),),
+          "/settings":(context) => const LogoutPage(),
           "/search": (context) => const SearchPage(),
           "/friendRequests": (context) => FriendRequests(),
           "/friendLists": (context) => const FriendListPage(),
@@ -155,6 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: MyDrawer(),
+      bottomNavigationBar: CommonNavigationBar(),
       appBar: AppBar(
         title: const Text("Project"),
         centerTitle: true,
@@ -1121,8 +1112,7 @@ class _EducationFormState extends State<EducationForm> {
                                     List<Accomplishment> accomplishments =
                                         (widget.educations
                                                     .elementAt(index)
-                                                    .accomplishments ==
-                                                null)
+                                                    .accomplishments == null)
                                             ? List.empty(growable: true)
                                             : widget.educations
                                                 .elementAt(index)

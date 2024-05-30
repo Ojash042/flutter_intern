@@ -110,7 +110,7 @@ class _SearchPageState extends State<SearchPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar() ,
-      drawer: (loggedInEmail == null) ? MyDrawer() : const LoggedInDrawer(),
+      // drawer: (loggedInEmail == null) ? MyDrawer() : const LoggedInDrawer(),
       body:SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(14.0),

@@ -17,6 +17,89 @@ class LandingPage extends StatefulWidget{
 
 }
 
+class PhotoGrid extends StatefulWidget {
+      final int maxImages;
+      final List<String> imageUrls;
+      final Function(int) onImageClicked;
+      final Function onExpandClicked;
+
+  PhotoGrid({required this.imageUrls, required this.onImageClicked, required this.onExpandClicked,
+      this.maxImages = 4, super.key});
+
+  @override
+  createState() => _PhotoGridState();
+}
+
+class _PhotoGridState extends State<PhotoGrid> {
+  @override
+  Widget build(BuildContext context) {
+    var images = buildImages();
+
+    return GridView(
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        
+        maxCrossAxisExtent: 200,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+      ),
+      children: images,
+    );
+  }
+
+  List<Widget> buildImages() {
+    int numImages = widget.imageUrls.length;
+    return List<Widget>.generate(min(numImages, widget.maxImages), (index) {
+      String imageUrl = widget.imageUrls[index];
+
+      // If its the last image
+      if (index == widget.maxImages - 1) {
+        // Check how many more images are left
+        int remaining = numImages - widget.maxImages;
+
+        // If no more are remaining return a simple image widget
+        if (remaining == 0) {
+          return GestureDetector(
+            child: Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+            ),
+            onTap: () => widget.onImageClicked(index),
+          );
+        } else {
+          // Create the facebook like effect for the last image with number of remaining  images
+          return GestureDetector(
+            onTap: () => widget.onExpandClicked(),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                Image.network(imageUrl, fit: BoxFit.cover),
+                Positioned.fill(
+                  child: Container(
+                    alignment: Alignment.center,
+                    color: Colors.black54,
+                    child: Text('+$remaining',
+                      style: const TextStyle(fontSize: 32),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        return GestureDetector(
+          child: Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+          ),
+          onTap: () => widget.onImageClicked(index),
+        );
+      }
+    });
+  }
+}
+
 class _LandingPageState extends State<LandingPage>{
   List<UserData> userList = [];
   List<UserDetails> userDetailsList = [];
@@ -201,7 +284,9 @@ Future<void> addPost(TModels.UserPost userPost) async{
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(
+    return Scaffold(
+      bottomNavigationBar: CommonNavigationBar(),
+      appBar: AppBar(
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])
@@ -230,8 +315,10 @@ Future<void> addPost(TModels.UserPost userPost) async{
                   itemBuilder: (context, index){
                   var e = userPosts.where((element)=> element.postId>0).elementAt(index);
                   return SizedBox(
-                    width: MediaQuery.of(context).size.width - 40,
+                    width: MediaQuery.of(context).size.width + 160,
                     child: Card(
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
                       color: Colors.white,
                       child: Padding(
                         padding: const EdgeInsets.only(left: 14.0, top: 5.0),
@@ -253,34 +340,21 @@ Future<void> addPost(TModels.UserPost userPost) async{
                             Text(e.title, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),),
                             const SizedBox(height: 5,),
                             SizedBox(
-                              height: 156 * min(4, e.images.length.toDouble()) / 3,
+                              height: 300 * min(4, e.images.length.toDouble()) / 3,
                               width: MediaQuery.of(context).size.height - 40,
-                              child: Center(
-                                child: GridView.builder(
-                                  itemCount: e.images.length,
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5.0, mainAxisSpacing: 4.0),
-                                physics: const NeverScrollableScrollPhysics(),           
-                                itemBuilder:(context, index)=> Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Image.network(e.images.elementAt(index).url, fit: BoxFit.cover,),
-                                ),),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: PhotoGrid(imageUrls: e.images.map((image) => image.url).toList(), onImageClicked: (idx){}, onExpandClicked: (){},),
                               )),
-            
-                            // Wrap(
-                            // spacing: 10,
-                            //   children: 
-                            // e.images.map((e) => Image.network(e.url, fit: BoxFit.contain,)).toList(),
-                            // )
-            
-                          const SizedBox(height: 10,),
-                          Row(children: [
-                            IconButton(onPressed: (){
-                              if(!isLoggedIn){
-                                return;
-                              }
-                              pressedLikeOperation(e.postId);
+                              const SizedBox(height: 10,),
+                              Row(children: [
+                                IconButton(onPressed: (){
+                                if(!isLoggedIn){
+                                  return;
+                                }
+                                pressedLikeOperation(e.postId);
                               }, 
-                              icon: Icon(e.postLikedBys.map((e) => e.userId).toList().contains(currentLoggedInUser!.id)? Icons.thumb_up : Icons.thumb_up_alt_outlined, color: const Color(0xffabb5ff),)),
+                            icon: Icon(e.postLikedBys.map((e) => e.userId).toList().contains(currentLoggedInUser!.id)? Icons.thumb_up : Icons.thumb_up_alt_outlined, color: const Color(0xffabb5ff),)),
                             const SizedBox(width: 5,),
                             e.postLikedBys.length >= 2?
                             Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.')
@@ -293,64 +367,7 @@ Future<void> addPost(TModels.UserPost userPost) async{
                       ),
                     ));
                 }),
-                // Column(
-                //   children: userPosts.where((element) => element.postId>0).map((e) => SizedBox(
-                //     width: MediaQuery.of(context).size.width - 40,
-                //     child: Card(
-                //       child: Padding(
-                //         padding: const EdgeInsets.only(left: 25.0, top: 5.0),
-                //         child: Column(
-                //         crossAxisAlignment: CrossAxisAlignment.start,
-                //           children: [
-                //             Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-                //             const SizedBox(height: 5,),
-                //             GestureDetector(
-                //               onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
-                //               child: Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 12),)),
-                //             const SizedBox(height: 10,),
-                //             SizedBox(
-                //               height: 156 * min(4, e.images.length.toDouble()) / 3,
-                //               width: MediaQuery.of(context).size.height - 40,
-                //               child: Center(
-                //                 child: GridView.builder(
-                //                   itemCount: e.images.length,
-                //                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5.0, mainAxisSpacing: 4.0),
-                //                 physics: const NeverScrollableScrollPhysics(),           
-                //                 itemBuilder:(context, index)=> Padding(
-                //                   padding: const EdgeInsets.all(8.0),
-                //                   child: Image.network(e.images.elementAt(index).url, fit: BoxFit.cover,),
-                //                 ),),
-                //               )),
-                //
-                //             // Wrap(
-                //             // spacing: 10,
-                //             //   children: 
-                //             // e.images.map((e) => Image.network(e.url, fit: BoxFit.contain,)).toList(),
-                //             // )
-                //
-                //           const SizedBox(height: 10,),
-                //           Row(children: [
-                //             IconButton(onPressed: (){
-                //               if(!isLoggedIn){
-                //                 return;
-                //               }
-                //               pressedLikeOperation(e.postId);
-                //               }, 
-                //               icon: const Icon(Icons.thumb_up_alt_outlined, color: Colors.lightBlue,)),
-                //             const SizedBox(width: 5,),
-                //             e.postLikedBys.length >= 2?
-                //             Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.')
-                //             : e.postLikedBys.length ==1 ? 
-                //             Text("${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} liked this")
-                //              : Container(),
-                //           ],),
-                //           const SizedBox(height: 10,)
-                //           ],),
-                //       ),
-                //     ))
-                //     ).toList(),
-                // ),
-              ],
+             ],
             ),
           ),
         ),

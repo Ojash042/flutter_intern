@@ -77,6 +77,7 @@ class _CoursesPageState extends State<CoursesPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(),
+      bottomNavigationBar: CommonNavigationBar(),
       drawer: checkLoggedIn() ? const LoggedInDrawer(): MyDrawer(),
       body: SingleChildScrollView(
         child: Column(children: [
@@ -145,7 +146,7 @@ class _CoursesPageState extends State<CoursesPage>{
                     scrollDirection: Axis.horizontal,
                       child: Row(children: courseList!.map((e) => 
                       GestureDetector(
-                        onTap: ()=> {Navigator.popAndPushNamed(context, '/courses/${e.id}')},
+                        onTap: ()=> {Navigator.pushNamed(context, '/courses/${e.id}')},
                         child: Column(children: [
                           const SizedBox(height: 5,),
                           Text(e.title),

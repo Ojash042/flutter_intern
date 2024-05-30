@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:intl/intl.dart';
@@ -31,9 +29,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
   late List<UserData> userDataList;
   late List<UserDetails> userDetailsList;
   bool isCurrentUserLoggedInUser = false;
-
-
-
+  List<Widget> action = [];
   void saveData(List<UserDetails> userDetailsList) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     print(userDetailsList);
@@ -43,6 +39,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
     });
     
   }
+
   Future<void> getDataFromSharedPrefs() async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? userDataString =  sharedPreferences.getString("user_data");
@@ -91,17 +88,17 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                       Align(
                         alignment: Alignment.topRight,
                         child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
-                      const SizedBox(height: 30,),
-                      Text("Edit Basic Info", style: Theme.of(context).textTheme.headlineMedium,),
-                      const SizedBox(height: 30,),
-                      TextFormField(
+                        const SizedBox(height: 30,),
+                        Text("Edit Basic Info", style: Theme.of(context).textTheme.headlineMedium,),
+                        const SizedBox(height: 30,),
+                        TextFormField(
                         controller: summaryController,
                         decoration: InputDecoration(labelText: currentUserDetails.basicInfo.summary,hintText: "Enter summary"),
                         //initialValue: currentUserDetails.basicInfo.summary,
                         ),
-                      const SizedBox(height: 30,),
-                      Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
-                    RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
+                        const SizedBox(height: 30,),
+                        Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
+                        RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
                     setState((){
                       currentUserDetails.basicInfo.gender = "Male";
                       _gender = value; 
@@ -618,27 +615,48 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
   void didChangeDependencies() {
     super.didChangeDependencies();
     getDataFromSharedPrefs().then((value) => setState(() { }));
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      setState(() { 
+      });
+    });
   }
 
   @override
   void didUpdateWidget(covariant ProfileInfoPage oldWidget) {
     super.didUpdateWidget(oldWidget);
     getDataFromSharedPrefs().then((value) => setState(() { }));
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      setState(() {
+        
+      });
+    });
   }
 
   @override
   void initState() {
     super.initState();
+    Future.delayed(Duration.zero, (){
     setState(() {});
-    getDataFromSharedPrefs().then((value) => setState(() { 
+      getDataFromSharedPrefs().then((value) => setState(() { 
+      IconButton userPostButton = IconButton(onPressed: (){
+        Navigator.of(context).pushNamed('/myPosts');
+      }, icon: const Icon(Icons.bookmarks_outlined));
+      IconButton  todoButton = IconButton(onPressed: (){Navigator.of(context).pushNamed('/todos');}, icon: const Icon(Icons.check_box_outlined));
+      action.addAll([userPostButton, todoButton]);
     }));   
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      setState(() {
+      });
+    });
+    }); 
   }
   
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(),
-      drawer: const LoggedInDrawer(),
+      appBar: CommonAppBar(actions: action,),
+      bottomNavigationBar: CommonNavigationBar(),
+      // drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
