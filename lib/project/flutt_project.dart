@@ -11,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/auth_bloc.dart';
 import 'package:flutter_intern/project/auth_events.dart';
 import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
 import 'package:flutter_intern/project/courses_page.dart';
@@ -66,7 +67,7 @@ class _MyAppState extends State<MyApp> {
     sharedPreferences.getString("course") == null ? sharedPreferences.setString("courses", coursesJson) : null;
     sharedPreferences.getString("instructor") == null ? sharedPreferences.setString("instructor", instructorJson): null;
     sharedPreferences.getString("user_post") == null ? sharedPreferences.setString("user_post", jsonEncode(jsonDecode(userPost)["user_post"])) : null;
-    sharedPreferences.getString("user_friend_list") == null?  sharedPreferences.setString("user_friend", jsonEncode(jsonDecode(userFriendJson)["user_friend_list"])) : null;
+    sharedPreferences.getString("user_friend") == null?  sharedPreferences.setString("user_friend", jsonEncode(jsonDecode(userFriendJson)["user_friend_list"])) : null;
 
   }
 
@@ -80,9 +81,10 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        BlocProvider(create: (_) => AuthBloc()..add(UnauthorizedAuthEvent())),
+        BlocProvider(create: (_) => AuthBloc()..add(UnknownAuthEvent())),
         //ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (context) => FriendServiceProvider(context)),],
+        // ChangeNotifierProvider(create: (context) => FriendServiceProvider(context)),
+        ],
       child: MaterialApp(
         theme: ThemeData(
             textTheme: GoogleFonts.quicksandTextTheme(),
@@ -136,22 +138,35 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  void redirectPage(){
+    context.read<AuthBloc>().state.loggedInState ? Navigator.of(context).popAndPushNamed('/home') : Navigator.of(context).popAndPushNamed('/login');
+  }
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // redirectPage();
+  }
+
+  @override
+  void didUpdateWidget(covariant MyHomePage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    //redirectPage();
+  }
+
   @override
   void initState() {
     super.initState();
+    Future.delayed(Duration.zero, () => redirectPage());
+    //redirectPage();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: MyDrawer(),
+      //drawer: MyDrawer(),
       bottomNavigationBar: CommonNavigationBar(),
-      appBar: AppBar(
-        title: const Text("Project"),
-        centerTitle: true,
-        backgroundColor: Colors.blueAccent,
-      ),
-      body: BodyContainer(),
+      appBar: const CommonAppBar(),
+      body: const BodyContainer(),
     );
   }
 }
@@ -163,26 +178,22 @@ class BodyContainer extends StatefulWidget {
   State<BodyContainer> createState() => _BodyContainerState();
 }
 
-class _BodyContainerState extends State<BodyContainer> {
-  Future<void> checkLoggedInState() async {
-    bool getLoggedInState =
-        await Provider.of<AuthProvider>(context, listen: false).isLoggedIn();
-    if (getLoggedInState) {
-      Navigator.popAndPushNamed(context, "/home");
-    } else {
-      Navigator.popAndPushNamed(context, '/login');
-    }
-  }
+class _BodyContainerState extends State<BodyContainer> { 
 
   @override
   void initState() {
     super.initState();
-    checkLoggedInState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return BlocListener<AuthBloc, AuthStates>( 
+      listener: (BuildContext context, state) => 
+      Future.delayed(Duration.zero, (){
+          print("Wahoo");
+          (state is AuthorizedAuthState) ? Navigator.of(context).popAndPushNamed('/home') : Navigator.of(context).popAndPushNamed('/login'); 
+      }),
+            child: BlocBuilder<AuthBloc, AuthStates>(builder: (context, state) => const Center(child: CircularProgressIndicator()),));
   }
 }
 
@@ -436,9 +447,6 @@ class _PersonalDetailsState extends State<PersonalDetails> {
       });
       return;
     }
-    // if(widget.basicInfo.dob == ""){
-    //   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Date of Birth cannot be empty")));
-    // }
 
     if (widget.formKey.currentState!.validate()) {
       widget.incrementPhase();
@@ -549,59 +557,19 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 ],
               ),
             ),
-            const SizedBox(
-              height: 40,
-            ),
-            TextFormField(
-              maxLines: null,
-              controller: summaryController,
-              decoration:
-                  const InputDecoration(hintText: "Describe yourself..."),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8),
-              child: Text(
-                "Gender",
-                style: Theme.of(context).textTheme.headlineSmall,
-                textAlign: TextAlign.start,
-              ),
-            ),
-            RadioListTile(
-                value: Gender.Male,
-                groupValue: _gender,
-                title: const Text("Male"),
-                onChanged: (Gender? value) {
+            const SizedBox(height: 40,),
+            TextFormField( maxLines: null, controller: summaryController, decoration: const InputDecoration(hintText: "Describe yourself..."),),
+            const SizedBox(height: 30,),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8), child: 
+              Text("Gender", style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.start,),),
+            RadioListTile( value: Gender.Male, groupValue: _gender, title: const Text("Male"), onChanged: (Gender? value) { setState(() { _gender = value; });}),
+            RadioListTile( value: Gender.Female, title: const Text("Female"), groupValue: _gender, onChanged: (Gender? value) {
                   setState(() {
                     _gender = value;
-                  });
-                }),
-            RadioListTile(
-                value: Gender.Female,
-                title: const Text("Female"),
-                groupValue: _gender,
-                onChanged: (Gender? value) {
-                  setState(() {
-                    _gender = value;
-                  });
-                }),
-            const SizedBox(
-              height: 30,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0,vertical :8.0),
-              child: Text(
-                "Marital Status",
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
-            ),
-            RadioListTile(
-                value: MaritalStatus.married,
-                title: const Text("Married"),
-                groupValue: _maritalStatus,
-                onChanged: (MaritalStatus? value) {
+                  });}),
+            const SizedBox(height: 30,),
+            Padding(padding: const EdgeInsets.symmetric(horizontal: 14.0,vertical :8.0), child: Text( "Marital Status", style: Theme.of(context).textTheme.headlineSmall,),),
+            RadioListTile( value: MaritalStatus.married, title: const Text("Married"), groupValue: _maritalStatus, onChanged: (MaritalStatus? value) {
                   setState(() {
                     _maritalStatus = value;
                   });
@@ -682,18 +650,7 @@ class WorkPlaceDetails extends StatefulWidget {
   DateTime? endDate;
 
   List<WorkExperiences> workplaceData;
-  // Map<String, List<dynamic>> workplaceData = {
-  //   "job_title": List.empty(growable: true),
-  //   "summary": List.empty(growable: true),
-  //   "organization_name": List.empty(growable: true),
-  //   "starting_date": List.empty(growable: true),
-  //   "end_date": List.empty(growable: true),
-  // };
-  WorkPlaceDetails(
-      {super.key,
-      required this.incrementPhase,
-      required this.formKey,
-      required this.workplaceData});
+    WorkPlaceDetails({super.key, required this.incrementPhase, required this.formKey, required this.workplaceData});
   @override
   State<WorkPlaceDetails> createState() => _WorkPlaceDetailsState();
 }
@@ -701,16 +658,11 @@ class WorkPlaceDetails extends StatefulWidget {
 class _WorkPlaceDetailsState extends State<WorkPlaceDetails> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Form(
+    return Padding( padding: const EdgeInsets.all(8.0), child: Form(
         key: widget.formKey,
         child: Column(
           children: [
-            Text(
-              "Workplace history",
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
+            Text( "Workplace history", style: Theme.of(context).textTheme.headlineMedium,),
             ListView.builder(
               itemCount: widget.workplaceCount,
               shrinkWrap: true,
@@ -1699,7 +1651,6 @@ class _SignUpFormState extends State<SignUpForm> {
   @override
   Widget build(BuildContext context) {
     return (Scaffold(
-      //appBar: AppBar(centerTitle: true, title: const Text("Flutter Project"), backgroundColor: Colors.blueAccent,),
       body: Stack(
         children: [
           Align(
@@ -1723,19 +1674,9 @@ class _SignUpFormState extends State<SignUpForm> {
             controller: scrollController,
             child: Column(
               children: [
-                const SizedBox(
-                  height: 20,
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(14.0),
-                  child: Text(
-                    "Sign Up",
-                    style: Theme.of(context).textTheme.headlineMedium,
-                  ),
-                ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 20,),
+                Padding(padding: const EdgeInsets.all(14.0),child: Text("Sign Up", style: Theme.of(context).textTheme.headlineMedium,),),
+                const SizedBox(height: 15,),
                 formPhases.elementAt(currentIndex),
               ],
             ),

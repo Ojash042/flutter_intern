@@ -2,13 +2,15 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_intern/project/auth_bloc.dart';
+import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
-import 'package:flutter_intern/project/friend_service_provider.dart';
+import 'package:flutter_intern/project/friend_service_provider.dart' as fService;
 
 class FriendListPage extends StatefulWidget{
   const FriendListPage({super.key});
@@ -29,57 +31,56 @@ class _FriendListPageState extends State<FriendListPage>{
 
   List<Widget> action = List.empty(growable: true);
 
-  Future<Widget> getFriendStateWidget(int id) async{
+  Future<Widget> getFriendStateWidget(int id, UserData userData) async{
     String friendStateString;
-    FriendState friendState = await Provider.of<FriendServiceProvider>(context,listen: false).getFriendState(id);
+    fService.FriendServiceProvider fserve = fService.FriendServiceProvider();
+    fService.FriendState friendState = await fserve.getFriendState(id, userData);
     IconData ico;
     VoidCallback onPressed;
     switch(friendState){
-      case FriendState.notFriend:
+      case fService.FriendState.notFriend:
         friendStateString = "Add Friend";
         ico = Icons.group_add;
         onPressed = (){
-           Provider.of<FriendServiceProvider>(context,listen: false).addFriend(id);
+           fserve.addFriend(id, userData);
            setState(() {             
            });
            };
         break;
 
-      case FriendState.friend:
+      case fService.FriendState.friend:
         friendStateString = "Remove Friend";
         ico = Icons.group_off_outlined;
-        onPressed = ()=> Provider.of<FriendServiceProvider>(context, listen: false).removeFriend(id);
+        onPressed = ()=>  fserve.removeFriend(id, userData);
         break;
 
-      case FriendState.pending:
+      case fService.FriendState.pending:
         friendStateString = "Pending";
         ico = Icons.access_time;
         onPressed= (){};
         break;
-      case FriendState.requested:
+      case fService.FriendState.requested:
         friendStateString = "Requested";
         ico = Icons.group;
         onPressed = () {
         {
-        Provider.of<FriendServiceProvider>(context, listen: false).acceptRequest(id);
+        fserve.acceptRequest(id, userData);
          setState(() { 
         }); 
         }          
         };
         break;
-      case FriendState.isUser:
+      case fService.FriendState.isUser:
         return Container();
     }
+
     return OutlinedButton(onPressed: (){
-      print("woooooooooooo");
-      onPressed(); setState(() {
-      
+      onPressed(); setState(() { 
     });},child: Row(children: [Icon(ico), Text(friendStateString)],));
   }
 
-  Future<void> getDataFromSharedPrefs() async{
+  Future<void> getDataFromSharedPrefs(UserData? loggedInUser) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    UserData? loggedInUser = await Provider.of<AuthProvider>(context, listen: false).getLoggedInUser();
     
     String? userFriendJson = sharedPreferences.getString("user_friend");
     String? userDataJson = sharedPreferences.getString("user_data");
@@ -95,7 +96,7 @@ class _FriendListPageState extends State<FriendListPage>{
 
     setState(() {
       usersFriends = userFriendList.where((element) => (element.userListId>0) &&
-      (element.userId == loggedInUser!.id || element.friendId == loggedInUser.id ) && (element.hasNewRequest == true) && (!element.hasRemoved)).toList();
+      (element.userId == loggedInUser!.id || element.friendId == loggedInUser.id ) && (element.hasNewRequest == false) && (!element.hasRemoved)).toList();
     });
 
     for(var item in usersFriends){
@@ -119,19 +120,53 @@ class _FriendListPageState extends State<FriendListPage>{
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    getDataFromSharedPrefs();
+    UserData? loggedInUser;
+    AuthBloc authBloc = context.read<AuthBloc>();
+    print("oooo ${authBloc.state.userData!.email}");
+    setState(() { 
+      loggedInUser = authBloc.state.userData;
+    });
+    // authBloc.stream.listen((state) {
+    //   setState(() {
+    //     loggedInUser = state.userData;
+    //     print(state.userData!.email);
+    //   });
+    // });
+    getDataFromSharedPrefs(loggedInUser);
   }
   
   @override
   void didUpdateWidget(covariant FriendListPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    getDataFromSharedPrefs();
+    UserData? loggedInUser;
+    AuthBloc authBloc = context.read<AuthBloc>();
+    setState(() { 
+      loggedInUser = authBloc.state.userData;
+    });
+    print(' ooooooojaifkf ${loggedInUser == null}');
+    // authBloc.stream.listen((state) {
+    //   setState(() {
+    //     loggedInUser = state.userData;
+    //   });
+    // });
+    getDataFromSharedPrefs(loggedInUser);
   }
   
   @override
   void initState() {
     super.initState();
-    getDataFromSharedPrefs();
+    UserData? loggedInUser;
+    AuthBloc authBloc = context.read<AuthBloc>();
+    setState(() {
+      loggedInUser = authBloc.state.userData;
+    });
+    authBloc.stream.listen((state) {
+      setState(() {
+        loggedInUser = state.userData;
+        print(state.userData!.email);
+      });
+    });
+    getDataFromSharedPrefs(loggedInUser);
     IconButton searchButton = IconButton(onPressed: (){
       Navigator.of(context).pushNamed('/search');
     }, icon: const Icon(Icons.search));
@@ -140,46 +175,51 @@ class _FriendListPageState extends State<FriendListPage>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CommonAppBar(actions: action,),
-      bottomNavigationBar: CommonNavigationBar(),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-          Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.group_add_outlined), onPressed: (){
-            Navigator.of(context).pushNamed("/friendRequests");
-          },),),
-          const SizedBox(height: 30,),
-          Text("Friend List", style: Theme.of(context).textTheme.headlineSmall,),
-          ListView.builder(
-            shrinkWrap: true,
-            itemCount: usersFriends.length,
-            itemBuilder: (context, index)=> Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: GestureDetector(onTap: (){
-                Navigator.of(context).pushNamed('/profileInfo/${usersFriends.elementAt(index).userId}');},
-              child: Row(
-                children: [
-                  CircleAvatar(backgroundImage: FileImage(File(userFriendDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
-                  const SizedBox(width: 20,),
-                  Column(children: [
-                    Text(userFriendData.elementAt(index).name),
-                    ],),
-                  const Spacer(),
-                  FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id!), builder: (context, AsyncSnapshot<Widget> snapshot){
-                              if(snapshot.connectionState == ConnectionState.waiting){
-                                return const CircularProgressIndicator();
-                              }
-                              else if(snapshot.hasError){
-                                return Text('${snapshot.error}');
-                              }
-                              return snapshot.data ?? Container();
-                            })
-                ],
-              ), 
-              ),
-            ))
-          ]
-        ),),);
+    return BlocBuilder<AuthBloc, AuthStates>(
+      builder: (builder, state) {
+        UserData? loggedInUser = state.userData;
+        return Scaffold(
+        appBar: CommonAppBar(actions: action,),
+        bottomNavigationBar: CommonNavigationBar(),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+            Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.group_add_outlined), onPressed: (){
+              Navigator.of(context).pushNamed("/friendRequests");
+            },),),
+            const SizedBox(height: 30,),
+            Text("Friend List", style: Theme.of(context).textTheme.headlineSmall,),
+            ListView.builder(
+              shrinkWrap: true,
+              itemCount: usersFriends.length,
+              itemBuilder: (context, index)=> Padding(
+                padding: const EdgeInsets.all(14.0),
+                child: GestureDetector(onTap: (){
+                  Navigator.of(context).pushNamed('/profileInfo/${usersFriends.elementAt(index).userId}');},
+                child: Row(
+                  children: [
+                    CircleAvatar(backgroundImage: FileImage(File(userFriendDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
+                    const SizedBox(width: 20,),
+                    Column(children: [
+                      Text(userFriendData.elementAt(index).name),
+                      ],),
+                    const Spacer(),
+                    FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id!, loggedInUser!), builder: (context, AsyncSnapshot<Widget> snapshot){
+                                if(snapshot.connectionState == ConnectionState.waiting){
+                                  return const CircularProgressIndicator();
+                                }
+                                else if(snapshot.hasError){
+                                  return Text('${snapshot.error}');
+                                }
+                                return snapshot.data ?? Container();
+                              })
+                  ],
+                ), 
+                ),
+              ))
+            ]
+          ),),);
+      },
+    );
   }
 }

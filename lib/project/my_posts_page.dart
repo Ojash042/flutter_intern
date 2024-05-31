@@ -4,6 +4,7 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_intern/project/auth_bloc.dart';
 import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:provider/provider.dart';
@@ -55,8 +56,7 @@ class _MyPostsPageState extends State<MyPostsPage>{
     Iterable decodeUserPost = jsonDecode(userPostJson!);
     Iterable decoderUserDetails = jsonDecode(userDetailsJson!);
 
-    loggedInUser = await Provider.of<AuthProvider>(context, listen: false).getLoggedInUser();
-
+    loggedInUser = mounted ? context.read<AuthBloc>().state.userData : null;
     setState(() { 
       loggedInUserDetails = decoderUserDetails.map((e) => UserDetails.fromJson(e)).firstWhere((element) => element.id == loggedInUser!.id);
       allUserPosts = decodeUserPost.map((e) => TModels.UserPost.fromJson(e)).where((element) => (element.postId > 0)).toList();

@@ -2,7 +2,11 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_intern/project/auth_bloc.dart';
+import 'package:flutter_intern/project/auth_events.dart';
 import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/landing_page.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_intern/project/models.dart';
@@ -49,8 +53,7 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
       if(route!=null){
         setState(() {
           if(routes.isNotEmpty){ 
-            print('1 $routes ${routes.contains(route.settings.name)} ${route.settings.name}');
-          _selectedIndex =  routes.indexOf(route.settings.name ?? '/home');
+          _selectedIndex =  routes.indexOf(route.settings.name ?? '/profileInfo/${loggedInUser!.id}');
         }
       });
     }     
@@ -65,9 +68,7 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
       if(route!=null){
       setState(() {
         if(routes.isNotEmpty){  
-          //print('2 $routes ${routes.indexOf(route.settings.name!)} ${routes.contains(route.settings.name)} ${route.settings.name}');
-          //print(routes);
-          _selectedIndex =  max(0,routes.indexOf(route.settings.name ?? '/home'));
+          _selectedIndex =  max(0,routes.indexOf(route.settings.name ?? '/profileInfo/${loggedInUser!.id}'));
         }
       });
     }     
@@ -77,7 +78,6 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
     void initState(){
       super.initState(); 
       getLoggedInUser();
-      //print(st);
     }
 
   @override
@@ -86,21 +86,16 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
     void _onItemTapped(int value){
       setState(() {  
         _selectedIndex = value;
-      });
-      if(_selectedIndex == 2){
-        Navigator.of(context).pushNamed(routes[_selectedIndex]);
-      }
-      else{
-        Navigator.of(context).popAndPushNamed(routes[_selectedIndex]);
-      }
+      }); 
+      Navigator.of(context).popAndPushNamed(routes[_selectedIndex]); 
       return;
     }
 
-    return  routes.isNotEmpty ? BottomNavigationBar(items:[
-      BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home $_selectedIndex"),
-      BottomNavigationBarItem(icon: Icon(Icons.group_outlined), label: "Friends $_selectedIndex"),
-      BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined), label: "Profile Info $_selectedIndex"),
-      BottomNavigationBarItem(icon: Icon(Icons.folder_open_outlined), label: "Courses $_selectedIndex"),
+    return  routes.isNotEmpty ? BottomNavigationBar(items: const[
+      BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home"),
+      BottomNavigationBarItem(icon: Icon(Icons.group_outlined), label: "Friends"),
+      BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined), label: "Profile Info"),
+      BottomNavigationBarItem(icon: Icon(Icons.folder_open_outlined), label: "Courses"),
       BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Logout"),
     ],
       onTap: (value) => _onItemTapped(value),
@@ -227,16 +222,7 @@ class LoggedInDrawer extends StatefulWidget{
 
 }
 
-class _LoggedInDrawerState extends State<LoggedInDrawer>{   
-
-  UserData? loggedInUser;
-  Future<void> getLoggedInUser() async{
-    UserData? userData =  await Provider.of<AuthProvider>(context).getLoggedInUser();
-    setState(() {
-     loggedInUser = userData; 
-    }); 
-
-  }
+class _LoggedInDrawerState extends State<LoggedInDrawer>{    
 
   @override
   void initState() {
@@ -246,139 +232,138 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    getLoggedInUser();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(gradient:LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
-            child: Center(child: Text("Project App"))
-            ),
-
-        ListTile(title:const Row(
+    return BlocBuilder<AuthBloc, AuthStates>(
+    builder: (context, state) => Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
-            Icon(Icons.folder_open_outlined),
-            SizedBox(width: 10,),
-            Text("Courses Info"),
-          ],
-        ),
-        onTap: (){
-          if(ModalRoute.of(context)?.settings.name != '/courses'){
-            Navigator.of(context).pushNamed("/courses"); 
-          }
-          else{
-            Scaffold.of(context).openEndDrawer();
-          }
-          },),
-          ListTile(title: const Row(
-            children: [
-              Icon(Icons.account_circle_outlined),
-              SizedBox(width: 10,),
-              Text("Profile Info"),
-            ],
-          ),
-          onTap: (){ 
-          Navigator.of(context).pushNamed('/profileInfo/${loggedInUser!.id}');
-          },
-          ),
-          ListTile(title: const Row(
-            children: [
-              Icon(Icons.group_outlined),
-              SizedBox(width: 10,),
-              Text("Friends"),
-            ],
-          ),
-          onTap: (){
-            if(ModalRoute.of(context)?.settings.name!='/friendLists'){
-              Navigator.of(context).pushNamed('/friendLists');
-            }
-            else{
-              Scaffold.of(context).openEndDrawer();
-            }
-          },
-          ),
+            const DrawerHeader(
+              decoration: BoxDecoration(gradient:LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
+              child: Center(child: Text("Project App"))
+              ),
           ListTile(title:const Row(
             children: [
-              Icon(Icons.bookmarks_outlined),
+              Icon(Icons.folder_open_outlined),
               SizedBox(width: 10,),
-              Text("My Posts"),
+              Text("Courses Info"),
             ],
           ),
           onTap: (){
-            if(ModalRoute.of(context)?.settings.name!='/myPosts'){
-              Navigator.of(context).pushNamed('/myPosts');
-            }
-            else {
-              Scaffold.of(context).openEndDrawer();
-            }
-          },
-          ),
-          ListTile(title: const Row(
-            children: [
-              Icon(Icons.group_add_outlined),
-              SizedBox(width: 10,),
-              Text("Friend Requests"),
-            ],
-          ),
-          onTap: (){
-            if(ModalRoute.of(context)?.settings.name != '/friendRequests'){
-              Navigator.of(context).pushNamed("/friendRequests");
+            if(ModalRoute.of(context)?.settings.name != '/courses'){
+              Navigator.of(context).pushNamed("/courses"); 
             }
             else{
               Scaffold.of(context).openEndDrawer();
             }
-          }
-          ),
-
-          ListTile(title: const Row(children: [
-            Icon(Icons.check_box_outlined),
-            SizedBox(width: 10,),
-            Text("ToDos")
-            ],),
+            },),
+            ListTile(title: const Row(
+              children: [
+                Icon(Icons.account_circle_outlined),
+                SizedBox(width: 10,),
+                Text("Profile Info"),
+              ],
+            ),
+            onTap: (){ 
+            Navigator.of(context).pushNamed('/profileInfo/${(state.userData)!.id}');},
+            ),
+            ListTile(title: const Row(
+              children: [
+                Icon(Icons.group_outlined),
+                SizedBox(width: 10,),
+                Text("Friends"),
+              ],
+            ),
             onTap: (){
-              if(ModalRoute.of(context)?.settings.name != '/todos'){
-                Navigator.of(context).pushNamed('/todos');
+              if(ModalRoute.of(context)?.settings.name!='/friendLists'){
+                Navigator.of(context).pushNamed('/friendLists');
               }
               else{
                 Scaffold.of(context).openEndDrawer();
               }
             },
             ),
-          // ListTile(title: const Text("Change Password"),
-          // onTap: (){
-          //   Navigator.pushNamed(context, '/changePassword');
-          // },),
-
-          ListTile(title: const Row(
-            children: [
-              Icon(Icons.search_outlined),
-              SizedBox(width: 10,),
-              Text("Search"),
-            ],
-          ),
+            ListTile(title:const Row(
+              children: [
+                Icon(Icons.bookmarks_outlined),
+                SizedBox(width: 10,),
+                Text("My Posts"),
+              ],
+            ),
             onTap: (){
-              Navigator.of(context).pushNamed("/search");
+              if(ModalRoute.of(context)?.settings.name!='/myPosts'){
+                Navigator.of(context).pushNamed('/myPosts');
+              }
+              else {
+                Scaffold.of(context).openEndDrawer();
+              }
             },
-          ),
-          ListTile(title:const Row(
-            children: [
-              Icon(Icons.exit_to_app_outlined),
+            ),
+            ListTile(title: const Row(
+              children: [
+                Icon(Icons.group_add_outlined),
+                SizedBox(width: 10,),
+                Text("Friend Requests"),
+              ],
+            ),
+            onTap: (){
+              if(ModalRoute.of(context)?.settings.name != '/friendRequests'){
+                Navigator.of(context).pushNamed("/friendRequests");
+              }
+              else{
+                Scaffold.of(context).openEndDrawer();
+              }
+            }
+            ),
+      
+            ListTile(title: const Row(children: [
+              Icon(Icons.check_box_outlined),
               SizedBox(width: 10,),
-              Text("Log out"),
+              Text("ToDos")
+              ],),
+              onTap: (){
+                if(ModalRoute.of(context)?.settings.name != '/todos'){
+                  Navigator.of(context).pushNamed('/todos');
+                }
+                else{
+                  Scaffold.of(context).openEndDrawer();
+                }
+              },
+              ),
+            // ListTile(title: const Text("Change Password"),
+            // onTap: (){
+            //   Navigator.pushNamed(context, '/changePassword');
+            // },),
+      
+            ListTile(title: const Row(
+              children: [
+                Icon(Icons.search_outlined),
+                SizedBox(width: 10,),
+                Text("Search"),
+              ],
+            ),
+              onTap: (){
+                Navigator.of(context).pushNamed("/search");
+              },
+            ),
+            ListTile(title:const Row(
+              children: [
+                Icon(Icons.exit_to_app_outlined),
+                SizedBox(width: 10,),
+                Text("Log out"),
+              ],
+            ),
+            onTap: (){
+              context.read<AuthBloc>().add(RequestLogoutEvent());
+              Navigator.of(context).pushNamedAndRemoveUntil( "/",(Route<dynamic> route) => false);
+            },
+            ),
             ],
           ),
-          onTap: (){
-            Provider.of<AuthProvider>(context, listen: false).logout(); 
-            Navigator.of(context).pushNamedAndRemoveUntil( "/",(Route<dynamic> route) => false);
-          },
-          ),
-          ],
-        ),
+      ),
     );
   }
 }

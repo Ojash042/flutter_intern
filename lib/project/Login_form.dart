@@ -33,29 +33,13 @@ class _LoginFormState extends State<LoginForm>{
   double secondHeightFactor = 0.5;
   double originaSecondHeightFactor = 0.5;
 
-  bool passwordObscure = true;
-
-  void checkLoggedIn() async{
-
-  if(await Provider.of<AuthProvider>(context, listen: false).isLoggedIn()){
-      mounted? Navigator.of(context).popAndPushNamed("/home") : null;
-    }
-  }
-
+  bool passwordObscure = true; 
   @override
   void initState(){
     super.initState(); 
-    checkLoggedIn();
     _emailFocusNode.addListener(() {_onLostFocus();});
     _passwordFocusNode.addListener(() {_onLostFocus();});
-  }
-
-  void loginUser() async {
-    Provider.of<AuthProvider>(context, listen: false).login(context, _emailController.text, _passwordController.text);
-    if(await Provider.of<AuthProvider>(context, listen: false).isLoggedIn()){
-      mounted ? Navigator.of(context).popAndPushNamed("/home") : null;
-    }
-  }
+  } 
   
   void _onTapChangeClipPath(){
     setState(() {
@@ -84,16 +68,15 @@ class _LoginFormState extends State<LoginForm>{
     return;
   }
   
-
   @override
   Widget build(BuildContext context) { 
-    return BlocListener(
+    return BlocListener<AuthBloc, AuthStates>(
       listener: (BuildContext context, state) { 
         if(state is AuthorizedAuthState){
           Navigator.of(context).popAndPushNamed('/');
         }
        },
-      child: BlocBuilder(
+      child: BlocBuilder<AuthBloc, AuthStates>(
         builder: (BuildContext context, state)  => Scaffold(
           // appBar: AppBar(title: const Text("Project"), centerTitle: true, backgroundColor: Colors.blueAccent,),
           drawer: MyDrawer(),
@@ -132,7 +115,10 @@ class _LoginFormState extends State<LoginForm>{
                           icon: Icon(passwordObscure ? Icons.visibility_off : Icons.visibility)),
                           hintText: "Enter password"),),),
                         const SizedBox(height: 30,), 
-                        SizedBox(child: OutlinedButton(onPressed:  () => BlocProvider.of<AuthBloc>(context).add(UnauthorizedAuthEvent()) ,child: const Text("Login"),)),
+                        SizedBox(child: OutlinedButton(onPressed:  () => 
+                        context.read<AuthBloc>().add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text)),
+                        //BlocProvider.of<AuthBloc>(context).add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text)),
+                        child: const Text("Login"),)),
                         const SizedBox(height: 40,),
                         SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, '/forgotPassword');}, child: const Text("Forgot Password"),),),
                         const SizedBox(height: 30,),

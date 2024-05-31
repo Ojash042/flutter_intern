@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_intern/project/auth_provider.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_intern/project/auth_bloc.dart';
+import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/friend_service_provider.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
@@ -19,12 +21,13 @@ class _FriendRequestsState extends State<FriendRequests>{
   List<UserData> requestedByUsers = List.empty(growable: true);
   List<UserDetails> requestedByUserDetails = List.empty(growable: true);
   List<UserData> userDataList =List.empty(growable: true);
-
+  UserData? loggedInUser;
   int minUser = 3;
 
-  Future<Widget> getFriendStateWidget(int id) async{
+  Future<Widget> getFriendStateWidget(int id, UserData userData) async{
     String friendStateString;
-    FriendState friendState = await Provider.of<FriendServiceProvider>(context,listen: false).getFriendState(id);
+    FriendServiceProvider fService = FriendServiceProvider();
+    FriendState friendState = await fService.getFriendState(id, userData);
     IconData ico;
     VoidCallback onPressed;
 
@@ -32,13 +35,13 @@ class _FriendRequestsState extends State<FriendRequests>{
       case FriendState.notFriend:
         friendStateString = "Add Friend";
         ico = Icons.group_add;
-        onPressed = () => Provider.of<FriendServiceProvider>(context,listen: false).addFriend(id);
+        onPressed = () => fService.addFriend(id, userData);
         break;
 
       case FriendState.friend:
         friendStateString = "Remove Friend";
         ico = Icons.group_off_outlined;
-        onPressed = ()=> Provider.of<FriendServiceProvider>(context, listen: false).removeFriend(id);
+        onPressed = ()=> fService.removeFriend(id, userData);
         break;
 
       case FriendState.pending:
@@ -49,7 +52,7 @@ class _FriendRequestsState extends State<FriendRequests>{
       case FriendState.requested:
         friendStateString = "Requested";
         ico = Icons.group;
-        onPressed = () => {Provider.of<FriendServiceProvider>(context, listen: false).acceptRequest(id)};
+        onPressed = () => {fService.acceptRequest(id, userData)};
         break;
       case FriendState.isUser:
         return Container();
@@ -59,12 +62,11 @@ class _FriendRequestsState extends State<FriendRequests>{
     });},child: Row(children: [Icon(ico), Text(friendStateString)],));
   }
 
-  Future<void> getDataFromSharedPrefs() async{
+  Future<void> getDataFromSharedPrefs(UserData? userData) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     String? userDataJson = sharedPreferences.getString("user_data");
     String? userDetailsJson = sharedPreferences.getString("user_details");
     String? userFriendJson = sharedPreferences.getString("user_friend");
-    UserData? userData = await Provider.of<AuthProvider>(context, listen: false).getLoggedInUser();
     
     Iterable decoderUserFriend = jsonDecode(userFriendJson!); 
     Iterable decoderUserData = jsonDecode(userDataJson!);
@@ -100,59 +102,67 @@ class _FriendRequestsState extends State<FriendRequests>{
   @override
   void initState() {
     super.initState();
-    getDataFromSharedPrefs();
+    AuthBloc authBloc = context.read<AuthBloc>();
+    setState(() { 
+          loggedInUser = context.read<AuthBloc>().state.userData!;
+    });
+    getDataFromSharedPrefs(loggedInUser);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CommonAppBar(),
-      // drawer: const LoggedInDrawer(),
-      body: SingleChildScrollView(
-        child: userDataList.length < minUser ? Container(child: Text(userDataList.length.toString()),):Column(
-          children: [
-            const SizedBox(height: 30,),
-            Center(child: Text("Requests", style: Theme.of(context).textTheme.headlineSmall,)),
-            const SizedBox(height: 30,),
-            Padding(padding: const EdgeInsets.all(12),
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: requestedByUsers.length,
-                itemBuilder: (context, index) => Container(
-                  child: GestureDetector(
-                    onTap: (){
-                      Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
-                    },
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            CircleAvatar(backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
-                            const SizedBox(width: 20,),
-                            Column(
-                              children: [
-                                Text(requestedByUsers.elementAt(index).name),
-                              ],
-                            ),
-                            Spacer(),
-                          FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!), builder: (context, AsyncSnapshot<Widget> snapshot){
-                            if(snapshot.connectionState == ConnectionState.waiting){
-                              return const CircularProgressIndicator();
-                            }
-                            else if(snapshot.hasError){
-                              return Text('${snapshot.error}');
-                            }
-                            return snapshot.data ?? Container();
-                          })
-                          ],),
-                        const SizedBox(height: 30,),
-                      ],
-                    ),
-                  ))),
-            ),
-          ],
+    return BlocBuilder<AuthBloc, AuthStates>(
+      builder:(builder, state) { 
+        return Scaffold(
+        appBar: const CommonAppBar(),
+        // drawer: const LoggedInDrawer(),
+        body: SingleChildScrollView(
+          child: userDataList.length < minUser ? Text(userDataList.length.toString()):Column(
+            children: [
+              const SizedBox(height: 30,),
+              Center(child: Text("Requests", style: Theme.of(context).textTheme.headlineSmall,)),
+              const SizedBox(height: 30,),
+              Padding(padding: const EdgeInsets.all(12),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: requestedByUsers.length,
+                  itemBuilder: (context, index) => Container(
+                    child: GestureDetector(
+                      onTap: (){
+                        Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
+                      },
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
+                              const SizedBox(width: 20,),
+                              Column(
+                                children: [
+                                  Text(requestedByUsers.elementAt(index).name),
+                                ],
+                              ),
+                              Spacer(),
+                            FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!, loggedInUser!), builder: (context, AsyncSnapshot<Widget> snapshot){
+                              if(snapshot.connectionState == ConnectionState.waiting){
+                                return const CircularProgressIndicator();
+                              }
+                              else if(snapshot.hasError){
+                                return Text('${snapshot.error}');
+                              }
+                              return snapshot.data ?? Container();
+                            })
+                            ],),
+                          const SizedBox(height: 30,),
+                        ],
+                      ),
+                    ))),
+              ),
+            ],
+          ),
         ),
-      ),
+      );
+      },
     );
   }
 }

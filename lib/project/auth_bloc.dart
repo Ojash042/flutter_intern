@@ -34,22 +34,25 @@ class AuthBloc extends Bloc<AuthEvents, AuthStates>{
   
   void loginEvent(RequestLogInEvent event, Emitter<AuthStates> emit) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    String? userDataJson = sharedPreferences.getString("userData");
-    String? userDetailsJson =sharedPreferences.getString("userDetails");
+    String? userDataJson = sharedPreferences.getString("user_data");
+    String? userDetailsJson =sharedPreferences.getString("user_details");
     if(userDataJson == null || userDetailsJson == null){
       emit(const UnauthorizedAuthState());
       return;
     }
     
     Iterable decoderUserData = jsonDecode(userDataJson);
-    Iterable decoderUserDetails = jsonDecode(userDataJson);
+    Iterable decoderUserDetails = jsonDecode(userDetailsJson);
     
     UserData? userData =  decoderUserData.map((data) => UserData.fromJson(data)).firstWhereOrNull((element) => element.email == event.email && element.password == event.password);
     if(userData == null){
       emit(const UnauthorizedAuthState());
       return;
     }
+    print(userData.email);
     UserDetails userDetails = decoderUserDetails.map((details) => UserDetails.fromJson(details)).firstWhere((element) => element.id == userData.id);
+    print(userDetails.id);
+    sharedPreferences.setString("loggedInEmail", userData.email);
     emit(AuthorizedAuthState(userData: userData, userDetails: userDetails)); 
   } 
 

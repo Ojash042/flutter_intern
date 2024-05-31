@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_intern/project/auth_bloc.dart';
+import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/friend_service_provider.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:provider/provider.dart';
@@ -16,10 +19,9 @@ class SearchPage extends StatefulWidget{
 }
 
 class _SearchPageState extends State<SearchPage>{
-  String? loggedInEmail;
   late List<UserData> userDataList;
   late List<UserDetails> userDetails;
-
+  UserData? loggedInUser;
   List<UserData> searchedData = List.empty(growable: true);
   List<UserDetails> searchedDataDetails = List.empty(growable: true);
 
@@ -38,22 +40,23 @@ class _SearchPageState extends State<SearchPage>{
     });
   }
 
-  Future<Widget> getFriendStateWidget(int id) async{
+  Future<Widget> getFriendStateWidget(int id, UserData? userData) async{
     String friendStateString;
-    FriendState friendState = await Provider.of<FriendServiceProvider>(context,listen: false).getFriendState(id);
+    FriendServiceProvider fService = FriendServiceProvider();
+    FriendState friendState = await fService.getFriendState(id, userData);
     IconData ico;
     VoidCallback onPressed;
     switch(friendState){
       case FriendState.notFriend:
         friendStateString = "Add Friend";
         ico = Icons.group_add;
-        onPressed = () => Provider.of<FriendServiceProvider>(context,listen: false).addFriend(id);
+        onPressed = () => fService.addFriend(id, userData!);
         break;
 
       case FriendState.friend:
         friendStateString = "Remove Friend";
         ico = Icons.group_off_outlined;
-        onPressed = () => Provider.of<FriendServiceProvider>(context, listen: false).removeFriend(id);
+        onPressed = () => fService.removeFriend(id, userData!);
         break;
 
       case FriendState.pending:
@@ -64,7 +67,7 @@ class _SearchPageState extends State<SearchPage>{
       case FriendState.requested:
         friendStateString = "Requested";
         ico = Icons.group;
-        onPressed = () => Provider.of<FriendServiceProvider>(context).acceptRequest(id);
+        onPressed = () => fService.acceptRequest(id, userData!);
         break;
       case FriendState.isUser:
         return Container();
@@ -74,7 +77,7 @@ class _SearchPageState extends State<SearchPage>{
     });},child: Row(children: [Icon(ico), Text(friendStateString)],));
   }
 
-  Future<void> searchData(String value) async{
+  Future<void> searchData(String value, UserData? userData) async{
     setState(() { 
       searchedData = List.empty(growable: true);
       searchedDataDetails = List.empty(growable: true);
@@ -84,87 +87,91 @@ class _SearchPageState extends State<SearchPage>{
         searchedDataDetails.add(userDetail);
       }
      });
-
+    FriendServiceProvider fService =  FriendServiceProvider();
     List<FriendState> friendStates = List.empty(growable: true);
     for(var item in searchedData){
-      FriendState friendState = await Provider.of<FriendServiceProvider>(context, listen: false).getFriendState(item.id);
+      FriendState friendState = await  fService.getFriendState(item.id, userData);
       friendStates.add(friendState);
     }
   }
 
-  Future<void> getLoggedInState() async{
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    setState(() { 
-      loggedInEmail = sharedPreferences.getString("loggedInEmail");
-    });
-  }
+  // Future<void> getLoggedInState() async{
+  //   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+  //   setState(() { 
+  //     loggedInEmail = sharedPreferences.getString("loggedInEmail");
+  //   });
+  // }
 
   @override
   void initState() {
     super.initState();
-    getLoggedInState();
     getDataFromSharedPrefs();
+    setState(() { 
+      loggedInUser =  context.read<AuthBloc>().state.userData;
+    });
   }
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CommonAppBar() ,
-      // drawer: (loggedInEmail == null) ? MyDrawer() : const LoggedInDrawer(),
-      body:SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Column(children: [
-            TextFormField(decoration: const InputDecoration(hintText: "Search..."), onFieldSubmitted: (value){
-              searchData(value);
-            },),
-
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ListView.builder(
-                itemCount: searchedData.length,
-                shrinkWrap: true,
-                itemBuilder: (context, index) => SizedBox(
-                  height: 64,
-                  width: MediaQuery.of(context).size.width,
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: GestureDetector(
-                        onTap: (){
-                          Navigator.pushNamed(context, '/profileInfo/${searchedData.elementAt(index).id}');
-                        },
-                          child: Row(children: [
-                            CircleAvatar(backgroundImage: FileImage(File(searchedDataDetails.elementAt(index).basicInfo.profileImage.imagePath), ),),
-                            const SizedBox(width: 12,),
-                            Text(searchedData.elementAt(index).name),
-                            const SizedBox(height: 12,),
-                            const Spacer(),
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: FutureBuilder(
-                                future: getFriendStateWidget(searchedDataDetails.elementAt(index).id!),
-                                builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
-                                  if(snapshot.connectionState == ConnectionState.waiting){
-                                    return const CircularProgressIndicator();
+    return BlocBuilder<AuthBloc, AuthStates>(
+      builder: (builder,context) => Scaffold(
+        appBar: const CommonAppBar() ,
+        // drawer: (loggedInEmail == null) ? MyDrawer() : const LoggedInDrawer(),
+        body:SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: Column(children: [
+              TextFormField(decoration: const InputDecoration(hintText: "Search..."), onFieldSubmitted: (value){
+                searchData(value, loggedInUser);
+              },),
+      
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ListView.builder(
+                  itemCount: searchedData.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) => SizedBox(
+                    height: 64,
+                    width: MediaQuery.of(context).size.width,
+                    child: Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: GestureDetector(
+                          onTap: (){
+                            Navigator.pushNamed(context, '/profileInfo/${searchedData.elementAt(index).id}');
+                          },
+                            child: Row(children: [
+                              CircleAvatar(backgroundImage: FileImage(File(searchedDataDetails.elementAt(index).basicInfo.profileImage.imagePath), ),),
+                              const SizedBox(width: 12,),
+                              Text(searchedData.elementAt(index).name),
+                              const SizedBox(height: 12,),
+                              const Spacer(),
+                              Align(
+                                alignment: Alignment.centerLeft,
+                                child: FutureBuilder(
+                                  future: getFriendStateWidget(searchedDataDetails.elementAt(index).id!, loggedInUser),
+                                  builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
+                                    if(snapshot.connectionState == ConnectionState.waiting){
+                                      return const CircularProgressIndicator();
+                                    }
+                                    else if(snapshot.hasError){
+                                      return Text('${snapshot.error}');
+                                    }
+                                    return snapshot.data ?? Container();
                                   }
-                                  else if(snapshot.hasError){
-                                    return Text('${snapshot.error}');
-                                  }
-                                  return snapshot.data ?? Container();
-                                }
-                              ))
-                          ],),
-                        ),
-                      )
-                    ],
+                                ))
+                            ],),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            )
-            // TextFormField(controller: searchController, decoration: InputDecoration(hintText: ), )
-          ],),
+              )
+              // TextFormField(controller: searchController, decoration: InputDecoration(hintText: ), )
+            ],),
+          ),
         ),
       ),
     );
