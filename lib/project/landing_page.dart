@@ -11,6 +11,7 @@ import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:humanizer/humanizer.dart';
 
 class LandingPage extends StatefulWidget{
   const LandingPage({super.key});
@@ -321,7 +322,18 @@ Future<void> addPost(TModels.UserPost userPost) async{
                                   children: [
                                     CircleAvatar(backgroundImage: FileImage(File(userDetailsList.firstWhereOrNull((element) => element.id == e.userId)!.basicInfo.profileImage.imagePath)),),
                                     const SizedBox(width: 10,),
-                                    Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 16, color: Color(0xffabb5ff)),),
+                                    Column(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, 
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: /* Color(0xffabb5ff) */ Colors.black),),
+                                        Text(
+                                          const ApproximateTimeTransformation(granularity: Granularity.primaryUnit, round: true, isRelativeToNow: true)
+                                          .transform(Duration(microseconds: DateTime.parse(e.createdAt).microsecondsSinceEpoch - DateTime.now().microsecondsSinceEpoch), 'en')
+                                        )
+                                      ],
+                                    ), 
                                   ],
                                 )),
                               Center(child: SizedBox(width: MediaQuery.of(context).size.width * 0.7 ,child: const Divider())),
@@ -336,20 +348,30 @@ Future<void> addPost(TModels.UserPost userPost) async{
                                   child: PhotoGrid(imageUrls: e.images.map((image) => image.url).toList(), onImageClicked: (idx){}, onExpandClicked: (){},),
                                 )),
                                 const SizedBox(height: 10,),
-                                Row(children: [
-                                  IconButton(onPressed: (){
-                                  if(!state.loggedInState){
-                                    return;
-                                  }
-                                  pressedLikeOperation(e.postId, state.userData!.email);
-                                }, 
-                              icon: Icon(e.postLikedBys.map((e) => e.userId).toList().contains((state as AuthStates).userData!.id)? Icons.thumb_up : Icons.thumb_up_alt_outlined, color: const Color(0xffabb5ff),)),
-                              const SizedBox(width: 5,),
-                              e.postLikedBys.length >= 2?
-                              Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.')
-                              : e.postLikedBys.length == 1 ? 
-                              Text("${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} liked this")
-                               : Container(),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                  Row(
+                                    children: [
+                                      IconButton(onPressed: (){
+                                      if(!state.loggedInState){
+                                        return;
+                                      }
+                                      pressedLikeOperation(e.postId, state.userData!.email);
+                                      }, 
+                                      icon: Icon(e.postLikedBys.map((e) => e.userId).toList().contains(state.userData!.id)? Icons.thumb_up : Icons.thumb_up_alt_outlined, color: const Color(0xffabb5ff),)),
+                                      const SizedBox(width: 5,),
+                                      e.postLikedBys.length >= 2?
+                                      Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length - 1).toString()} others liked this.', 
+                                      overflow: TextOverflow.fade,
+                                      ): e.postLikedBys.length == 1 ? 
+                                      Text("${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} liked this", overflow: TextOverflow.fade,)
+                                      : Container(),
+                                    ],
+                                  ),
+                               IconButton(onPressed: (){}, icon: const Icon(Icons.comment_outlined, color: Color(0xffabb5ff),)),
+                               IconButton(onPressed: (){}, icon: const Icon(Icons.share_outlined, color: Color(0xffabb5ff),)),
                             ],),
                             const SizedBox(height: 10,)
                             ],),

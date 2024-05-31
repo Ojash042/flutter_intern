@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/auth_bloc.dart';
 import 'package:flutter_intern/project/auth_events.dart';
-import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/auth_states.dart';
-import 'package:flutter_intern/project/landing_page.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

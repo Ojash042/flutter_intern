@@ -6,14 +6,11 @@ import 'package:flutter_intern/project/auth_bloc.dart';
 import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/friend_service_provider.dart';
 import 'package:flutter_intern/project/misc.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_intern/project/models.dart';
 
 class SearchPage extends StatefulWidget{
-
   const SearchPage({super.key});
-
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
@@ -72,8 +69,9 @@ class _SearchPageState extends State<SearchPage>{
       case FriendState.isUser:
         return Container();
     }
-    return OutlinedButton(onPressed: (){onPressed();setState(() {
-      
+
+    return OutlinedButton(onPressed: (){onPressed();setState(() { 
+
     });},child: Row(children: [Icon(ico), Text(friendStateString)],));
   }
 
@@ -94,13 +92,6 @@ class _SearchPageState extends State<SearchPage>{
       friendStates.add(friendState);
     }
   }
-
-  // Future<void> getLoggedInState() async{
-  //   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  //   setState(() { 
-  //     loggedInEmail = sharedPreferences.getString("loggedInEmail");
-  //   });
-  // }
 
   @override
   void initState() {
@@ -124,7 +115,7 @@ class _SearchPageState extends State<SearchPage>{
               TextFormField(decoration: const InputDecoration(hintText: "Search..."), onFieldSubmitted: (value){
                 searchData(value, loggedInUser);
               },),
-      
+ 
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: ListView.builder(

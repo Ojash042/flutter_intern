@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_intern/project/auth_bloc.dart';
-import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,7 +76,7 @@ class _MyPostsPageState extends State<MyPostsPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(),
+      appBar:const CommonAppBar(),
       // drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(child: 
       Padding(
@@ -141,49 +140,6 @@ class _MyPostsPageState extends State<MyPostsPage>{
             ),),
           );
         }),
-        // child: Column(
-        // crossAxisAlignment: CrossAxisAlignment.center,
-          // children: userPosts.map((e) => SizedBox(
-          //   child: Card(child: Padding(
-          //     padding: const EdgeInsets.only(left: 25, top: 5),
-          //     child: Column(
-          //       crossAxisAlignment: CrossAxisAlignment.start,
-          //       children: [
-          //         Text(e.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),),
-          //         const SizedBox(height: 5,),
-          //         GestureDetector(
-          //           onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
-          //           child: Text(loggedInUser!.name, style: const TextStyle(fontWeight: FontWeight.w100, fontSize: 12),),),
-          //         const SizedBox(height: 10,),
-          //         SizedBox(height: 156 * min(4, e.images.length.toDouble()/3),
-          //         width: MediaQuery.of(context).size.width - 40,
-          //         child: Center(
-          //           child: GridView.builder(
-          //             itemCount: e.images.length,
-          //             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, crossAxisSpacing: 5, mainAxisSpacing: 4),
-          //              physics: const NeverScrollableScrollPhysics(),
-          //              itemBuilder: (context, index) => Padding(padding: const EdgeInsets.all(8),
-          //              child: Image.network(e.images.elementAt(index).url, fit: BoxFit.cover,),
-          //              )),
-          //           ),
-          //         ),
-          //         const SizedBox(height: 10,),
-          //         Row(children: [IconButton(onPressed: (){
-          //           pressedLikeOperation(e.postId);
-          //         }, icon: const Icon(Icons.thumb_up_alt_outlined, color: Colors.lightBlue,),),
-          //         const SizedBox(height: 4,),
-          //         e.postLikedBys.length >= 2?
-          //         Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} and ${(e.postLikedBys.length -1).toString()} others liked this.'):
-          //         e.postLikedBys.length == 1 ?
-          //         Text('${userList.firstWhere((element) => element.id == e.postLikedBys.first.userId).name} liked this')
-          //         :
-          //         Container(),
-          //         ],),
-          //         const SizedBox(height: 10,),
-          //       ],
-          //     ),
-          //   ),),
-          // )).toList(),),
       ),),
     );
   }

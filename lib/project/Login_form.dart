@@ -3,10 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/auth_bloc.dart';
 import 'package:flutter_intern/project/auth_events.dart';
-import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/misc.dart';
-import 'package:provider/provider.dart';
 class LoginForm extends StatefulWidget{
   const LoginForm({super.key});
 

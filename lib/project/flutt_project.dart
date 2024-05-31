@@ -10,7 +10,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/auth_bloc.dart';
 import 'package:flutter_intern/project/auth_events.dart';
-import 'package:flutter_intern/project/auth_provider.dart';
+// import 'package:flutter_intern/project/auth_provider.dart';
 import 'package:flutter_intern/project/auth_states.dart';
 import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
@@ -18,7 +18,6 @@ import 'package:flutter_intern/project/courses_page.dart';
 import 'package:flutter_intern/project/forgot_password_page.dart';
 import 'package:flutter_intern/project/friend_list_page.dart';
 import 'package:flutter_intern/project/friend_requests.dart';
-import 'package:flutter_intern/project/friend_service_provider.dart';
 import 'package:flutter_intern/project/landing_page.dart';
 import 'package:flutter_intern/project/logout_page.dart';
 import 'package:flutter_intern/project/misc.dart';
@@ -697,8 +696,7 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails> {
                       height: 30,
                     ),
                     TextFormField(
-                      onChanged: (value) => {
-                        setState(() {
+                      onChanged: (value) => { setState(() {
                           widget.workplaceData.elementAt(index).summary = value;
                         })
                       },
