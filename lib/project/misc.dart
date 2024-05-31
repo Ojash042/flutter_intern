@@ -72,7 +72,8 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
     }); 
   }
 
-    void initState(){
+    @override
+      void initState(){
       super.initState(); 
       getLoggedInUser();
     }
@@ -329,12 +330,7 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
                   Scaffold.of(context).openEndDrawer();
                 }
               },
-              ),
-            // ListTile(title: const Text("Change Password"),
-            // onTap: (){
-            //   Navigator.pushNamed(context, '/changePassword');
-            // },),
-      
+              ), 
             ListTile(title: const Row(
               children: [
                 Icon(Icons.search_outlined),
