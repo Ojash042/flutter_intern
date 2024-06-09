@@ -124,14 +124,11 @@ class MyPostsPage extends StatefulWidget{
 class _MyPostsPageState extends State<MyPostsPage>{
   late List<UserData> userList = List.empty(growable: true);
   late List<TModels.UserPost> userPosts = List.empty(growable: true);
-  //late List<TModels.UserPost> allUserPosts = List.empty(growable: true);
-  // late UserData? loggedInUser;
-  //late UserDetails? loggedInUserDetails;
 
-    Future<void> pressedLikeOperation(int postId) async{
-      int userId  = context.read<AuthBloc>().state.userData!.id;
-      context.read<UserPostBloc>().add(UserPostLikePostEvent(postId: postId, userId: userId));
-    }
+  Future<void> pressedLikeOperation(int postId) async{
+    int userId  = context.read<AuthBloc>().state.userData!.id;
+    context.read<UserPostBloc>().add(UserPostLikePostEvent(postId: postId, userId: userId));
+  }
  
   @override
   void initState() {

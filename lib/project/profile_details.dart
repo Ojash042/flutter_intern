@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
-import 'package:flutter_intern/project/bloc/auth_events.dart';
 import 'package:flutter_intern/project/bloc/auth_states.dart';
 import 'package:flutter_intern/project/bloc/user_list_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_list_events.dart';
@@ -11,7 +10,6 @@ import 'package:flutter_intern/project/bloc/user_list_states.dart';
 import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
-import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 
 class ProfileDetails extends StatefulWidget{
@@ -36,9 +34,15 @@ void saveData(List<UserDetails> userDetailsList) async{
   //locator.get<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
   //return;
   BlocProvider.of<UserListBloc>(context).add(EditUserEvent(userDetails: userDetailsList));
-  BlocProvider.of<AuthBloc>(context).add(UnknownAuthEvent());
+  //BlocProvider.of<AuthBloc>(context).add(UnknownAuthEvent());
   //context.read<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
 }
+
+@override
+  void dispose() {
+    super.dispose();
+    locator<UserListBloc>().close();
+  }
 
 @override
 void initState(){

@@ -13,6 +13,7 @@ import 'package:flutter_intern/project/bloc/user_list_states.dart';
 import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_event.dart';
 import 'package:flutter_intern/project/bloc/user_post_states.dart';
+import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
@@ -42,6 +43,7 @@ class LandingPage extends StatefulWidget{
 
   @override
   State<LandingPage> createState()=> _LandingPageState();
+
 }
 
 class PhotoGrid extends StatefulWidget {
@@ -342,11 +344,12 @@ class _LandingPageState extends State<LandingPage>{
       );
   }
 
+
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    setState(() {
-      
+    setState(() { 
     });
   }
   
@@ -356,13 +359,23 @@ class _LandingPageState extends State<LandingPage>{
     setState(() { 
     });
   }
+
+
+   
+  @override
+  void dispose() {
+    super.dispose();
+    locator<UserListBloc>().close();
+  } 
+
   
   @override
   void initState() {
     super.initState();
     //context.read<UserListBloc>().add(UserListInitialize());
-    GetIt.I<UserListBloc>().add(UserListInitialize());
-    //BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
+    //locator.get<UserListBloc>().add(UserListInitialize());
+    context.read<UserListBloc>();
+    BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
     setState(() {
       
     });

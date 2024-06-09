@@ -96,6 +96,14 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    resetLocator();
+    //context.read<UserListBloc>().close();
+    //resetLocator();
+  }
+
+  @override
   void initState() {
     super.initState();
     loadAssets();
@@ -128,7 +136,7 @@ class _MyAppState extends State<MyApp> {
                     create: (context) =>
                         UserPostBloc()..add(UserPostInitialize()),
                   ),
-                  BlocProvider.value(value: locator.get<UserListBloc>()),
+                  BlocProvider.value(value: locator<UserListBloc>()),
                 ],
                 child: const LandingPage(),
               ),
@@ -141,8 +149,7 @@ class _MyAppState extends State<MyApp> {
               value: locator.get<UserListBloc>(),
               child: ProfileDetails()),
           "/search": (context) => MultiBlocProvider(providers: [
-                BlocProvider.value(
-                    value: locator<UserListBloc>()),
+                BlocProvider(create:(context) => UserListBloc()..add(UserListInitialize()),),
                 BlocProvider(
                     create: (_) =>
                         UserFriendBloc()..add(UserFriendInitialize())),
@@ -153,7 +160,7 @@ class _MyAppState extends State<MyApp> {
                     create: (context) =>
                         UserFriendBloc()..add(UserFriendInitialize()),
                   ),
-                  BlocProvider.value(value: locator.get<UserListBloc>())
+                  BlocProvider(create: (context) => UserListBloc()..add(UserListInitialize()),)
                 ],
                 child: const FriendRequests(),
               ),
@@ -163,7 +170,7 @@ class _MyAppState extends State<MyApp> {
                     create: (context) =>
                         UserFriendBloc()..add(UserFriendInitialize()),
                   ),
-                  BlocProvider.value(value: locator.get<UserListBloc>()) 
+                  BlocProvider(create: (context) => UserListBloc()..add(UserListInitialize())) ,
                 ],
                 child: const FriendListPage(),
               ),

@@ -106,6 +106,11 @@ class _FriendRequestsState extends State<FriendRequests>{
   } 
 
   @override
+  void dispose(){
+    super.dispose();
+  }
+
+  @override
   void initState() {
     super.initState();
   }

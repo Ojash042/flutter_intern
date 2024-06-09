@@ -1,7 +1,5 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_states.dart';
@@ -37,21 +35,6 @@ class _SearchPageState extends State<SearchPage>{
   UserData? loggedInUser;
 
   SearchController searchController = SearchController();
-
-
-  // Future<void> getDataFromSharedPrefs() async{
-  //   SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-  //   String? userDataJson = sharedPreferences.getString("user_data");
-  //   String? userDetailsJson = sharedPreferences.getString("user_details");
-  //   Iterable userDataDecoder = jsonDecode(userDataJson!); 
-  //   Iterable userDetailsDecoder = jsonDecode(userDetailsJson!);
-  //
-  //   setState(() {
-  //     userDataList = userDataDecoder.map((e) => UserData.fromJson(e)).toList();
-  //     userDetails =  userDetailsDecoder.map((e) => UserDetails.fromJson(e)).toList(); 
-  //   });
-  // }
-  //
 
   Future<Widget> getFriendStateWidget(int id, UserData? userData) async{
     String friendStateString;
@@ -126,6 +109,11 @@ class _SearchPageState extends State<SearchPage>{
     });},child: Row(children: [Icon(ico, color: Colors.white,), Text(friendStateString, style: const TextStyle(color: Colors.white),)],));
   }
 
+  @override
+  void dispose(){
+    super.dispose();
+  }
+
   Future<void> searchData(String value, UserData? userData) async{
     setState(() { 
       searchedData = List.empty(growable: true);
@@ -162,7 +150,10 @@ class _SearchPageState extends State<SearchPage>{
       
           return BlocBuilder<UserFriendBloc, UserFriendStates>(
           builder: (context, userFriendState) {
-usersFriends = userFriendState.userFriends!.where((element) => (element.userListId>0) &&
+            if(userFriendState is UserFriendEmpty){
+              return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),),);
+            }
+          usersFriends = userFriendState.userFriends!.where((element) => (element.userListId>0) &&
              (element.userId == loggedInUser!.id || element.friendId == loggedInUser!.id ) && (element.hasNewRequest == false) && (!element.hasRemoved)).toList();
       
             for(var item in usersFriends){

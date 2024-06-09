@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
@@ -8,8 +9,8 @@ import 'package:flutter_intern/project/bloc/user_friend_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_friend_events.dart';
 import 'package:flutter_intern/project/bloc/user_friend_states.dart';
 import 'package:flutter_intern/project/bloc/user_list_bloc.dart';
-import 'package:flutter_intern/project/bloc/user_list_events.dart';
 import 'package:flutter_intern/project/bloc/user_list_states.dart';
+import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:bootstrap_icons/bootstrap_icons.dart' as bsIcons;
@@ -125,9 +126,14 @@ class _FriendListPageState extends State<FriendListPage>{
     }
   
   @override
+  void dispose() {
+    super.dispose();
+  }
+  
+  @override
   void initState() {
     super.initState();
-    BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
+    //BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
     BlocProvider.of<UserFriendBloc>(context).add(UserFriendInitialize());
     IconButton searchButton = IconButton(onPressed: (){
     Navigator.of(context).pushNamed('/search');
@@ -167,8 +173,10 @@ class _FriendListPageState extends State<FriendListPage>{
  
               var userData = userDataList!.firstWhere((element) => element.id == friendId);
               var userDetails = userDetailsList!.firstWhere((element) => element.id == friendId);
-              userFriendData.add(userData);
-              userFriendDetails.add(userDetails);
+              if(userFriendData.firstWhereOrNull((e) => e.id == userData.id) == null){
+                userFriendData.add(userData);
+                userFriendDetails.add(userDetails); 
+              }
               }
 
             return Scaffold (
