@@ -10,6 +10,7 @@ import 'package:flutter_intern/project/bloc/user_friend_states.dart';
 import 'package:flutter_intern/project/bloc/user_list_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_list_states.dart';
 import 'package:flutter_intern/project/friend_service_provider.dart' as fService;
+import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
@@ -113,24 +114,24 @@ class _FriendRequestsState extends State<FriendRequests>{
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthStates>(
       builder:(builder, state) { 
-        return BlocListener<UserListBloc, UserListStates>(
-          listener: (context, userListState) {
+        return BlocBuilder<UserListBloc, UserListStates>(
+          builder: (context, userListState) {
             userDataList = userListState.userDataList!;
             userDetailsList = userListState.userDetailsList;
-          },
-          child: BlocConsumer<UserFriendBloc, UserFriendStates>(
-            listener: (context, userFriendState) {
+            return BlocBuilder<UserFriendBloc, UserFriendStates>(
+            builder: (context, userFriendState) {
+              if(userFriendState is UserFriendEmpty){
+                return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),));
+              }
               var filteredFriendList =  userFriendState.userFriends!.where((element) => 
               (element.friendId == state.userData!.id || element.userId == state.userData!.id) && (element.hasNewRequestAccepted == false) &&
               element.requestedBy != state.userData!.id && element.userListId>0).toList(); 
               for(var item in filteredFriendList){
-                var user = userDataList.firstWhere((element) => element.id == item.requestedBy); 
-                var userDetails = userDetailsList!.firstWhere((element) => element.id == user.id); 
+                var user = locator.get<UserListBloc>().state.userDataList!.firstWhere((element) => element.id == item.requestedBy); 
+                var userDetails = locator.get<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
                 requestedByUsers.add(user);
                 requestedByUserDetails.add(userDetails);
                 }
-            },
-            builder: (context, userFriendState) {
               return Scaffold(
               key: _scaffoldKey,
                 appBar: const CommonAppBar(),
@@ -174,9 +175,10 @@ class _FriendRequestsState extends State<FriendRequests>{
                               ],
                             ),
                           ),
-                        );
+                          );
             },
-          ),
+          );
+          },
         );
       },
     );

@@ -128,6 +128,7 @@ class _FriendListPageState extends State<FriendListPage>{
   void initState() {
     super.initState();
     BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
+    BlocProvider.of<UserFriendBloc>(context).add(UserFriendInitialize());
     IconButton searchButton = IconButton(onPressed: (){
     Navigator.of(context).pushNamed('/search');
     }, icon: const Icon(Icons.search));
@@ -145,6 +146,13 @@ class _FriendListPageState extends State<FriendListPage>{
            userDetailsList = userListState.userDetailsList;
         return BlocBuilder<UserFriendBloc, UserFriendStates >(
           builder: (context, userFriendState) {
+             if(userFriendState is UserFriendEmpty){
+              return(
+                const Scaffold(
+                appBar: CommonAppBar(),
+                body: Center(child: CircularProgressIndicator(),),
+              ));
+             }
              usersFriends = userFriendState.userFriends!.where((element) => (element.userListId>0) &&
              (element.userId == loggedInUser!.id || element.friendId == loggedInUser.id ) && (element.hasNewRequest == false) && (!element.hasRemoved)).toList();
 

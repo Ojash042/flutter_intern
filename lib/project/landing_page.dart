@@ -258,7 +258,6 @@ class _LandingPageState extends State<LandingPage>{
                             Future.delayed(Duration.zero, (){
                               setState(() {  
                                 forceUpdateVar = Random().nextInt(1290);
-                                print(imagesCounter);
                               });
                             });
                           },),

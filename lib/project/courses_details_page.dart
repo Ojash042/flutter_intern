@@ -233,7 +233,6 @@ class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTick
                   if(currentCourse ==null || instructorState == InstructorEmpty()){
                     return;
                   }
-                  print(instructorState.instructors?.where((e) => currentCourse!.instructors.contains(e.id)));
                   currentCourseInstructor = (currentCourse == null || instructorState == InstructorEmpty() ) ? null :
                   instructorState.instructors?.where((e) => currentCourse!.instructors.contains(e.id)).toList();
                 },
