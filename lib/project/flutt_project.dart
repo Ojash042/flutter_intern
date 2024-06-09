@@ -1,5 +1,4 @@
 // ignore_for_file: must_be_immutable
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -8,10 +7,19 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_intern/project/auth_bloc.dart';
-import 'package:flutter_intern/project/auth_events.dart';
-// import 'package:flutter_intern/project/auth_provider.dart';
-import 'package:flutter_intern/project/auth_states.dart';
+import 'package:flutter_intern/project/bloc/auth_bloc.dart';
+import 'package:flutter_intern/project/bloc/auth_events.dart';
+import 'package:flutter_intern/project/bloc/auth_states.dart';
+import 'package:flutter_intern/project/bloc/course_events.dart';
+import 'package:flutter_intern/project/bloc/courses_bloc.dart';
+import 'package:flutter_intern/project/bloc/instructor_bloc.dart';
+import 'package:flutter_intern/project/bloc/instructor_event.dart';
+import 'package:flutter_intern/project/bloc/user_friend_bloc.dart';
+import 'package:flutter_intern/project/bloc/user_friend_events.dart';
+import 'package:flutter_intern/project/bloc/user_list_bloc.dart';
+import 'package:flutter_intern/project/bloc/user_list_events.dart';
+import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
+import 'package:flutter_intern/project/bloc/user_post_event.dart';
 import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
 import 'package:flutter_intern/project/courses_page.dart';
@@ -19,12 +27,15 @@ import 'package:flutter_intern/project/forgot_password_page.dart';
 import 'package:flutter_intern/project/friend_list_page.dart';
 import 'package:flutter_intern/project/friend_requests.dart';
 import 'package:flutter_intern/project/landing_page.dart';
+import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/logout_page.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/my_posts_page.dart';
+import 'package:flutter_intern/project/profile_details.dart';
 import 'package:flutter_intern/project/profile_info_page.dart';
 import 'package:flutter_intern/project/search_page.dart';
 import 'package:flutter_intern/project/todo.dart';
+import 'package:get_it/get_it.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -35,9 +46,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_intern/project/Login_form.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
+
 void main(List<String> args) {
+  setupLocator();
   runApp(const MyApp());
-}
+  }
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -48,26 +62,37 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late List<UserData> userDataList;
-  late int currentUserId; 
+  late int currentUserId;
 
   Future<void> loadAssets() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    var courseCategoriesJson = await rootBundle.loadString('assets/course_categories.json');
-    var courseByCategoriesJson = await rootBundle.loadString('assets/courses_by_categories.json');
+    var courseCategoriesJson =
+        await rootBundle.loadString('assets/course_categories.json');
+    var courseByCategoriesJson =
+        await rootBundle.loadString('assets/courses_by_categories.json');
     var coursesJson = await rootBundle.loadString('assets/courses.json');
     var instructorJson = await rootBundle.loadString('assets/instructor.json');
     var userPost = await rootBundle.loadString('assets/user_post.json');
 
-    var userFriendJson = await rootBundle.loadString('assets/user_friend_list.json');
+    var userFriendJson =
+        await rootBundle.loadString('assets/user_friend_list.json');
 
-    sharedPreferences.getString("course_categories") == null ? sharedPreferences.setString("course_categories", courseCategoriesJson): null;
-    print('${sharedPreferences.getString("user_post") == null}');
-    sharedPreferences.getString("course_by_categories") == null ? sharedPreferences.setString("course_by_categories", courseByCategoriesJson) : null;
-    sharedPreferences.getString("course") == null ? sharedPreferences.setString("courses", coursesJson) : null;
-    sharedPreferences.getString("instructor") == null ? sharedPreferences.setString("instructor", instructorJson): null;
-    sharedPreferences.getString("user_post") == null ? sharedPreferences.setString("user_post", jsonEncode(jsonDecode(userPost)["user_post"])) : null;
-    sharedPreferences.getString("user_friend") == null?  sharedPreferences.setString("user_friend", jsonEncode(jsonDecode(userFriendJson)["user_friend_list"])) : null;
-
+    sharedPreferences.getString("course_categories") == null ? sharedPreferences.setString("course_categories", courseCategoriesJson) : null;
+    sharedPreferences.getString("course_by_categories") == null ? sharedPreferences.setString( "course_by_categories", courseByCategoriesJson): null;
+    sharedPreferences.getString("courses") == null
+        ? sharedPreferences.setString("courses", coursesJson)
+        : null;
+    sharedPreferences.getString("instructor") == null
+        ? sharedPreferences.setString("instructor", instructorJson)
+        : null;
+    sharedPreferences.getString("user_post") == null
+        ? sharedPreferences.setString(
+            "user_post", jsonEncode(jsonDecode(userPost)["user_post"]))
+        : null;
+    sharedPreferences.getString("user_friend") == null
+        ? sharedPreferences.setString("user_friend",
+            jsonEncode(jsonDecode(userFriendJson)["user_friend_list"]))
+        : null;
   }
 
   @override
@@ -81,9 +106,7 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         BlocProvider(create: (_) => AuthBloc()..add(UnknownAuthEvent())),
-        //ChangeNotifierProvider(create: (_) => AuthProvider()),
-        // ChangeNotifierProvider(create: (context) => FriendServiceProvider(context)),
-        ],
+      ],
       child: MaterialApp(
         theme: ThemeData(
             textTheme: GoogleFonts.quicksandTextTheme(),
@@ -96,31 +119,93 @@ class _MyAppState extends State<MyApp> {
           "/": (context) => const MyHomePage(child: LoginForm()),
           "/login": (context) => const LoginForm(),
           "/signup": (context) => const SignUpForm(),
-          "/courses": (context) => const CoursesPage(),
-          "/home": (context) => const LandingPage(),
+          "/courses": (context) => BlocProvider(
+              create: (_) => CoursesBloc()..add(CourseListInitialize()),
+              child: const CoursesPage()),
+          "/home": (context) => MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (context) =>
+                        UserPostBloc()..add(UserPostInitialize()),
+                  ),
+                  BlocProvider.value(value: locator.get<UserListBloc>()),
+                ],
+                child: const LandingPage(),
+              ),
           "/changePassword": (context) => const ChangePasswordPage(),
-          "/profileInfo": (context) => ProfileInfoPage(id: currentUserId.toString(),),
-          "/settings":(context) => const LogoutPage(),
-          "/search": (context) => const SearchPage(),
-          "/friendRequests": (context) => FriendRequests(),
-          "/friendLists": (context) => const FriendListPage(),
+          "/profileInfo": (context) => ProfileInfoPage(
+                id: currentUserId.toString(),
+              ),
+          "/settings": (context) => const LogoutPage(),
+          "/editDetails": (context) => BlocProvider.value(
+              value: locator.get<UserListBloc>(),
+              child: ProfileDetails()),
+          "/search": (context) => MultiBlocProvider(providers: [
+                BlocProvider.value(
+                    value: locator<UserListBloc>()),
+                BlocProvider(
+                    create: (_) =>
+                        UserFriendBloc()..add(UserFriendInitialize())),
+              ], child: const SearchPage()),
+          "/friendRequests": (context) => MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (context) =>
+                        UserFriendBloc()..add(UserFriendInitialize()),
+                  ),
+                  BlocProvider.value(value: locator.get<UserListBloc>())
+                ],
+                child: const FriendRequests(),
+              ),
+          "/friendLists": (context) => MultiBlocProvider(
+                providers: [
+                  BlocProvider(
+                    create: (context) =>
+                        UserFriendBloc()..add(UserFriendInitialize()),
+                  ),
+                  BlocProvider.value(value: locator.get<UserListBloc>()) 
+                ],
+                child: const FriendListPage(),
+              ),
           "/forgotPassword": (context) => const ForgotPasswordPage(),
-          "/myPosts": (context) => MyPostsPage(),
+          "/myPosts": (context) => MultiBlocProvider(providers: [
+                BlocProvider(
+                    create: (_) => UserPostBloc()..add(UserPostInitialize())),
+                BlocProvider.value(value: locator.get<UserListBloc>()) 
+              ], child: const MyPostsPage()),
           "/todos": (context) => const ToDoPage(),
         },
-
         onGenerateRoute: (settings) {
           if (settings.name!.startsWith('/courses/')) {
             var courseId = settings.name!.split('/').last;
             return MaterialPageRoute(
-                builder: (context) => CoursesDetailsPage(courseId: courseId));
+                builder: (context) => MultiBlocProvider(
+                      providers: [
+                        BlocProvider(
+                          create: (context) =>
+                              CoursesBloc()..add(CourseListInitialize()),
+                        ),
+                        BlocProvider(
+                          create: (context) =>
+                              InstructorBloc()..add(InstructorInitialize()),
+                        ),
+                      ],
+                      child: CoursesDetailsPage(courseId: courseId),
+                    ));
           }
-
           if (settings.name!.startsWith('/profileInfo/')) {
             var profileId = settings.name!.split('/').last;
             return MaterialPageRoute(
-              builder: (context) => ProfileInfoPage(id: profileId));
-          } 
+                builder: (context) => MultiBlocProvider(
+                      providers: [
+                        BlocProvider(
+                          create: (context) => GetIt.I<UserListBloc>(),
+                        ),
+                        BlocProvider(create: (context) => UserPostBloc()..add(UserPostInitialize())),
+                      ],
+                      child: ProfileInfoPage(id: profileId),
+                    ));
+          }
           return null;
         },
       ),
@@ -137,9 +222,12 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  void redirectPage(){
-    context.read<AuthBloc>().state.loggedInState ? Navigator.of(context).popAndPushNamed('/home') : Navigator.of(context).popAndPushNamed('/login');
+  void redirectPage() {
+    context.read<AuthBloc>().state.loggedInState
+        ? Navigator.of(context).popAndPushNamed('/home')
+        : Navigator.of(context).popAndPushNamed('/login');
   }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -161,11 +249,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      //drawer: MyDrawer(),
-      bottomNavigationBar: CommonNavigationBar(),
-      appBar: const CommonAppBar(),
-      body: const BodyContainer(),
+    return const Scaffold(
+      bottomNavigationBar: UnauthorizedNavigationBar(),
+      appBar: CommonAppBar(),
+      body: BodyContainer(),
     );
   }
 }
@@ -177,8 +264,7 @@ class BodyContainer extends StatefulWidget {
   State<BodyContainer> createState() => _BodyContainerState();
 }
 
-class _BodyContainerState extends State<BodyContainer> { 
-
+class _BodyContainerState extends State<BodyContainer> {
   @override
   void initState() {
     super.initState();
@@ -186,13 +272,17 @@ class _BodyContainerState extends State<BodyContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AuthBloc, AuthStates>( 
-      listener: (BuildContext context, state) => 
-      Future.delayed(Duration.zero, (){
-          print("Wahoo");
-          (state is AuthorizedAuthState) ? Navigator.of(context).popAndPushNamed('/home') : Navigator.of(context).popAndPushNamed('/login'); 
-      }),
-            child: BlocBuilder<AuthBloc, AuthStates>(builder: (context, state) => const Center(child: CircularProgressIndicator()),));
+    return BlocListener<AuthBloc, AuthStates>(
+        listener: (BuildContext context, state) =>
+            Future.delayed(Duration.zero, () {
+              (state is AuthorizedAuthState)
+                  ? Navigator.of(context).popAndPushNamed('/home')
+                  : Navigator.of(context).popAndPushNamed('/login');
+            }),
+        child: BlocBuilder<AuthBloc, AuthStates>(
+          builder: (context, state) =>
+              const Center(child: CircularProgressIndicator()),
+        ));
   }
 }
 
@@ -200,28 +290,29 @@ class BasicDetails extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   UserData userData;
   final VoidCallback incrementPhase;
-  final FocusNode fullNameFocusNode; 
+  final FocusNode fullNameFocusNode;
   final FocusNode passwordFocusNode;
   final FocusNode emailFocusNode;
   final FocusNode rePasswordFocusNode;
-  final VoidCallback onChangeFocus; 
+  final VoidCallback onChangeFocus;
 
-  BasicDetails(
-      {super.key,
-      required this.formKey,
-      required this.userData,
-      required this.incrementPhase,
-      required this.fullNameFocusNode, required this.passwordFocusNode, required this.emailFocusNode, required this.rePasswordFocusNode,
-      required this.onChangeFocus, 
-      });
+  BasicDetails({
+    super.key,
+    required this.formKey,
+    required this.userData,
+    required this.incrementPhase,
+    required this.fullNameFocusNode,
+    required this.passwordFocusNode,
+    required this.emailFocusNode,
+    required this.rePasswordFocusNode,
+    required this.onChangeFocus,
+  });
 
   @override
   State<BasicDetails> createState() => _BasicDetailsState();
-
 }
 
 class _BasicDetailsState extends State<BasicDetails> {
-  
   final RegExp _fullNameRegex = RegExp(r'[A-Za-z]+');
   final RegExp _emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
   TextEditingController fullNameController = TextEditingController();
@@ -231,7 +322,6 @@ class _BasicDetailsState extends State<BasicDetails> {
 
   void addData() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    // final GlobalKey<ScaffoldState> bottomSheetKey = GlobalKey<ScaffoldState>();
     Completer<void> dialogCompleter = Completer<void>();
 
     String? userDataSharedPrefs = sharedPreferences.getString("user_data");
@@ -248,24 +338,24 @@ class _BasicDetailsState extends State<BasicDetails> {
         (retrievedUserData.firstWhereOrNull(
                 (element) => element.email == emailController.text) !=
             null)) {
-      mounted ?showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            context = scaffoldContext;
-            return AlertDialog(
-              title: const Text("User Already exists"),
-              content: const Text("Redirecting to loging page"),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      Navigator.pop(scaffoldContext);
-                      dialogCompleter.complete();
-                    },
-                    child: const Text("Ok!")),
-              ],
-            );
-          }) : null;
+      mounted
+          ? showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                context = scaffoldContext;
+                return AlertDialog(
+                  title: const Text("User Already exists"),
+                  content: const Text("Redirecting to loging page"),
+                  actions: [
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.pop(scaffoldContext);
+                          dialogCompleter.complete();
+                        },
+                        child: const Text("Ok!")),
+                  ],
+                );}): null;
       return;
     }
 
@@ -298,8 +388,7 @@ class _BasicDetailsState extends State<BasicDetails> {
                 focusNode: widget.fullNameFocusNode,
                 decoration: const InputDecoration(hintText: "Enter Full Name "),
                 validator: (value) => (!_fullNameRegex.hasMatch(value!))
-                    ? null /*"Invalid Name Format"*/
-                    : null,
+                    ? null /*"Invalid Name Format"*/: null,
               ),
               const SizedBox(
                 height: 30,
@@ -323,7 +412,7 @@ class _BasicDetailsState extends State<BasicDetails> {
                   ),
                   obscureText: true,
                   validator: (value) => (value == null || value.isEmpty)
-                      ? null /*"Password cannot be empty"*/
+                      ? "Password cannot be empty"
                       : null),
               const SizedBox(
                 height: 30,
@@ -336,7 +425,7 @@ class _BasicDetailsState extends State<BasicDetails> {
                 validator: (value) => (value == null ||
                         value.isEmpty ||
                         passwordController.text != value)
-                    ? null/*"Passwords do not match"*/
+                    ? null /*"Passwords do not match"*/
                     : null,
               ),
               const SizedBox(
@@ -466,9 +555,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
         key: widget.formKey,
         child: Padding(
           padding: const EdgeInsets.all(9),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Align(
               alignment: Alignment.topCenter,
               child: Stack(
@@ -507,14 +595,14 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                             child: Container(
                               decoration: const BoxDecoration(
                                 border: Border(
-                                  top:
-                                      BorderSide(color: Colors.white, width: 1.5),
-                                  bottom:
-                                      BorderSide(color: Colors.white, width: 1.5),
-                                  left:
-                                      BorderSide(color: Colors.white, width: 1.5),
-                                  right:
-                                      BorderSide(color: Colors.white, width: 1.5),
+                                  top: BorderSide(
+                                      color: Colors.white, width: 1.5),
+                                  bottom: BorderSide(
+                                      color: Colors.white, width: 1.5),
+                                  left: BorderSide(
+                                      color: Colors.white, width: 1.5),
+                                  right: BorderSide(
+                                      color: Colors.white, width: 1.5),
                                 ),
                                 color: Colors.blueGrey,
                                 shape: BoxShape.circle,
@@ -556,19 +644,61 @@ class _PersonalDetailsState extends State<PersonalDetails> {
                 ],
               ),
             ),
-            const SizedBox(height: 40,),
-            TextFormField( maxLines: null, controller: summaryController, decoration: const InputDecoration(hintText: "Describe yourself..."),),
-            const SizedBox(height: 30,),
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8), child: 
-              Text("Gender", style: Theme.of(context).textTheme.headlineSmall, textAlign: TextAlign.start,),),
-            RadioListTile( value: Gender.Male, groupValue: _gender, title: const Text("Male"), onChanged: (Gender? value) { setState(() { _gender = value; });}),
-            RadioListTile( value: Gender.Female, title: const Text("Female"), groupValue: _gender, onChanged: (Gender? value) {
+            const SizedBox(
+              height: 40,
+            ),
+            TextFormField(
+              maxLines: null,
+              controller: summaryController,
+              decoration:
+                  const InputDecoration(hintText: "Describe yourself..."),
+            ),
+            const SizedBox(
+              height: 30,
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8),
+              child: Text(
+                "Gender",
+                style: Theme.of(context).textTheme.headlineSmall,
+                textAlign: TextAlign.start,
+              ),
+            ),
+            RadioListTile(
+                value: Gender.Male,
+                groupValue: _gender,
+                title: const Text("Male"),
+                onChanged: (Gender? value) {
                   setState(() {
                     _gender = value;
-                  });}),
-            const SizedBox(height: 30,),
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 14.0,vertical :8.0), child: Text( "Marital Status", style: Theme.of(context).textTheme.headlineSmall,),),
-            RadioListTile( value: MaritalStatus.married, title: const Text("Married"), groupValue: _maritalStatus, onChanged: (MaritalStatus? value) {
+                  });
+                }),
+            RadioListTile(
+                value: Gender.Female,
+                title: const Text("Female"),
+                groupValue: _gender,
+                onChanged: (Gender? value) {
+                  setState(() {
+                    _gender = value;
+                  });
+                }),
+            const SizedBox(
+              height: 30,
+            ),
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+              child: Text(
+                "Marital Status",
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+            RadioListTile(
+                value: MaritalStatus.married,
+                title: const Text("Married"),
+                groupValue: _maritalStatus,
+                onChanged: (MaritalStatus? value) {
                   setState(() {
                     _maritalStatus = value;
                   });
@@ -586,7 +716,8 @@ class _PersonalDetailsState extends State<PersonalDetails> {
               height: 30,
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14.0,vertical :8.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
               child: Text(
                 "Date of Birth",
                 style: Theme.of(context).textTheme.headlineSmall,
@@ -649,7 +780,12 @@ class WorkPlaceDetails extends StatefulWidget {
   DateTime? endDate;
 
   List<WorkExperiences> workplaceData;
-    WorkPlaceDetails({super.key, required this.incrementPhase, required this.formKey, required this.workplaceData});
+  WorkPlaceDetails(
+      {super.key,
+      required this.incrementPhase,
+      required this.formKey,
+      required this.workplaceData});
+
   @override
   State<WorkPlaceDetails> createState() => _WorkPlaceDetailsState();
 }
@@ -657,11 +793,16 @@ class WorkPlaceDetails extends StatefulWidget {
 class _WorkPlaceDetailsState extends State<WorkPlaceDetails> {
   @override
   Widget build(BuildContext context) {
-    return Padding( padding: const EdgeInsets.all(8.0), child: Form(
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Form(
         key: widget.formKey,
         child: Column(
           children: [
-            Text( "Workplace history", style: Theme.of(context).textTheme.headlineMedium,),
+            Text(
+              "Workplace history",
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
             ListView.builder(
               itemCount: widget.workplaceCount,
               shrinkWrap: true,
@@ -696,7 +837,8 @@ class _WorkPlaceDetailsState extends State<WorkPlaceDetails> {
                       height: 30,
                     ),
                     TextFormField(
-                      onChanged: (value) => { setState(() {
+                      onChanged: (value) => {
+                        setState(() {
                           widget.workplaceData.elementAt(index).summary = value;
                         })
                       },
@@ -1062,7 +1204,8 @@ class _EducationFormState extends State<EducationForm> {
                                     List<Accomplishment> accomplishments =
                                         (widget.educations
                                                     .elementAt(index)
-                                                    .accomplishments == null)
+                                                    .accomplishments ==
+                                                null)
                                             ? List.empty(growable: true)
                                             : widget.educations
                                                 .elementAt(index)
@@ -1464,7 +1607,7 @@ class SignUpForm extends StatefulWidget {
 class _SignUpFormState extends State<SignUpForm> {
   TextEditingController mobileNoController = TextEditingController();
   List<GlobalKey<FormState>> formStateList =
-  List.generate(6, (index) => GlobalKey<FormState>());
+      List.generate(6, (index) => GlobalKey<FormState>());
   UserData userData = UserData();
   RegExp phoneRegex = RegExp(r'[0-9]{10}');
   RegExp emailRegex = RegExp(r'^[\w\-\.]+@([\w-]+\.)+[\w-]{2,}$');
@@ -1489,19 +1632,22 @@ class _SignUpFormState extends State<SignUpForm> {
   FocusNode emailFocusNode = FocusNode();
   FocusNode passwordFocusNode = FocusNode();
   FocusNode rePasswordFocusNode = FocusNode();
-  
 
-
-  void _onFocusChangedBasic(){
-    print("focus changed");
-    if(fullNameFocusNode.hasFocus || emailFocusNode.hasFocus || passwordFocusNode.hasFocus || rePasswordFocusNode.hasFocus){
+  void _onFocusChangedBasic() {
+    if (fullNameFocusNode.hasFocus ||
+        emailFocusNode.hasFocus ||
+        passwordFocusNode.hasFocus ||
+        rePasswordFocusNode.hasFocus) {
       setState(() {
         heightFactor = 0.3;
         widthFactor = -1.0;
         secondHeightFactor = -0.1;
       });
     }
-    if(!fullNameFocusNode.hasFocus && !emailFocusNode.hasFocus && !passwordFocusNode.hasFocus && !rePasswordFocusNode.hasFocus){
+    if (!fullNameFocusNode.hasFocus &&
+        !emailFocusNode.hasFocus &&
+        !passwordFocusNode.hasFocus &&
+        !rePasswordFocusNode.hasFocus) {
       heightFactor = originalHeightFactor;
       widthFactor = originaWidthFactor;
       secondHeightFactor = originaSecondHeightFactor;
@@ -1523,8 +1669,6 @@ class _SignUpFormState extends State<SignUpForm> {
     userDataList = decoded.map((e) => UserData.fromJson(e)).toList();
     return userDataList.length + 1;
   }
-  
-  
 
   Future<void> storeUserDatatoPreferences() async {
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
@@ -1541,7 +1685,6 @@ class _SignUpFormState extends State<SignUpForm> {
     String? userDetailsSharedPrefs =
         sharedPreferences.getString("user_details");
 
-
     List<UserDetails> retrievedUserDetails = List.empty(growable: true);
     List<UserData> retrievedUserData = List.empty(growable: true);
 
@@ -1557,8 +1700,10 @@ class _SignUpFormState extends State<SignUpForm> {
 
     retrievedUserDetails.add(userDetails);
     retrievedUserData.add(userData);
-    String jsonUserDetails =jsonEncode(retrievedUserDetails.map((e) => e.toJson()).toList());
-    String jsonUserData =jsonEncode(retrievedUserData.map((e) => e.toJson()).toList());
+    String jsonUserDetails =
+        jsonEncode(retrievedUserDetails.map((e) => e.toJson()).toList());
+    String jsonUserData =
+        jsonEncode(retrievedUserData.map((e) => e.toJson()).toList());
 
     sharedPreferences.setString("user_details", jsonUserDetails);
     sharedPreferences.setString("user_data", jsonUserData);
@@ -1579,27 +1724,34 @@ class _SignUpFormState extends State<SignUpForm> {
   double secondHeightFactor = 0.45;
   double originaSecondHeightFactor = 0.45;
 
-  void _onscrollReducePath(){
+  void _onscrollReducePath() {
     setState(() {
-      print("${scrollController.position.pixels/2.5 }");
-      heightFactor = min(0.45, max(originalHeightFactor - (scrollController.position.pixels * (0.0625 / 4)), -1.0));
-      print(heightFactor);
-      widthFactor = min(0.7,max(0.7 - (scrollController.position.pixels * (0.00625 /4)), -0.25)); //0.5 
+      heightFactor = min(
+          0.45,
+          max(
+              originalHeightFactor -
+                  (scrollController.position.pixels * (0.0625 / 4)),
+              -1.0));
+      widthFactor = min(
+          0.7,
+          max(0.7 - (scrollController.position.pixels * (0.00625 / 4)),
+              -0.25)); //0.5
       //widthFactor = min(widthFactor,max(widthFactor - scrollController.position.pixels/40, 0.05));
-      secondHeightFactor = min(0.45, max(0.45 - (scrollController.position.pixels * (0.0625/4)), -1.0));
+      secondHeightFactor = min(0.45,
+          max(0.45 - (scrollController.position.pixels * (0.0625 / 4)), -1.0));
 
       //widthFactor = (heightFactor+secondHeightFactor) *0.5;
     });
-  } 
+  }
 
   @override
   void initState() {
     super.initState();
     scrollController.addListener(_onscrollReducePath);
-    fullNameFocusNode.addListener( _onFocusChangedBasic);
-    emailFocusNode.addListener( _onFocusChangedBasic);
-    passwordFocusNode.addListener( _onFocusChangedBasic);
-    rePasswordFocusNode.addListener( _onFocusChangedBasic);
+    fullNameFocusNode.addListener(_onFocusChangedBasic);
+    emailFocusNode.addListener(_onFocusChangedBasic);
+    passwordFocusNode.addListener(_onFocusChangedBasic);
+    rePasswordFocusNode.addListener(_onFocusChangedBasic);
 
     formPhases = [
       BasicDetails(
@@ -1612,13 +1764,11 @@ class _SignUpFormState extends State<SignUpForm> {
         rePasswordFocusNode: rePasswordFocusNode,
         onChangeFocus: _onFocusChangedBasic,
       ),
-
       PersonalDetails(
         formKey: formStateList.elementAt(1),
         basicInfo: basicInfo,
         incrementPhase: storeUserDatatoPreferences,
       ),
-
       FinishedSignupPage(),
       WorkPlaceDetails(
         formKey: formStateList.elementAt(2),
@@ -1645,7 +1795,6 @@ class _SignUpFormState extends State<SignUpForm> {
     ];
   }
 
- 
   @override
   Widget build(BuildContext context) {
     return (Scaffold(
@@ -1661,9 +1810,8 @@ class _SignUpFormState extends State<SignUpForm> {
               child: Container(
                 width: MediaQuery.of(context).size.width,
                 height: 280,
-                decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                        colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
+                color: Colors.blueAccent,
+                //decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
               ),
             ),
           ),
@@ -1672,9 +1820,19 @@ class _SignUpFormState extends State<SignUpForm> {
             controller: scrollController,
             child: Column(
               children: [
-                const SizedBox(height: 20,),
-                Padding(padding: const EdgeInsets.all(14.0),child: Text("Sign Up", style: Theme.of(context).textTheme.headlineMedium,),),
-                const SizedBox(height: 15,),
+                const SizedBox(
+                  height: 20,
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(14.0),
+                  child: Text(
+                    "Sign Up",
+                    style: Theme.of(context).textTheme.headlineMedium,
+                  ),
+                ),
+                const SizedBox(
+                  height: 15,
+                ),
                 formPhases.elementAt(currentIndex),
               ],
             ),

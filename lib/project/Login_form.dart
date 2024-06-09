@@ -1,9 +1,9 @@
 // ignore: file_names
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_intern/project/auth_bloc.dart';
-import 'package:flutter_intern/project/auth_events.dart';
-import 'package:flutter_intern/project/auth_states.dart';
+import 'package:flutter_intern/project/bloc/auth_bloc.dart';
+import 'package:flutter_intern/project/bloc/auth_events.dart';
+import 'package:flutter_intern/project/bloc/auth_states.dart';
 import 'package:flutter_intern/project/misc.dart';
 class LoginForm extends StatefulWidget{
   const LoginForm({super.key});
@@ -75,9 +75,13 @@ class _LoginFormState extends State<LoginForm>{
         }
        },
       child: BlocBuilder<AuthBloc, AuthStates>(
-        builder: (BuildContext context, state)  => Scaffold(
+        builder: (BuildContext context, state) {
+          
+          return Scaffold(
+
           // appBar: AppBar(title: const Text("Project"), centerTitle: true, backgroundColor: Colors.blueAccent,),
-          drawer: MyDrawer(),
+          //drawer: MyDrawer(),
+          bottomNavigationBar: const UnauthorizedNavigationBar(),
           body: Stack(
             children: [
               Align(
@@ -85,7 +89,7 @@ class _LoginFormState extends State<LoginForm>{
                 child: ClipPath(
                 clipper: BackgroundWaveClipper(heightFactor: heightFactor, widthFactor: widthFactor, secondHeightFactor: heightFactor),
                 child: Container(width: MediaQuery.of(context).size.width,
-                height: 280, decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),
+                height: 280, decoration: const BoxDecoration(gradient: LinearGradient(colors: [Colors.blueAccent, Colors.white])),
                       ),
                     ),
                   ),
@@ -97,7 +101,21 @@ class _LoginFormState extends State<LoginForm>{
                     mainAxisAlignment: MainAxisAlignment.center,
                       children: [ 
                         Text("Login", style: Theme.of(context).textTheme.headlineMedium),
-                        const SizedBox(height: 40,),
+                        const SizedBox(height: 120,),
+                        // (state is UnauthorizedAuthState && state.isLoginError)? SnackBar(content: const Text("Login Error"), 
+                        // backgroundColor: Colors.white, elevation: 5, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                        // behavior: SnackBarBehavior.floating,showCloseIcon: true,): Container(), 
+
+                        (state is UnauthorizedAuthState && state.isLoginError ) ? Container(
+                          decoration:BoxDecoration(color: Colors.red[400],
+                          border: Border.all(color: Colors.grey[200]!, width: 2),
+                          borderRadius:const BorderRadius.all(Radius.circular(14)),
+                          //shape: BoxShape.circle
+                          ),
+                          child: const Padding(
+                            padding:  EdgeInsets.symmetric(horizontal: 9.0, vertical: 10),
+                            child:  Text("Error! Invalid Credentials", style: TextStyle(color: Colors.white),),
+                          ),) : Container(),
                         SizedBox(width: MediaQuery.of(context).size.width - 100, child: TextFormField(decoration: const InputDecoration(hintText: "Enter Email"),
                         focusNode: _emailFocusNode,controller: _emailController,),),
                         const SizedBox(height: 30,),
@@ -113,8 +131,12 @@ class _LoginFormState extends State<LoginForm>{
                           icon: Icon(passwordObscure ? Icons.visibility_off : Icons.visibility)),
                           hintText: "Enter password"),),),
                         const SizedBox(height: 30,), 
-                        SizedBox(child: OutlinedButton(onPressed:  () => 
-                        context.read<AuthBloc>().add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text)),
+                        SizedBox(child: OutlinedButton(onPressed:  (){                        
+                        context.read<AuthBloc>().add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text));
+                        if(true){
+                          
+                        }
+                        },
                         //BlocProvider.of<AuthBloc>(context).add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text)),
                         child: const Text("Login"),)),
                         const SizedBox(height: 40,),
@@ -128,7 +150,8 @@ class _LoginFormState extends State<LoginForm>{
               ),
             ],
           ),
-        ),
+        );
+        },
       ),
     );
   } 

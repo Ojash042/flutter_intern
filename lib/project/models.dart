@@ -1,11 +1,12 @@
 import 'dart:math';
 
+import 'package:equatable/equatable.dart';
 import 'package:intl/intl.dart';
 enum Gender {Male, Female}
 
 enum MaritalStatus{married, single}
 
-class UserData{
+class UserData extends Equatable{
   UserData();
   // UserData({this.id = 0, this.name ="", this.email = "", this.password = "" });
   late int id;
@@ -23,9 +24,12 @@ class UserData{
     ud.password = json["password"];
     return ud;
   }
+  
+  @override
+  List<Object?> get props => [id, name, email, password];
 }
 
-class ImageModel{
+class ImageModel extends Equatable{
   ImageModel();
   //ImageModel({this.isNetworkUrl = false, this.imagePath = ""});
   late bool isNetworkUrl = true;
@@ -39,9 +43,13 @@ class ImageModel{
     imageModel.isNetworkUrl = json["is_network_url"];
     return imageModel;  
   }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [isNetworkUrl, imagePath];
 }
 
-class Skills{
+class Skills extends Equatable{
   Skills({this.id, this.title});
   // Skills({required this.id, required this.title});
   int? id;
@@ -54,9 +62,12 @@ class Skills{
     skills.title = json["title"];
     return skills;
   }
+  
+  @override
+  List<Object?> get props => [id, title];
 }
 
-class WorkExperiences{
+class WorkExperiences extends Equatable{
   WorkExperiences();
   // WorkExperiences({required this.id, required this.jobTitle, required this.summary, 
   // required this.organizationName, required this.startDate, required this.endDate});
@@ -82,10 +93,14 @@ class WorkExperiences{
     workExperiences.endDate = DateFormat("yyyy-MM-dd").parse(json["end_date"]);
     return workExperiences;
   }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, jobTitle, summary, organizationName, startDate, endDate];
 
 }
 
-class Hobbies{
+class Hobbies extends Equatable{
   Hobbies();
   // Hobbies({required this.id, required this.title});
   late int id;
@@ -98,9 +113,13 @@ class Hobbies{
     hobbies.title = json["title"];
     return hobbies;
   }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, title];
 }
 
-class Accomplishment{
+class Accomplishment extends Equatable{
   Accomplishment();
   // Accomplishment({required this.id, required this.title, required this.description, required this.dateTime});
   late int id;  
@@ -120,9 +139,12 @@ class Accomplishment{
     accomplishment.dateTime = DateFormat("yyyy-MM-dd").parse(json["date_time"]);
     return accomplishment;
   }
+  
+  @override
+  List<Object?> get props => [id, title, description, dateTime];
 }
 
-class Education{
+class Education extends Equatable{
   Education();
   // Education({required this.id, required this.level, required this.summary, required this.organizationName, required this.startDate, 
   // required this.endDate, required this.accomplishments});
@@ -151,10 +173,14 @@ class Education{
     var accomplishmentJson = json["accomplishments"] as List;
     education.accomplishments =  accomplishmentJson.map((e) => Accomplishment.fromJson(e)).toList();
     return education;
-  } 
+  }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, level, summary, organizationName, startDate, endDate, accomplishments]; 
 }
 
-class SocialMedia{
+class SocialMedia extends Equatable{
   // SocialMedia({required this.id, required this.title, required this.url, required this.type});
 
   SocialMedia();
@@ -173,9 +199,13 @@ class SocialMedia{
     sm.type = json["type"];
     return sm;
   }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, title, url, type];
 }
 
-class ContactInfo{
+class ContactInfo extends Equatable{
   const ContactInfo({this.mobileNo = "", this.socialMedias = const []});
   // ContactInfo({required this.mobileNo, required this.socialMedias});
   final String? mobileNo;  
@@ -194,9 +224,13 @@ class ContactInfo{
     ContactInfo contactInfo = ContactInfo(mobileNo: json["mobileNo"], socialMedias: sm.map((e) => SocialMedia.fromJson(e)).toList());
     return contactInfo;
   }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [mobileNo, socialMedias];
 }
 
-class Languages{
+class Languages extends Equatable{
   // Languages({required this.id, required this.title, required this.status});
   Languages();
   late int id;
@@ -213,9 +247,13 @@ class Languages{
     //langs.status = json["status"];
     return langs;
   }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, title];
 }
 
-class BasicInfo{
+class BasicInfo extends Equatable{
   BasicInfo();
   //BasicInfo({required this.id, required this.profileImage, required this.coverImage, 
   // required this.summary, required this.gender, required this.dob, required this.maritalStatus});
@@ -246,10 +284,14 @@ class BasicInfo{
     basicInfo.dob = json["dob"];
     return basicInfo;
   }
+  
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, profileImage, coverImage, gender, maritalStatus, summary, dob];
 
 }
 
-class UserDetails{
+class UserDetails extends Equatable{
   //UserDetails();
   UserDetails({this.id, required this.basicInfo, this.workExperiences =const [], this.skills = const [], this.hobbies = const [], this.languages = const [], 
    this.educations = const [], this.contactInfo = const ContactInfo()});
@@ -290,4 +332,7 @@ class UserDetails{
     userDetails.contactInfo = ContactInfo.fromJson(json["contact_info"]); 
     return userDetails;
   }
+  
+  @override
+  List<Object?> get props => [workExperiences, skills, hobbies, languages, educations, contactInfo];
 }

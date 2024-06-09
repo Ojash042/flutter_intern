@@ -18,11 +18,10 @@ class UnauthorizedAuthEvent extends AuthEvents{
 }
 
 class RequestLogInEvent extends AuthEvents{
-  String email;
-  String password;
-  RequestLogInEvent({required this.email, required this.password});
+  final String email;
+  final String password;
+  const RequestLogInEvent({required this.email, required this.password});
 }
 
 class RequestLogoutEvent extends AuthEvents{
-
 }

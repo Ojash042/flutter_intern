@@ -1,8 +1,12 @@
-import 'dart:convert';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_intern/project/bloc/course_states.dart';
+import 'package:flutter_intern/project/bloc/courses_bloc.dart';
+import 'package:flutter_intern/project/bloc/instructor_bloc.dart';
+import 'package:flutter_intern/project/bloc/instructor_state.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class CoursesDetailsPage extends StatefulWidget{
   @override
@@ -17,12 +21,10 @@ class SyllabusPage extends StatelessWidget{
 
   @override
   Widget build(BuildContext context) {
-
   return Container(
     padding: const EdgeInsets.all(8.0),
-    alignment: Alignment.topLeft,
-    child: SingleChildScrollView(child: 
-    Wrap(
+    //alignment: Alignment.topLeft,
+    child: Wrap(
       children: syllabus.map((e) => ExpansionTile(
       expandedAlignment: Alignment.topLeft,
         title: Text(e.title),
@@ -53,7 +55,7 @@ class SyllabusPage extends StatelessWidget{
           const SizedBox(height: 30,)
           ],
         )).toList(),
-    ),),
+    ),
   );
   }
 }
@@ -102,6 +104,7 @@ class DescriptionPage extends StatelessWidget{
   final List<TModels.Instructor> instructors;
   final List<String> skills;
   const DescriptionPage({super.key, required this.description, required this.overview, required this.price, required this.instructors, 
+
   required this.skills});
 
   @override
@@ -115,14 +118,7 @@ class DescriptionPage extends StatelessWidget{
             child: 
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [ 
-              const Text("Description", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, decoration: TextDecoration.underline),),
-              const SizedBox(height: 10,),
-              Padding(
-                padding: const EdgeInsets.only(left: 16),
-                child: Text(description),
-              ), 
-              const SizedBox(height: 30,),
+              children: [  
               Row(children: [
                 const Text('Price: ', style: TextStyle(fontWeight: FontWeight.bold, decoration: TextDecoration.underline, fontSize: 18),),
                 const SizedBox(width: 10,),
@@ -172,84 +168,166 @@ class DescriptionPage extends StatelessWidget{
     }
 }
 
-class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTickerProviderStateMixin{
-List<TModels.Courses> courses = List.empty(growable: true);
-List<TModels.Instructor> instructors = List.empty(growable: true);
-TModels.Courses? currentCourse;
-List<TModels.Instructor> currentCourseInstructor = List.empty(growable: true);
-late TabController _tabController;
+class ImageClipper extends CustomClipper<Path>{
+  @override
+  Path getClip(Size size) {
+    Path path = Path();
+    double radius = 50.0; // adjust the radius for the rounded corners
 
-Future<void> getDataFromSharedPrefs() async{
-    try{
-      SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-      String? coursesJson = sharedPreferences.getString("courses"); 
-      String? instructorJson = sharedPreferences.getString("instructor");
-    List<dynamic> decoderCourse = jsonDecode(coursesJson!)["courses"];
-    List<dynamic> decoderInstructor = jsonDecode(instructorJson!)["instructor"];
-    courses = decoderCourse.map((e) => TModels.Courses.fromJson(e)).toList(); 
-    instructors = decoderInstructor.map((e) => TModels.Instructor.fromJson(e)).toList(); 
-    currentCourse = courses.firstWhere((element) => element.id == int.parse(widget.courseId));
-    for(int item in currentCourse!.instructors){
-      currentCourseInstructor.add(instructors.firstWhere((element) =>element.id ==  item));
-    }
-    }
-    catch(e){
-      print(e);
-    }
-    // sharedPreferences = await SharedPreferences.getInstance();
-    }
+    // top-left corner
+    path.moveTo(0, radius);
+    path.quadraticBezierTo(0, 0, radius, 0);
+
+    // top edge
+    path.lineTo(size.width - radius, 0);
+
+    // top-right corner (stretched)
+    path.lineTo(size.width, radius);
+    path.lineTo(size.width, size.height - radius);
+
+    // right edge
+    path.lineTo(size.width, size.height);
+
+    // bottom-right corner (stretched)
+    path.lineTo(size.width - radius, size.height);
+    path.lineTo(size.width - radius, size.height);
+
+    // bottom edge
+    path.lineTo(radius, size.height);
+
+    // bottom-left corner
+
+    path.quadraticBezierTo(0, size.height, 0, size.height - radius);
+
+    // close the path
+    path.close();
+
+    return path;
+  }
 
   @override
-    void initState(){
-      super.initState();
-      _tabController = TabController(length: 3, vsync: this);
-      getDataFromSharedPrefs().then((value) => setState(() { 
-      }));
-    }
+  bool shouldReclip(CustomClipper oldClipper) => false;
+}
+
+class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTickerProviderStateMixin{
+  TModels.Courses? currentCourse;
+  List<TModels.Instructor>? currentCourseInstructor = List.empty(growable: true);
+  late final TabController _tabController = TabController(length: 2, vsync: this);
+  bool showMore = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(),
-    drawer: MyDrawer(),
+      appBar: const CommonAppBar(),
     body:
-    // Center(child: Text(int.parse(widget.courseId).toString()),)
-    Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          Row(children: [
-              Image.network(currentCourse!.image, height: 196,width: 196,),
-              const SizedBox(width: 10,),
-              Column(
-                children: [
-                  Text(currentCourse!.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),),
-                  Text(currentCourse!.subtitle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w100), maxLines: null,),
-                ],
-              ),
-          ],),
-
-        const SizedBox(height: 30,),
-        const Divider(),
-        TabBar(tabs: const [
-          Tab(text: "Description",),
-          Tab(text: "Syllabus"),
-          Tab(text: "FAQs",),
-        ],
-        controller: _tabController,),
-
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: <Widget>[
-            DescriptionPage(description: currentCourse!.description, overview: currentCourse!.overview, price: currentCourse!.price,
-              instructors: currentCourseInstructor, skills: currentCourse!.skills,
-            ),
-            SyllabusPage(syllabus: currentCourse!.syllabus,),
-            FAQPage(faqs: currentCourse!.faqs,),
-          ]),
+    MultiBlocListener(
+        listeners: [
+            BlocListener<CoursesBloc, CourseListStates>(
+          listener: (context, coursesState) {
+            currentCourse = (coursesState is CourseListEmpty) ? null : coursesState.courses?.firstWhereOrNull((e) => e.id == int.parse(widget.courseId)); 
+          },
+    
         ),
-        ],),
+            BlocListener<InstructorBloc, InstructorState>(
+                listener: (context, instructorState) {
+                  if(currentCourse ==null || instructorState == InstructorEmpty()){
+                    return;
+                  }
+                  print(instructorState.instructors?.where((e) => currentCourse!.instructors.contains(e.id)));
+                  currentCourseInstructor = (currentCourse == null || instructorState == InstructorEmpty() ) ? null :
+                  instructorState.instructors?.where((e) => currentCourse!.instructors.contains(e.id)).toList();
+                },
+            ),
+        ],
+              child: BlocBuilder<CoursesBloc, CourseListStates>(
+              builder: (context, coursesState) {
+                return BlocBuilder<InstructorBloc, InstructorState>(
+                  builder: (context, instructorState) {
+                                      return CustomScrollView(
+                    slivers: [
+                      SliverToBoxAdapter(child: Column(
+                        children: [
+                          ClipPath(clipper: ImageClipper(),
+                            child: Image.network(currentCourse!.image),
+                            ),
+                            const SizedBox(height: 5,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal:8.0),
+                              child: Row(
+                                children: [
+                                  Text(currentCourse!.title, style:const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                                  const Spacer(),
+                                  Text('Rs. ${currentCourse!.price}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.lightGreenAccent),)
+                                ],
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal:16.0),
+                              child: Text(currentCourse!.subtitle, style: const TextStyle(color: Colors.greenAccent),),
+                            ),
+                            const SizedBox(height: 5,),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal:16.0),
+                              child: GestureDetector(
+                                onTap: ()=> setState(() {
+                                  showMore = !showMore;
+                                }),
+                                child: Text(currentCourse!.description, maxLines: showMore? 100 : 2, overflow: TextOverflow.ellipsis, 
+                                style: const TextStyle(fontWeight: FontWeight.w100, color: Colors.black26),),
+
+                                ),
+                            ),
+                            SizedBox(height: showMore ? 10 : 0 ),
+                            showMore ? Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Wrap(spacing: 5, children: currentCourse!.skills.map((e) => Card(color: Colors.white,elevation: 0,child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Text(e),
+                              ),)).toList(),),
+                            ): Container(),
+                            SizedBox(height: showMore ? 10 : 0),
+                            showMore ? SingleChildScrollView(
+                              child: Wrap(spacing: 5, children: currentCourseInstructor!.map((e) => 
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                CircleAvatar(backgroundImage: NetworkImage(e.image),),  
+                                Column(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                  Text(e.name), 
+                                  Text(e.summary)
+                                  ],)],) ).toList()),
+                            ) : Container(),
+                        ],
+                      ),),
+                      SliverAppBar(
+                        title:TabBar(tabs: const [
+                            //Tab(text: "Description",),
+                            Tab(text: "Syllabus"),
+                            Tab(text: "FAQs",),
+                          ],
+                          controller: _tabController,),
+                          pinned: true, 
+                          automaticallyImplyLeading: false,
+                          leading: null,
+                      ),
+                      SliverFillRemaining(
+                        child: TabBarView(
+                          controller: _tabController,
+                          children: <Widget>[
+                            SingleChildScrollView(child: SyllabusPage(syllabus: currentCourse!.syllabus,)),
+                          SingleChildScrollView(child: FAQPage(faqs: currentCourse!.faqs,)),
+                        ])
+                      )
+                    ],
+                  ); 
+                  },
+                );
+              },
+            ),
     ) 
     );
   } 

@@ -3,13 +3,88 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_intern/project/auth_bloc.dart';
-import 'package:flutter_intern/project/auth_events.dart';
-import 'package:flutter_intern/project/auth_states.dart';
+import 'package:flutter_intern/project/bloc/auth_bloc.dart';
+import 'package:flutter_intern/project/bloc/auth_events.dart';
+import 'package:flutter_intern/project/bloc/auth_states.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class UnauthorizedNavigationBar extends StatefulWidget{
+  const UnauthorizedNavigationBar({super.key});
+
+
+  @override
+  State<UnauthorizedNavigationBar> createState() => _UnauthorizedNavigationBarState();
+
+}
+
+class _UnauthorizedNavigationBarState extends State<UnauthorizedNavigationBar>{
+  List<String> routes = ["/home", "/login", "/courses"];
+  int _currentIndex = 1;
+
+  void getCurrentIndex(){
+    String? route = ModalRoute.of(context)?.settings.name;
+    if(route == null ||  !route.contains(route)){
+      setState(() {
+        _currentIndex = 1;    
+      });
+      return;
+    } 
+      setState(() { 
+        Future.delayed(Duration.zero, (){
+          _currentIndex = (routes.indexOf(route)).abs(); 
+        });
+      });
+    
+  }
+
+  @override
+  void didUpdateWidget(covariant UnauthorizedNavigationBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    Future.delayed(Duration.zero, (){
+      getCurrentIndex();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    Future.delayed(Duration.zero, (){
+      getCurrentIndex();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _currentIndex = 1;
+    });
+    // Future.delayed(Duration.zero,(){      
+    //   getCurrentIndex();
+    // });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BottomNavigationBar(items: const [
+      BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home"),
+      BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined), label: "Login"),
+      BottomNavigationBarItem(icon: Icon(Icons.folder_open_outlined), label: "Courses"),
+    ],
+    unselectedItemColor: Colors.grey,
+    selectedItemColor: Colors.blueAccent,
+    currentIndex: _currentIndex,
+    onTap: (value) => setState(() {
+      _currentIndex = value;
+      Navigator.of(context).popAndPushNamed(routes[_currentIndex]);
+    })); 
+  }
+}
+
 class CommonNavigationBar extends StatefulWidget{
+  const CommonNavigationBar({super.key});
+
 
   @override
   State<CommonNavigationBar> createState() {
@@ -45,7 +120,7 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
   @override
   void didUpdateWidget(covariant CommonNavigationBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    Future.delayed(const Duration(milliseconds: 100), (){
+    Future.delayed(Duration.zero, (){
       var route = ModalRoute.of(context);
       if(route!=null){
         setState(() {
@@ -60,7 +135,7 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    Future.delayed(const Duration(milliseconds: 100), (){
+    Future.delayed(Duration.zero, (){
       var route = ModalRoute.of(context);
       if(route!=null){
       setState(() {
@@ -72,9 +147,9 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
     }); 
   }
 
-    @override
-      void initState(){
-      super.initState(); 
+  @override
+    void initState(){
+    super.initState(); 
       getLoggedInUser();
     }
 
@@ -89,17 +164,17 @@ class _CommonNavigationBarState extends State<CommonNavigationBar>{
       return;
     }
 
-    return  routes.isNotEmpty ? BottomNavigationBar(items: const[
-      BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: "Home"),
-      BottomNavigationBarItem(icon: Icon(Icons.group_outlined), label: "Friends"),
-      BottomNavigationBarItem(icon: Icon(Icons.account_circle_outlined), label: "Profile Info"),
-      BottomNavigationBarItem(icon: Icon(Icons.folder_open_outlined), label: "Courses"),
-      BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Logout"),
+    return  routes.isNotEmpty ? BottomNavigationBar(items: [
+      BottomNavigationBarItem(icon: Icon(_selectedIndex == 0 ? Icons.home_filled : Icons.home_outlined), label: "Home"),
+      BottomNavigationBarItem(icon: Icon(_selectedIndex == 1 ? Icons.group: Icons.group_outlined), label: "Friends"),
+      BottomNavigationBarItem(icon: Icon(_selectedIndex == 2 ?  Icons.account_circle : Icons.account_circle_outlined ), label: "Profile Info"),
+      BottomNavigationBarItem(icon: Icon(_selectedIndex == 3 ? Icons.folder_open_rounded: Icons.folder_open_outlined), label: "Courses"),
+      BottomNavigationBarItem(icon: Icon(_selectedIndex == 4 ? Icons.settings : Icons.settings_outlined), label: "Logout"),
     ],
       onTap: (value) => _onItemTapped(value),
       currentIndex: _selectedIndex,
-      unselectedItemColor: const Color(0xff80546f),
-      selectedItemColor: const Color(0xffabb5ff),
+      unselectedItemColor: Colors.grey,
+      selectedItemColor: Colors.blueAccent,
     ) : const BottomAppBar();
   }  
 }
@@ -111,13 +186,14 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget{
   Widget build(BuildContext context) {
     return AppBar(
       actions: actions,
-      flexibleSpace: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])
-        ),
-      ),
-    centerTitle: true,
-    title: const Text("Project"),
+      backgroundColor: Colors.white,
+      // flexibleSpace: Container(
+      //   decoration: const BoxDecoration(
+      //     gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])
+      //   ),
+      // ),
+    centerTitle: false,
+    title: const Text("Project", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),),
     );
   }
   

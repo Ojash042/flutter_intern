@@ -31,11 +31,13 @@ class Image{
   Image();
   late int id;
   late String url;
-  Map<String, dynamic> toJson()=> {"image_id": id, "image_url": url};
+  late bool isNetworkUrl;
+  Map<String, dynamic> toJson()=> {"image_id": id, "image_url": url, "is_network_url": isNetworkUrl};
   factory Image.fromJson(Map<String, dynamic> json){
     Image im = Image();
     im.id = json["image_id"];
     im.url = json["image_url"];
+    im.isNetworkUrl = json["is_network_url"] ?? true;
     return im;
   }
 }

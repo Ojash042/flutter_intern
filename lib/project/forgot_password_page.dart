@@ -61,7 +61,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage>{
     return Scaffold(appBar: AppBar(
       title: const Text("Project"),centerTitle: true, 
     backgroundColor: Colors.lightBlueAccent,),
-    drawer: MyDrawer(),
+    //drawer: MyDrawer(),
     body: SingleChildScrollView(child: Center(child: Column(children: [
       TextFormField(controller: emailController, decoration: InputDecoration(hintText: "Enter email address", error: emailError ? const Text("Invalid Email") : null),),
       const SizedBox(height: 30,),

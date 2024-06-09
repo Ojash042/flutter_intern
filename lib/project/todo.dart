@@ -89,7 +89,7 @@ class _ToDoPage extends State<ToDoPage>{
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CommonAppBar(),
-      drawer: const LoggedInDrawer(),
+      //drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(
         child: Column(
           children: [

@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_intern/project/auth_events.dart';
-import 'package:flutter_intern/project/auth_states.dart';
+import 'package:flutter_intern/project/bloc/auth_events.dart';
+import 'package:flutter_intern/project/bloc/auth_states.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -29,7 +29,7 @@ class AuthBloc extends Bloc<AuthEvents, AuthStates>{
   void logoutEvent(RequestLogoutEvent event, Emitter<AuthStates> emit) async{
     SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
     sharedPreferences.remove("loggedInEmail");
-    emit(const UnauthorizedAuthState());
+    emit(const UnauthorizedAuthState(isLoginError: false));
   }
   
   void loginEvent(RequestLogInEvent event, Emitter<AuthStates> emit) async{
@@ -37,7 +37,7 @@ class AuthBloc extends Bloc<AuthEvents, AuthStates>{
     String? userDataJson = sharedPreferences.getString("user_data");
     String? userDetailsJson =sharedPreferences.getString("user_details");
     if(userDataJson == null || userDetailsJson == null){
-      emit(const UnauthorizedAuthState());
+      emit(const UnauthorizedAuthState(isLoginError: true));
       return;
     }
     
@@ -46,12 +46,10 @@ class AuthBloc extends Bloc<AuthEvents, AuthStates>{
     
     UserData? userData =  decoderUserData.map((data) => UserData.fromJson(data)).firstWhereOrNull((element) => element.email == event.email && element.password == event.password);
     if(userData == null){
-      emit(const UnauthorizedAuthState());
+      emit(const UnauthorizedAuthState(isLoginError: true));
       return;
     }
-    print(userData.email);
     UserDetails userDetails = decoderUserDetails.map((details) => UserDetails.fromJson(details)).firstWhere((element) => element.id == userData.id);
-    print(userDetails.id);
     sharedPreferences.setString("loggedInEmail", userData.email);
     emit(AuthorizedAuthState(userData: userData, userDetails: userDetails)); 
   } 
@@ -62,7 +60,7 @@ class AuthBloc extends Bloc<AuthEvents, AuthStates>{
     String? userDetailsJson = sharedPreferences.getString("user_details");
     String? loggedInEmail = sharedPreferences.getString("loggedInEmail");
     if(loggedInEmail == null){
-      emit(const UnauthorizedAuthState());
+      emit(const UnauthorizedAuthState(isLoginError:false));
       return;
     }
 
@@ -71,7 +69,7 @@ class AuthBloc extends Bloc<AuthEvents, AuthStates>{
       Iterable decoderUserDetails = jsonDecode(userDetailsJson);
       UserData? userData = decoderUserData.map((data) => UserData.fromJson(data)).firstWhereOrNull((element) => element.email == loggedInEmail);
       if(userData == null){
-        emit(const UnauthorizedAuthState());
+        emit(const UnauthorizedAuthState(isLoginError: false));
         return;
       } 
       else{
@@ -80,6 +78,6 @@ class AuthBloc extends Bloc<AuthEvents, AuthStates>{
         return;
       }
     }
-    emit(const UnauthorizedAuthState());
+    emit(const UnauthorizedAuthState(isLoginError: true));
   }
 }

@@ -5,9 +5,10 @@ class AuthStates extends Equatable{
   final bool loggedInState;
   final UserData? userData; 
   final UserDetails? userDetails;
-  const AuthStates({this.loggedInState = false, this.userData, this.userDetails});
+  final bool isLoginError;
+  const AuthStates({this.loggedInState = false, this.userData, this.userDetails, this.isLoginError = false});
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [loggedInState, userData, userDetails, isLoginError];
 }
 
 class UnknownAuthState extends AuthStates{
@@ -21,5 +22,6 @@ class AuthorizedAuthState extends AuthStates{
 }
 
 class UnauthorizedAuthState extends AuthStates{
-  const UnauthorizedAuthState():super();
+  final bool isLoginError;
+  const UnauthorizedAuthState({required this.isLoginError}):super(isLoginError: isLoginError);
 }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_intern/project/auth_bloc.dart';
-import 'package:flutter_intern/project/auth_events.dart';
-import 'package:flutter_intern/project/auth_states.dart';
+import 'package:flutter_intern/project/bloc/auth_bloc.dart';
+import 'package:flutter_intern/project/bloc/auth_events.dart';
+import 'package:flutter_intern/project/bloc/auth_states.dart';
 import 'package:flutter_intern/project/misc.dart';
-import 'package:provider/provider.dart';
 
 class LogoutPage extends StatefulWidget{
   const LogoutPage({super.key});
