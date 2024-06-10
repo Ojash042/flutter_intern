@@ -1,10 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
-import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart' as cupertino;
+import 'package:flutter/cupertino.dart' as cupertino show CupertinoIcons;
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_states.dart';
@@ -18,7 +16,6 @@ import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:humanizer/humanizer.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class CustomThumbUpIcon extends StatelessWidget{
@@ -159,59 +156,109 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                                   child: Image.file(File(currentUserDetails!.basicInfo.coverImage.imagePath), fit: BoxFit.fill,),
                                                   ),),
                                                  Padding(padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24),
-                                                 child: Center(
-                                                   child: Container(decoration: const BoxDecoration(border:  Border(
-                                                    top: BorderSide(color: Colors.transparent, width: 1.5),
-                                                    bottom: BorderSide(color: Colors.transparent, width: 1.5),
-                                                    left: BorderSide(color: Colors.transparent, width: 1.5),
-                                                    right: BorderSide(color: Colors.transparent, width: 1.5),
-                                                   ),),
-                                                   height: 120, width: 120, 
-                                                   child: CircleAvatar(backgroundColor: Colors.white, radius: 0,child: CircleAvatar(radius: 55, backgroundImage: FileImage(File(currentUserDetails!.basicInfo.profileImage.imagePath)))),
-                                                   ),
+                                                 child: Container(decoration: const BoxDecoration(border:  Border(
+                                                  top: BorderSide(color: Colors.transparent, width: 1.5),
+                                                  bottom: BorderSide(color: Colors.transparent, width: 1.5),
+                                                  left: BorderSide(color: Colors.transparent, width: 1.5),
+                                                  right: BorderSide(color: Colors.transparent, width: 1.5),
+                                                 ),),
+                                                 height: 120, width: 120, 
+                                                 child: CircleAvatar(backgroundColor: Colors.white, radius: 0,child: CircleAvatar(radius: 55, backgroundImage: FileImage(File(currentUserDetails!.basicInfo.profileImage.imagePath)))),
                                                  ),
                                                  )
                                               ],),
                                             ),
                                           const SizedBox(height: 10,),
+
                                           Padding( padding: const EdgeInsets.symmetric(horizontal: 32),
-                                          child: Center(child: Text(currentUser!.name, style:const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),)), 
-                                        ),
-                                        const SizedBox(height: 10,),
-                                        Center(child: Text(currentUserDetails!.basicInfo.summary)),
+                                          child: Text(currentUser!.name, style:const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),), 
+                                          ),
+                                          const SizedBox(height: 10,),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                            child: Text(currentUserDetails!.basicInfo.summary),
+                                          ),
+                                        const SizedBox(height: 15,), 
                                         Padding(
-                                          padding: const EdgeInsets.only(left: 8.0),
-                                          child: Row(children: [currentUserDetails!.basicInfo.gender == "Male"? const Icon(Icons.male_outlined) : const Icon(Icons.female_outlined), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.gender)],),
-                                        ),
-                                        const SizedBox(height: 10,),
-                                        Padding(
-                                          padding: const EdgeInsets.only(left: 8.0),
-                                          child: Row(children: [const Icon(Icons.cake_outlined), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.dob)],),
-                                        ),
-                                        const SizedBox(height: 24,),
-                                        Center(child: isCurrentUserLoggedInUser? FilledButton(onPressed: (){
-                                          Navigator.of(context).pushNamed('/editDetails');
-                                        }, 
-                                        style: ButtonStyle(
-                                        fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.35)),
-                                        shape: const WidgetStatePropertyAll(LinearBorder()),
-                                          iconColor: WidgetStatePropertyAll(isEditMode ? Colors.blueAccent: Colors.white),
-                                          backgroundColor:  WidgetStatePropertyAll(isEditMode ? Colors.grey[100] :Colors.blueAccent) ),
-                                        child: Row(
-                                          children: [
-                                            Icon(isEditMode? Icons.check_outlined: Icons.edit_outlined),
-                                            SizedBox(width: MediaQuery.of(context).size.width * 0.07,),
-                                            Text(isEditMode ? "Done": "Edit", style: TextStyle(color: isEditMode ? Colors.blueAccent: Colors.white ,)),
-                                          ],
-                                        ),) : 
-                                        Container(),
+                                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                          child: Flex(
+                                            direction: Axis.horizontal,
+                                            children: [
+                                              isCurrentUserLoggedInUser ? FilledButton.icon(
+                                                style: const ButtonStyle(
+                                                  backgroundColor: WidgetStatePropertyAll(Colors.blueAccent),
+                                                  shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8)))),
+                                                  ),
+                                                icon: const Icon(Icons.add),
+                                                onPressed: (){},
+                                                label: const Text("Add to Story"), 
+                                              ) : Container(),
+                                              const Spacer(),
+                                              isCurrentUserLoggedInUser? FilledButton.icon(onPressed: (){
+                                                Navigator.of(context).pushNamed('/editDetails');
+                                              }, 
+                                              style: ButtonStyle(
+                                              fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.35)),
+                                              shape: const WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0)))),
+                                                iconColor: WidgetStatePropertyAll(isEditMode ? Colors.blueAccent: Colors.white),
+                                                backgroundColor:  WidgetStatePropertyAll(isEditMode ? Colors.grey[100] :Colors.grey[300]) ),
+                                                icon: const Icon(Icons.edit, color: Colors.black,),
+                                                label: const Text("Edit", style: TextStyle(color: Colors.black)),
+                                              ) : Container(),
+                                            const Spacer(),
+                                            isCurrentUserLoggedInUser? IconButton(
+                                              icon: const Icon(Icons.more_horiz),
+                                              style: ButtonStyle(
+                                                fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.1),),
+                                                backgroundColor: WidgetStatePropertyAll(Colors.grey[300]), shape: const WidgetStatePropertyAll(
+                                                RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))))),
+                                              onPressed: (){},)
+                                            : Container()],
+                                          ),
                                         ),
                                           const SizedBox(height: 20,),
                                           ],
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 20),
+                                    const SizedBox(height: 5),
+                                    Card(
+                                      color: Colors.white,
+                                      elevation: 0,
+                                      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.zero)),
+                                      child: InkWell(
+                                      borderRadius: const BorderRadius.all(Radius.zero),
+                                        onTap: (){Navigator.of(context).pushNamed('/editDetails');},
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                          const SizedBox(height: 10,),
+                                          const Padding(padding: EdgeInsets.only(left: 8.0, bottom: 8.0),
+                                          child: Text("Details", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),),
+                                          ),
+                                          const Divider(thickness: 0.3,),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 8.0),
+                                            child: Row(children: [currentUserDetails!.basicInfo.gender == "Male"? const Icon(Icons.male_outlined) : const Icon(Icons.female_outlined), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.gender)],),
+                                          ),
+                                          const SizedBox(height: 10,),
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 8.0),
+                                            child: Row(children: [const Icon(Icons.cake_outlined), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.dob)],),
+                                          ),
+                                          const SizedBox(height: 10,),
+                                          const Padding(
+                                            padding: EdgeInsets.only(left: 8.0),
+                                            child: Row(children: [Icon(Icons.more_horiz), SizedBox(width: 10,), Text("See More details")],),
+                                          ),
+                                          const SizedBox(height: 20,),
+                                          Container(width: MediaQuery.of(context).size.width * 0.7,
+                                          decoration: BoxDecoration(
+                                            color: Colors.blue[200], 
+                                          ),)
+                                          ],),
+                                      ),
+                                    ),
                                     ListView.builder(
                                             physics: const NeverScrollableScrollPhysics(),
                                             shrinkWrap: true,

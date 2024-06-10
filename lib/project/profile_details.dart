@@ -47,7 +47,9 @@ void saveData(List<UserDetails> userDetailsList) async{
 @override
 void initState(){
   super.initState();
-  BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
+  if(locator<UserListBloc>().state is UserListEmpty){
+    locator<UserListBloc>().add(UserListInitialize());
+  }
 }
 
 Widget showEditBasicInfoModal(){
