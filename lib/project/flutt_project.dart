@@ -20,6 +20,7 @@ import 'package:flutter_intern/project/bloc/user_list_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_list_events.dart';
 import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_event.dart';
+import 'package:flutter_intern/project/categories_details_page.dart';
 import 'package:flutter_intern/project/change_password_page.dart';
 import 'package:flutter_intern/project/courses_details_page.dart';
 import 'package:flutter_intern/project/courses_page.dart';
@@ -79,28 +80,16 @@ class _MyAppState extends State<MyApp> {
 
     sharedPreferences.getString("course_categories") == null ? sharedPreferences.setString("course_categories", courseCategoriesJson) : null;
     sharedPreferences.getString("course_by_categories") == null ? sharedPreferences.setString( "course_by_categories", courseByCategoriesJson): null;
-    sharedPreferences.getString("courses") == null
-        ? sharedPreferences.setString("courses", coursesJson)
-        : null;
-    sharedPreferences.getString("instructor") == null
-        ? sharedPreferences.setString("instructor", instructorJson)
-        : null;
-    sharedPreferences.getString("user_post") == null
-        ? sharedPreferences.setString(
-            "user_post", jsonEncode(jsonDecode(userPost)["user_post"]))
-        : null;
-    sharedPreferences.getString("user_friend") == null
-        ? sharedPreferences.setString("user_friend",
-            jsonEncode(jsonDecode(userFriendJson)["user_friend_list"]))
-        : null;
+    sharedPreferences.getString("courses") == null ? sharedPreferences.setString("courses", coursesJson) : null;
+    sharedPreferences.getString("instructor") == null ? sharedPreferences.setString("instructor", instructorJson) : null;
+    sharedPreferences.getString("user_post") == null ? sharedPreferences.setString("user_post", jsonEncode(jsonDecode(userPost)["user_post"])): null;
+    sharedPreferences.getString("user_friend") == null? sharedPreferences.setString("user_friend",jsonEncode(jsonDecode(userFriendJson)["user_friend_list"])) : null;
   }
 
   @override
   void dispose() {
     super.dispose();
     resetLocator();
-    //context.read<UserListBloc>().close();
-    //resetLocator();
   }
 
   @override
@@ -212,6 +201,11 @@ class _MyAppState extends State<MyApp> {
                       ],
                       child: ProfileInfoPage(id: profileId),
                     ));
+          }
+          if(settings.name!.startsWith('/category/')){
+            var categoryId = int.parse(settings.name!.split('/').last);
+            return MaterialPageRoute(
+              builder: (context) => BlocProvider(create: (_) => CoursesBloc()..add(CourseListInitialize()), child: CategoriesDetailsPage(categoryId: categoryId,),));
           }
           return null;
         },
@@ -342,27 +336,20 @@ class _BasicDetailsState extends State<BasicDetails> {
     // var ret = retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text);
 
     if (retrievedUserData.isNotEmpty &&
-        (retrievedUserData.firstWhereOrNull(
-                (element) => element.email == emailController.text) !=
-            null)) {
-      mounted
-          ? showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                context = scaffoldContext;
-                return AlertDialog(
-                  title: const Text("User Already exists"),
-                  content: const Text("Redirecting to loging page"),
-                  actions: [
-                    TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                          Navigator.pop(scaffoldContext);
-                          dialogCompleter.complete();
-                        },
-                        child: const Text("Ok!")),
-                  ],
-                );}): null;
+        (retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text) != null)) {
+      mounted ? showDialog(context: context, builder: (BuildContext context) {
+        context = scaffoldContext;
+        return AlertDialog(
+          title: const Text("User Already exists"),
+          content: const Text("Redirecting to loging page"),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pop(scaffoldContext);
+                dialogCompleter.complete();
+                }, child: const Text("Ok!")),
+            ],);}): null;
       return;
     }
 

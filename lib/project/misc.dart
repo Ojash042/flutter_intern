@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_intern/project/bloc/auth_events.dart';
 import 'package:flutter_intern/project/bloc/auth_states.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_intern/project/technical_models.dart' as TModels;
 
 class UnauthorizedNavigationBar extends StatefulWidget{
   const UnauthorizedNavigationBar({super.key});
@@ -17,6 +19,137 @@ class UnauthorizedNavigationBar extends StatefulWidget{
   State<UnauthorizedNavigationBar> createState() => _UnauthorizedNavigationBarState();
 
 }
+
+class PhotoGrid extends StatefulWidget {
+  final int maxImages;
+  final List<TModels.Image> images;
+  final Function(int) onImageClicked;
+  final Function onExpandClicked;
+
+  PhotoGrid({required this.images, required this.onImageClicked, required this.onExpandClicked,
+      this.maxImages = 4, super.key});
+
+  @override
+  createState() => _PhotoGridState();
+}
+
+class _PhotoGridState extends State<PhotoGrid> {
+  @override
+  Widget build(BuildContext context) {
+    var images = buildImages();
+
+    return GridView(
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        
+        maxCrossAxisExtent: 200,
+        crossAxisSpacing: 2,
+        mainAxisSpacing: 2,
+      ),
+      children: images,
+    );
+  }
+
+  List<Widget> buildImages() {
+    int numImages = widget.images.length;
+    return List<Widget>.generate(min(numImages, widget.maxImages), (index) {
+      String imageUrl = widget.images[index].url;
+
+      // If its the last image
+      if (index == widget.maxImages - 1) {
+        // Check how many more images are left
+        int remaining = numImages - widget.maxImages;
+
+        // If no more are remaining return a simple image widget
+        if (remaining == 0) {
+
+          return GestureDetector(
+            child:  widget.images.elementAt(index).isNetworkUrl ? Image.network(
+              imageUrl,
+              fit: BoxFit.cover,
+            ):
+            Image.file(File(imageUrl), fit: BoxFit.cover,),
+            onTap: () => showDialog(
+              barrierDismissible: true,
+              context: context, builder: (build) {
+                return Scaffold(
+                  body: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  color: Colors.black,
+                    child: InteractiveViewer(
+                      minScale: 0.5,
+                      maxScale: 2,
+                      child: ClipRRect(
+                        child: widget.images.elementAt(index).isNetworkUrl ? 
+                              Image.network(imageUrl, fit: BoxFit.scaleDown,) : Image.file(File(imageUrl), fit: BoxFit.scaleDown,),
+                      ),
+                    ),
+                  ),
+                );
+              },),
+          );
+        } else {
+          // Create the facebook like effect for the last image with number of remaining  images
+          return GestureDetector(
+            onTap: () => widget.onExpandClicked(),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                widget.images.elementAt(index).isNetworkUrl ? Image.network(imageUrl, fit: BoxFit.scaleDown, 
+                width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height,) : Image.file(File(imageUrl), 
+                fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height,
+                ),
+                Positioned.fill(child: Container(alignment: Alignment.center, color: Colors.black54, child: 
+                Text('+$remaining',style: const TextStyle(fontSize: 32),),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+      } else {
+        return GestureDetector(
+          child: widget.images.elementAt(index).isNetworkUrl ? Image.network(
+            imageUrl,
+            fit: BoxFit.cover,
+          ) : Image.file(File(imageUrl), fit: BoxFit.cover,),
+          onTap: () {
+            showDialog(
+            barrierDismissible: true,
+            context: context, builder: (build) =>  Scaffold(
+              body: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                color: Colors.black,
+                child: InteractiveViewer(
+                  panEnabled: true,
+                  minScale: 0.5,
+                  maxScale: 2,
+                  scaleEnabled: true,
+                  child: Flex(
+                  direction: Axis.vertical,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    //SizedBox(height: MediaQuery.of(context).size.height * 0.2,),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: (widget.images.elementAt(index).isNetworkUrl ? 
+                    Image.network(imageUrl, fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height * 0.9,) 
+                    : Image.file(File(imageUrl), fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.width * 0.9,)),
+                    ),
+                  ],
+                            ),
+                ),
+              ),
+            ),);
+          },
+        );
+      }
+    });
+  }
+}
+
 
 class _UnauthorizedNavigationBarState extends State<UnauthorizedNavigationBar>{
   List<String> routes = ["/home", "/login", "/courses"];

@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:faker/faker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
@@ -23,7 +22,7 @@ enum Filter {all, popular, recentlyViewed}
 class _CoursesPageState extends State<CoursesPage>{ 
 
   Map<String, List<TModels.Courses>> groupedData = {}; 
-  Filter? _filter = Filter.all;
+  final Filter _filter = Filter.all;
   int catIndex = 0;
   List<String> categoryImages = [
     "https://cdn.dribbble.com/users/1538808/screenshots/16466417/media/5724dbe3c521a2263e376b2e1a3aa6e3.jpg?resize=768x576&vertical=center",
@@ -72,119 +71,116 @@ class _CoursesPageState extends State<CoursesPage>{
               child: (courseState is CourseListEmpty) ? const Center(child: CircularProgressIndicator(),) :Column(children: [
                 Text("Courses", style: Theme.of(context).textTheme.headlineMedium,),
                 const SizedBox(height: 20,),
-                 Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-                  InkWell(child: const Card(
-                    elevation: 0,
-                    child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text("All"),
-                  ),), onTap: (){
-                    setState(() {
-                      _filter = Filter.all;
-                    });
-                  },),
-                  InkWell(child: const Card(
-                    elevation: 0,
-                    child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text("Popular"),
-                  ),), onTap: (){
-                    setState(() {
-                      _filter = Filter.popular;
-                    });
-                  },),
-                  InkWell(child: const Card(
-                    elevation: 0,
-                    child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text("Recently Viewed"),
-                  ),), onTap: (){
-                    setState(() { 
-                      _filter = Filter.recentlyViewed;
-                    });
-                  },),
-                  ],),
-                Wrap(children: courseState.courses!.where((e){
-                  if(_filter == Filter.all){
-                   return true; 
-                  }
-                  if(_filter == Filter.recentlyViewed){
-                   return e.isRecentlyViewedCourse; 
-                  }
-
-                  if(_filter == Filter.popular){
-                    return e.isTopCourse;
-                  }
-                  else{
-                    return true;
-                  }
-                }).map((e) => 
-                GestureDetector(
-                      onTap: ()=> {Navigator.of(context).pushNamed('/courses/${e.id}')},
-                        child: Column(children: [
-                          const SizedBox(height: 5,),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 0),
-                            child: Image.network(e.image,height: 156, width: 156,),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(e.title),
-                          ),
-                          ],
-                          ),
-                      )
-                ).toList(),), 
+                Text("Categories", style: Theme.of(context).textTheme.bodyLarge),
                 const SizedBox(height: 10,),
-                Text("Categories", style: Theme.of(context).textTheme.headlineMedium),
-                const SizedBox(height: 10,),
-                Wrap(
-                  children: groupedData.entries.mapIndexed((index, e) {
-                    return InkWell(
-                    onTap: (){
-                      showModalBottomSheet(context: context, builder: (builder){
-                        return BottomSheet(
-                        showDragHandle: true,
-                        dragHandleColor: Colors.grey,
-                        onClosing: (){},
-                          builder: (context) {
-                            return Container(
-                              padding: const EdgeInsets.all(14),
-                              width: MediaQuery.of(context).size.width,
-                              child: SingleChildScrollView(
-                                child: Center(
-                                  child: Wrap(children: e.value.map((e) => 
-                                  GestureDetector(
-                                      onTap: ()=> {Navigator.pushNamed(context, '/courses/${e.id}')},
-                                      child: Column(children: [
-                                        Text(e.title),
-                                        const SizedBox(height: 5,),
-                                        Image.network(e.image, height: 126, width: 126,),
-                                        const SizedBox(height: 5,),
-                                      ],),
-                                    )
-                                  ).toList(),),
-                                ),
-                              ),
-                              );
-                          }
-                        ) ;
-                      });
-                    },
+                SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(children: courseState.courseCategories!.map((e) => 
+                  Padding(
+                    padding: const EdgeInsets.all(3.0),
                     child: Card(
-                      elevation: 0,
-                      color: Colors.white,
-                      child: Column(children: [
-                        Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Image(image: NetworkImage(categoryImages.elementAt(index)), height: 128, width: 128,),
-                        ),
-                        Text(e.key),
-                      ],),
+                      shape: const LinearBorder(),
+                      color: HSLColor.fromAHSL(1, Random().nextDouble() * 360.0, max(0.65, Random().nextDouble()), min(0.79, Random().nextDouble() + 0.69)).toColor(),
+                      child: InkWell(child: Padding(padding:const EdgeInsets.all(12), child: Text(e.title)), onTap: (){
+                        Navigator.of(context).pushNamed("/category/${e.id}");
+                      },),
                     ),
-                  );
-                  }).toList(),
-                ),           
+                  ),
+                  ).toList())),
+
+                  const SizedBox(height: 60,),
+                  const Text("Top Courses", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(children: courseState.courses!.where((e) => e.isTopCourse ).map((e)=> Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(children: [
+                        SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
+                        Text(e.title),
+                      ],),
+                    )).toList(),),
+                  ),
+
+                  const SizedBox(height: 60,),
+
+                  const Text("Recently Viewed", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(children: courseState.courses!.where((e) => e.isRecentlyViewedCourse ).map((e)=> Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(children: [
+                        SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
+                        Text(e.title),
+                      ],),
+                    )).toList(),),
+                  ),
+
+
+                  const SizedBox(height: 60,),
+                  const Text("Others", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(children: courseState.courses!.where((e) => !e.isRecentlyViewedCourse && !e.isTopCourse).map((e)=> Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Column(children: [
+                        SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
+                        Text(e.title),
+                      ],),
+                    )).toList(),),
+                  ),
+
+                const SizedBox(height: 10,),
+                const SizedBox(height: 10,),
+                // Wrap(
+                //   children: groupedData.entries.mapIndexed((index, e) {
+                //     return InkWell(
+                //     onTap: (){
+                //       showModalBottomSheet(context: context, builder: (builder){
+                //         return BottomSheet(
+                //         showDragHandle: true,
+                //         dragHandleColor: Colors.grey,
+                //         onClosing: (){},
+                //           builder: (context) {
+                //             return Container(
+                //               padding: const EdgeInsets.all(14),
+                //               width: MediaQuery.of(context).size.width,
+                //               child: SingleChildScrollView(
+                //                 child: Center(
+                //                   child: Wrap(children: e.value.map((e) => 
+                //                   GestureDetector(
+                //                       onTap: ()=> {Navigator.pushNamed(context, '/courses/${e.id}')},
+                //                       child: Column(children: [
+                //                         Text(e.title),
+                //                         const SizedBox(height: 5,),
+                //                         Image.network(e.image, height: 126, width: 126,),
+                //                         const SizedBox(height: 5,),
+                //                       ],),
+                //                     )
+                //                   ).toList(),),
+                //                 ),
+                //               ),
+                //               );
+                //           }
+                //         ) ;
+                //       });
+                //     },
+                //     child: Card(
+                //       elevation: 0,
+                //       color: Colors.white,
+                //       child: Column(children: [
+                //         Padding(
+                //           padding: const EdgeInsets.all(8.0),
+                //           child: Image(image: NetworkImage(categoryImages.elementAt(index)), height: 128, width: 128,),
+                //         ),
+                //         Text(e.key),
+                //       ],),
+                //     ),
+                //   );
+                //   }).toList(),
+                // ),           
               ]
               ),
             ),

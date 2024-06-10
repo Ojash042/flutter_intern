@@ -240,67 +240,74 @@ class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTick
         ],
               child: BlocBuilder<CoursesBloc, CourseListStates>(
               builder: (context, coursesState) {
+                if(coursesState is CourseListEmpty){ return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),),);}
                 return BlocBuilder<InstructorBloc, InstructorState>(
                   builder: (context, instructorState) {
-                                      return CustomScrollView(
+                    return CustomScrollView(
                     slivers: [
-                      SliverToBoxAdapter(child: Column(
-                        children: [
-                          ClipPath(clipper: ImageClipper(),
-                            child: Image.network(currentCourse!.image),
-                            ),
-                            const SizedBox(height: 5,),
+                      SliverToBoxAdapter(child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          children: [
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal:8.0),
-                              child: Row(
-                                children: [
-                                  Text(currentCourse!.title, style:const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
-                                  const Spacer(),
-                                  Text('Rs. ${currentCourse!.price}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.lightGreenAccent),)
-                                ],
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal:16.0),
-                              child: Text(currentCourse!.subtitle, style: const TextStyle(color: Colors.greenAccent),),
-                            ),
-                            const SizedBox(height: 5,),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(horizontal:16.0),
-                              child: GestureDetector(
-                                onTap: ()=> setState(() {
-                                  showMore = !showMore;
-                                }),
-                                child: Text(currentCourse!.description, maxLines: showMore? 100 : 2, overflow: TextOverflow.ellipsis, 
-                                style: const TextStyle(fontWeight: FontWeight.w100, color: Colors.black26),),
-
+                              padding: const EdgeInsets.symmetric(vertical: 8.0),
+                              child: ClipPath(clipper: ImageClipper(),
+                                child: Image.network(currentCourse!.image),
                                 ),
                             ),
-                            SizedBox(height: showMore ? 10 : 0 ),
-                            showMore ? Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Wrap(spacing: 5, children: currentCourse!.skills.map((e) => Card(color: Colors.white,elevation: 0,child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(e),
-                              ),)).toList(),),
-                            ): Container(),
-                            SizedBox(height: showMore ? 10 : 0),
-                            showMore ? SingleChildScrollView(
-                              child: Wrap(spacing: 5, children: currentCourseInstructor!.map((e) => 
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                CircleAvatar(backgroundImage: NetworkImage(e.image),),  
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  crossAxisAlignment: CrossAxisAlignment.center,
+                              const SizedBox(height: 5,),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal:8.0),
+                                child: Row(
                                   children: [
-                                  Text(e.name), 
-                                  Text(e.summary)
-                                  ],)],) ).toList()),
-                            ) : Container(),
-                        ],
+                                    Text(currentCourse!.title, style:const TextStyle(fontWeight: FontWeight.bold, fontSize: 24),),
+                                    const Spacer(),
+                                    Text('Rs. ${currentCourse!.price}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.lightGreenAccent),)
+                                  ],
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal:16.0),
+                                child: Text(currentCourse!.subtitle, style: const TextStyle(color: Colors.greenAccent),),
+                              ),
+                              const SizedBox(height: 5,),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal:16.0),
+                                child: GestureDetector(
+                                  onTap: ()=> setState(() {
+                                    showMore = !showMore;
+                                  }),
+                                  child: Text(currentCourse!.description, maxLines: showMore? 100 : 2, overflow: TextOverflow.ellipsis, 
+                                  style: const TextStyle(fontWeight: FontWeight.w100, color: Colors.black26),),
+                        
+                                  ),
+                              ),
+                              SizedBox(height: showMore ? 10 : 0 ),
+                              showMore ? Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                child: Wrap(spacing: 5, children: currentCourse!.skills.map((e) => Card(color: Colors.white,elevation: 0,child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(e),
+                                ),)).toList(),),
+                              ): Container(),
+                              SizedBox(height: showMore ? 10 : 0),
+                              showMore ? SingleChildScrollView(
+                                child: Wrap(spacing: 5, children: currentCourseInstructor!.map((e) => 
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                  CircleAvatar(backgroundImage: NetworkImage(e.image),),  
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: [
+                                    Text(e.name), 
+                                    Text(e.summary)
+                                    ],)],) ).toList()),
+                              ) : Container(),
+                          ],
+                        ),
                       ),),
                       SliverAppBar(
                         title:TabBar(tabs: const [
