@@ -95,10 +95,13 @@ class _CoursesPageState extends State<CoursesPage>{
                     scrollDirection: Axis.horizontal,
                     child: Row(children: courseState.courses!.where((e) => e.isTopCourse ).map((e)=> Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Column(children: [
-                        SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
-                        Text(e.title),
-                      ],),
+                      child: GestureDetector(
+                      onTap: () => Navigator.of(context).pushNamed('/courses/${e.id}'),
+                        child: Column(children: [
+                          SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
+                          Text(e.title),
+                        ],),
+                      ),
                     )).toList(),),
                   ),
 
@@ -110,10 +113,13 @@ class _CoursesPageState extends State<CoursesPage>{
                     scrollDirection: Axis.horizontal,
                     child: Row(children: courseState.courses!.where((e) => e.isRecentlyViewedCourse ).map((e)=> Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Column(children: [
-                        SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
-                        Text(e.title),
-                      ],),
+                      child: GestureDetector(
+                      onTap: () =>Navigator.of(context).pushNamed('/courses/${e.id}'),
+                        child: Column(children: [
+                          SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
+                          Text(e.title),
+                        ],),
+                      ),
                     )).toList(),),
                   ),
 
@@ -125,10 +131,13 @@ class _CoursesPageState extends State<CoursesPage>{
                     scrollDirection: Axis.horizontal,
                     child: Row(children: courseState.courses!.where((e) => !e.isRecentlyViewedCourse && !e.isTopCourse).map((e)=> Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                      child: Column(children: [
-                        SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
-                        Text(e.title),
-                      ],),
+                      child: GestureDetector(
+                        onTap: () => Navigator.of(context).pushNamed('/courses/${e.id}'),
+                        child: Column(children: [
+                          SizedBox(height: 192, width: 128, child: Image.network(e.image, fit: BoxFit.scaleDown,),),
+                          Text(e.title),
+                        ],),
+                      ),
                     )).toList(),),
                   ),
 

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' as cupertino show CupertinoIcons;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_events.dart';
@@ -11,10 +12,27 @@ import 'package:flutter_intern/project/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 
+class ModalAppBar extends StatelessWidget implements PreferredSizeWidget{
+  final String title;
+  
+  const ModalAppBar({super.key, required this.title});
+  
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      title: Text(title),
+      leading: IconButton(icon: const Icon(cupertino.CupertinoIcons.xmark), onPressed: () => Navigator.of(context).pop(),),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+}
+
 class UnauthorizedNavigationBar extends StatefulWidget{
   const UnauthorizedNavigationBar({super.key});
-
-
+  
   @override
   State<UnauthorizedNavigationBar> createState() => _UnauthorizedNavigationBarState();
 
@@ -73,12 +91,13 @@ class _PhotoGridState extends State<PhotoGrid> {
               barrierDismissible: true,
               context: context, builder: (build) {
                 return Scaffold(
+                  appBar: AppBar(backgroundColor: Colors.black, actions: [IconButton(onPressed: ()=> Navigator.of(context).pop, icon: const Icon(cupertino.CupertinoIcons.xmark, color: Colors.white,))],),
                   body: Container(
                   width: MediaQuery.of(context).size.width,
                   height: MediaQuery.of(context).size.height,
                   color: Colors.black,
                     child: InteractiveViewer(
-                      minScale: 0.5,
+                      minScale: 0.25,
                       maxScale: 2,
                       child: ClipRRect(
                         child: widget.images.elementAt(index).isNetworkUrl ? 
@@ -118,13 +137,14 @@ class _PhotoGridState extends State<PhotoGrid> {
             showDialog(
             barrierDismissible: true,
             context: context, builder: (build) =>  Scaffold(
+              appBar: AppBar(backgroundColor: Colors.black,actions: [IconButton(icon: const Icon(cupertino.CupertinoIcons.xmark, color: Colors.white,), onPressed: () => Navigator.of(context).pop(),)],),
               body: Container(
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 color: Colors.black,
                 child: InteractiveViewer(
                   panEnabled: true,
-                  minScale: 0.5,
+                  minScale: 0.25,
                   maxScale: 2,
                   scaleEnabled: true,
                   child: Flex(
@@ -135,11 +155,10 @@ class _PhotoGridState extends State<PhotoGrid> {
                     FittedBox(
                       fit: BoxFit.scaleDown,
                       child: (widget.images.elementAt(index).isNetworkUrl ? 
-                    Image.network(imageUrl, fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height * 0.9,) 
-                    : Image.file(File(imageUrl), fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.width * 0.9,)),
+                    Image.network(imageUrl, fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height * 0.75,) 
+                    : Image.file(File(imageUrl), fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.width * 0.75,)),
                     ),
-                  ],
-                            ),
+                  ],),
                 ),
               ),
             ),);

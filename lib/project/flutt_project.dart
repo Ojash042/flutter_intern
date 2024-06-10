@@ -105,6 +105,7 @@ class _MyAppState extends State<MyApp> {
         BlocProvider(create: (_) => AuthBloc()..add(UnknownAuthEvent())),
       ],
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
             textTheme: GoogleFonts.quicksandTextTheme(),
             useMaterial3: true,

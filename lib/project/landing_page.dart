@@ -17,7 +17,6 @@ import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
-import 'package:get_it/get_it.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:humanizer/humanizer.dart';
 import 'package:image_picker/image_picker.dart';

@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' as cupertino show CupertinoIcons;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_states.dart';
@@ -31,11 +32,7 @@ UserDetails? currentUserDetails;
 UserData? currentUserData;
 
 void saveData(List<UserDetails> userDetailsList) async{ 
-  //locator.get<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
-  //return;
-  BlocProvider.of<UserListBloc>(context).add(EditUserEvent(userDetails: userDetailsList));
-  //BlocProvider.of<AuthBloc>(context).add(UnknownAuthEvent());
-  //context.read<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+  locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
 }
 
 @override
@@ -64,17 +61,13 @@ Widget showEditBasicInfoModal(){
         return BlocBuilder<UserListBloc, UserListStates>(
             builder: (context, state) {
               return Scaffold(
+                appBar: const ModalAppBar(title: "Edit Basic Info",),
                 body: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child:  SingleChildScrollView(
                         child: Center(
                           child: Form(child: 
                               Column(children: [
-                                Align(
-                                  alignment: Alignment.topRight,
-                                  child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
-                                  const SizedBox(height: 30,),
-                                  Text("Edit Basic Info", style: Theme.of(context).textTheme.headlineMedium,),
                                   const SizedBox(height: 30,),
                                   TextFormField(
                                   controller: summaryController,
@@ -96,7 +89,9 @@ Widget showEditBasicInfoModal(){
                               });
                             }), 
                             const SizedBox(height: 30,),
-                            OutlinedButton(onPressed: (){
+                            FilledButton(
+                              style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.blueAccent), shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
+                              onPressed: (){
                               setState((){
                                 currentUserDetails.basicInfo.summary = summaryController.text;
                                 currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
@@ -121,6 +116,7 @@ Widget showEditBasicInfoModal(){
     var currentUserDetails = userDetailsList!.firstWhere((element) => element.id == BlocProvider.of<AuthBloc>(context).state.userData!.id);
     TextEditingController skillController = TextEditingController();
     return Scaffold(
+      appBar:const ModalAppBar(title: "Show Edit Skills",),
       body: StatefulBuilder(
         builder: (context, StateSetter setState) {
           return SingleChildScrollView(
@@ -137,7 +133,11 @@ Widget showEditBasicInfoModal(){
                   Text("Skills", style: Theme.of(context).textTheme.headlineMedium,),
                   Wrap(children: currentUserDetails.skills.map((e) => Card(child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: Text(e.title!),
+                    child: Row(
+                      children: [
+                        Text(e.title!),
+                      ],
+                    ),
                   ),)).toList(),),
                   const SizedBox(height: 30,),
                   TextFormField(
@@ -283,9 +283,9 @@ Widget showEditBasicInfoModal(){
 
 
     for(int i=0; i<currentUser.educations.length; i++){
-      levelControllers.elementAt(i).text = currentUserDetails!.educations.elementAt(i).level;
-      summaryControllers.elementAt(i).text = currentUserDetails!.educations.elementAt(i).summary;
-      organizationNameControllers.elementAt(i).text = currentUserDetails!.educations.elementAt(i).organizationName ?? "";
+      levelControllers.elementAt(i).text = currentUserDetails.educations.elementAt(i).level;
+      summaryControllers.elementAt(i).text = currentUserDetails.educations.elementAt(i).summary;
+      organizationNameControllers.elementAt(i).text = currentUserDetails.educations.elementAt(i).organizationName;
 
       for(int j=0; j<currentUser.educations.elementAt(i).accomplishments.length; j++){
         achievementTitleControllerMatrix.elementAt(i).elementAt(j).text = currentUser.educations.elementAt(i).accomplishments.elementAt(j).title;
@@ -318,27 +318,27 @@ Widget showEditBasicInfoModal(){
                     const SizedBox(height: 30,),
                     TextFormField(decoration: const InputDecoration(hintText: "Enter organization name"), controller: organizationNameControllers.elementAt(index),),
                     const SizedBox(height: 30,),
-                    TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails!.educations.elementAt(index).startDate == null)? "Enter the starting date here":
-                    DateFormat("yyyy-MM-dd").format(currentUserDetails!.educations.elementAt(index).startDate!)
+                    TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).startDate == null)? "Enter the starting date here":
+                    DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).startDate!)
                     ),),
                     readOnly: true,
                     onTap: () async{
                       DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
                       setState((){
                         if(pickedDate != null){
-                          currentUserDetails!.educations.elementAt(index).startDate = pickedDate;
+                          currentUserDetails.educations.elementAt(index).startDate = pickedDate;
                         }
                       });
                     },),
-                    TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails!.educations.elementAt(index).endDate == null)? "Enter the end date here":
-                    DateFormat("yyyy-MM-dd").format(currentUserDetails!.educations.elementAt(index).endDate!)
+                    TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).endDate == null)? "Enter the end date here":
+                    DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).endDate!)
                     ),),
                     readOnly: true,
                     onTap: () async{
                       DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
                       setState((){
                         if(pickedDate != null){
-                          currentUserDetails!.educations.elementAt(index).endDate = pickedDate;
+                          currentUserDetails.educations.elementAt(index).endDate = pickedDate;
                         }
                       });
                     },),
@@ -356,15 +356,15 @@ Widget showEditBasicInfoModal(){
                         const SizedBox(height: 10,),
                         TextFormField(decoration: const InputDecoration(hintText: "Achievement Description"),controller: achievementDescriptionControllerMatrix.elementAt(index).elementAt(indexJ),),
                         const SizedBox(height: 10,),
-                        TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails!.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime == null)? "Enter the starting date here":
-                          DateFormat("yyyy-MM-dd").format(currentUserDetails!.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime!)
+                        TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime == null)? "Enter the starting date here":
+                          DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime!)
                           ),),
                           readOnly: true,
                           onTap: () async{
                               DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
                               setState((){
                               if(pickedDate != null){
-                                  currentUserDetails!.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime = pickedDate;
+                                  currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime = pickedDate;
                           }
                       });
                     },),
@@ -378,7 +378,7 @@ Widget showEditBasicInfoModal(){
                             Accomplishment accomplishment = Accomplishment();
                             accomplishment.dateTime = null;
                             accomplishment.id = Random().nextInt(10000) +1000;
-                            currentUserDetails!.educations.elementAt(index).accomplishments.add(accomplishment);
+                            currentUserDetails.educations.elementAt(index).accomplishments.add(accomplishment);
                           }), child: const Text("Add achievements")),
                   ],
                  )),
@@ -406,7 +406,7 @@ Widget showEditBasicInfoModal(){
                     education.accomplishments = accomplishment;
                     achievementTitleControllerMatrix.add([]);
                     achievementDescriptionControllerMatrix.add([]);
-                    currentUserDetails!.educations.add(education);
+                    currentUserDetails.educations.add(education);
 
                     WidgetsBinding.instance.addPostFrameCallback((_) => setState((){}));
                   })
@@ -441,8 +441,6 @@ Widget showEditBasicInfoModal(){
     List<TextEditingController> jobTitleController = List.generate(growable: true, currentUserDetails.workExperiences.length, (index) => TextEditingController());
     List<TextEditingController> summaryController = List.generate(growable: true, currentUserDetails.workExperiences.length, (index) => TextEditingController());
     List<TextEditingController> organizationController = List.generate(growable: true, currentUserDetails.workExperiences.length, (index) => TextEditingController());
-    List<TextEditingController> startDateController = List.generate(growable: true, currentUserDetails.workExperiences.length, (index) => TextEditingController());
-    List<TextEditingController> endDateController = List.generate(growable: true, currentUserDetails.workExperiences.length, (index) => TextEditingController());
 
     for(int index=0; index< currentUserDetails.workExperiences.length; index++){
       jobTitleController.elementAt(index).text = currentUserDetails.workExperiences.elementAt(index).jobTitle;
@@ -634,93 +632,240 @@ Widget showEditBasicInfoModal(){
             appBar: const CommonAppBar(),
             body: SingleChildScrollView( 
               child: 
-              Column(children: [Card(
-                    shape: const LinearBorder(),
-                    elevation: 0,
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                      children: [
-                        Align(alignment: Alignment.topRight,
-                        child: IconButton(icon:const Icon(Icons.edit),onPressed: (){showDialog(context: context, builder: (context) => BlocProvider.value(
-                          value: locator<UserListBloc>(),
-                          child: showEditBasicInfoModal(),
-                        ));},),),
-                        const Text("About Me", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
+              Container(
+              color: Colors.white,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [Card(
+                      shape: const LinearBorder(),
+                      elevation: 0,
+                      color: Colors.white,
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(children: [
+                            const Text("About Me", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),),
+                            const Spacer(),
+                            IconButton(icon:const Icon(Icons.edit),onPressed: (){showDialog(context: context, builder: (context) => BlocProvider.value(
+                            value: locator<UserListBloc>(),
+                            child: showEditBasicInfoModal(),
+                
+                          ));},),
+                          ],
+                          ), 
+                          const SizedBox(height: 15,),
+                          Row(children: [const CustomDetailsIcon(ico: Icons.text_snippet_outlined), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.summary)],),
+                          const SizedBox(height: 15,),
+                          Row(children: [const CustomDetailsIcon(ico: Icons.person),const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.gender)],),
                         const SizedBox(height: 15,),
-                        Text(currentUserDetails!.basicInfo.summary),
-                        Row(
-                          children: [const Text("Gender: ", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.gender)],
+                        Row(children: [const CustomDetailsIcon(ico: Icons.cake), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.dob)],),
+                        const SizedBox(height: 15,),
+                        ],),
+                      ),) ,
+                      Wrap(
+                        children: [
+                          Divider(thickness: 0.5, indent: MediaQuery.of(context).size.width * 0.05, endIndent: MediaQuery.of(context).size.width * 0.05,),
+                          SizedBox(
+                          width: MediaQuery.of(context).size.width,
+                            child: Card(
+                              elevation: 0,
+                              shape: const LinearBorder(),
+                              color: Colors.white,
+                              child: Padding(padding: const EdgeInsets.all(16.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [ 
+                              Row(
+                                children: [
+                                  const Text("Skills", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),),
+                                  const Spacer(),
+                                  IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditSkillsModal());},),
+                                ],
+                              ),
+                              Container(),
+                              const SizedBox(height: 15,),
+                              Wrap(
+                                direction: Axis.vertical,
+                                children: currentUserDetails!.skills.map((e) => Container(
+                                width: MediaQuery.of(context).size.width,
+                                child: Padding(padding: const EdgeInsets.all(8), child: Row(
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const CustomDetailsIcon(ico: Icons.badge,),
+                                        const SizedBox(width: 10,),
+                                        Center(child: Text(e.title!)),
+                                      ],
+                                    ),
+                                  ],
+                                ),),)).toList(),),
+                            ],),),),
                           ),
-                      const SizedBox(height: 15,),
-                      Row(children: [const Text("Born On: ", style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),), const SizedBox(width: 10,), Text(currentUserDetails!.basicInfo.dob)],),
-                      const SizedBox(height: 15,),
-                      ],),
-                    ),) ,
-                    Wrap(
-                      children: [
-                        SizedBox(
+                        Divider(thickness: 0.5, indent: MediaQuery.of(context).size.width * 0.05, endIndent: MediaQuery.of(context).size.width * 0.05,),
+                        SizedBox( 
                         width: MediaQuery.of(context).size.width,
                           child: Card(
-                            elevation: 0,
                             shape: const LinearBorder(),
+                            elevation: 0,
                             color: Colors.white,
                             child: Padding(padding: const EdgeInsets.all(16.0),
-                          child: Column(children: [ 
-                            Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditSkillsModal());},),),
-                            Container(),
-                            const Text("Skills", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
-                            const SizedBox(height: 15,),
-                            Wrap(
-                              children: currentUserDetails!.skills.map((e) => Card(
-                              shape: BeveledRectangleBorder(borderRadius:const BorderRadius.all(Radius.circular(2.0),), side: BorderSide(width: 0.4, color: Colors.grey[100]!)),
-                              elevation: 0,
-                              child: Padding(padding: const EdgeInsets.all(8), child: Text(e.title!),),)).toList(),),
-                          ],),),),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Text("Hobbies", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),),
+                                      const Spacer(),
+                                      Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditHobbiesModal());},),),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 15,),
+                                  Wrap(
+                                    direction: Axis.vertical,
+                                  children: currentUserDetails!.hobbies.map((e) => Container(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(8), 
+                                      child: Row(
+                                        children: [
+                                          const CustomDetailsIcon(ico: Icons.music_note),
+                                          const SizedBox(width: 10,),
+                                          Text(e.title),
+                                        ],
+                                      ),),)).toList(),),
+                                    ],),),),
                         ),
+                          Divider(thickness: 0.5, indent: MediaQuery.of(context).size.width * 0.05, endIndent: MediaQuery.of(context).size.width * 0.05,),
                       SizedBox(
-                      width: MediaQuery.of(context).size.width,
+                        width: MediaQuery.of(context).size.width,
                         child: Card(
-                          shape: const LinearBorder(),
-                          elevation: 0,
-                          color: Colors.white,
+                        color: Colors.white,
+                        elevation: 0,
+                        shape: const LinearBorder(),
                           child: Padding(padding: const EdgeInsets.all(16.0),
-                                      child: Column(children: [
-                        Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditHobbiesModal());},),),
-                        const Text("Hobbies", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
-                        const SizedBox(height: 15,),
-                        Wrap(
-                          children: currentUserDetails!.hobbies.map((e) => Card(
-                          shape: BeveledRectangleBorder(borderRadius: const BorderRadius.all(Radius.circular(2.0)), side: BorderSide(width: 0.4, color: Colors.grey[100]!)),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text("Languages", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),),
+                                  const Spacer(),
+                                  Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditLanguagesModal());},),),
+                                ],
+                              ),
+                              const SizedBox(height: 15,),
+                              Wrap(children: currentUserDetails!.languages.map((e) => Padding(
+                                padding: const EdgeInsets.all(8),
+                                child: Row(
+                                  children: [
+                                    const CustomDetailsIcon(ico: cupertino.CupertinoIcons.chat_bubble_2_fill),
+                                    const SizedBox(width: 10,),
+                                    Text(e.title),
+                                  ],
+                                ),)).toList(),),
+                        ],),),),
+                      )],),
+                    const SizedBox(height: 20,),
+                    Divider(thickness: 0.5, indent: MediaQuery.of(context).size.width * 0.05, endIndent: MediaQuery.of(context).size.width * 0.05,),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: Card(
                           elevation: 0,
-                          child: Padding(padding: const EdgeInsets.all(8), child: Text(e.title),),)).toList(),),
-                                      ],),),),
+                          shape: const LinearBorder(),
+                          color: Colors.white,
+                          child: Padding(padding: const EdgeInsets.all(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                            Row(
+                              children: [
+                                const Text("Education", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),),
+                                const Spacer(),
+                                Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context)=> showEditEducationModal());},),),
+                              ],
+                            ),
+                            const SizedBox(height: 15,),
+                            Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: currentUserDetails!.educations.map((e) => Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                              Row(children: [const CustomDetailsIcon(ico: Icons.school), const SizedBox(width: 10,),const Text("Went To "), Text(e.organizationName, style: const TextStyle(fontWeight: FontWeight.bold),)],),
+                              // Padding(
+                              //   padding: const EdgeInsets.only(left:8.0),
+                              //   child: Text('${e.level} (${e.startDate!=null? DateFormat("yMMM").format(e.startDate!) :""} - ${e.endDate!=null? DateFormat("yMMM").format(e.endDate!): ""})',
+                              //   ),
+                              // ),
+                              const SizedBox(height: 5,),
+                              // ListView.builder(
+                              //   physics: const NeverScrollableScrollPhysics(),
+                              //   shrinkWrap: true,
+                              //   itemCount: e.accomplishments.length,
+                              //   itemBuilder: (context, index) => 
+                              //   Text('${e.accomplishments.elementAt(index).title} on ${DateFormat.yMMMM().format(e.accomplishments.elementAt(index).dateTime!)}')), 
+                              ],)).toList()
+                              
+                            )
+                          ],),
+                        ),
+                        ),),
                       ),
-                    SizedBox(
+                    ),
+                    Divider(thickness: 0.5, endIndent: MediaQuery.of(context).size.width * 0.05, indent: MediaQuery.of(context).size.width * 0.05,),
+                    Padding(padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                    child: SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: Card(
-                      color: Colors.white,
-                      elevation: 0,
-                      shape: const LinearBorder(),
-                        child: Padding(padding: const EdgeInsets.all(16.0),
-                        child: Column(children: [
-                        Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditLanguagesModal());},),),
-                        const Text("Languages", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),),
-                        const SizedBox(height: 15,),
-                        Wrap(children: currentUserDetails!.languages.map((e) => Card(
-                          shape: BeveledRectangleBorder(borderRadius: BorderRadius.circular(2.0)),
-                          elevation: 0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(8),
-                            child: Text(e.title),),)).toList(),),
-                      ],),),),
-                    )
-                      ],
+                        color: Colors.white,
+                        elevation: 0,
+                        shape: const LinearBorder(),
+                        child: Padding(padding: const EdgeInsets.all(8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(14.0),
+                          child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text("Workplace History", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),), 
+                                  const Spacer(),
+                                  Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditWorkPlaceHistory(userDetailsList, currentUserData!.id));},),),
+                                ],
+                              ),
+                              const SizedBox(height: 15,),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: currentUserDetails!.workExperiences.map((e) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                  Row(
+                                    children: [
+                                      const CustomDetailsIcon(ico: Icons.work),
+                                      const SizedBox(height: 10,),
+                                      Text(e.jobTitle),
+                                    ],
+                                  ),
+                                  Text(e.organizationName, maxLines: null,),
+                                  const SizedBox(height: 5,),
+                                  Text('Worked On: - ${e.summary}'),
+                                  const SizedBox(height: 5,),
+                                  Text( '${DateFormat("yMMM").format(e.startDate!)} - ${DateFormat("yMMM").format(e.endDate!)}'),
+                              ],)).toList(),),
+                            ],
+                          ),
+                        )
+                      ),),
+                      ),
                     ),
-                  const SizedBox(height: 20,),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    Divider(thickness: 0.5, indent: MediaQuery.of(context).size.width * 0.05, endIndent: MediaQuery.of(context).size.width * 0.05,),
+                    Padding(padding: const EdgeInsets.all(8),
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width,
                       child: Card(
@@ -729,109 +874,51 @@ Widget showEditBasicInfoModal(){
                         color: Colors.white,
                         child: Padding(padding: const EdgeInsets.all(8),
                       child: Padding(
-                        padding: const EdgeInsets.all(14.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                          Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context)=> showEditEducationModal());},),),
-                          const Text("Education", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),),
-                          const SizedBox(height: 15,),
-                          Column(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: currentUserDetails!.educations.map((e) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
+                        child: Column(children: [
+                          Row(
                             children: [
-                            Text(e.organizationName, style: const TextStyle(fontWeight: FontWeight.w700,),), 
-                            Padding(
-                              padding: const EdgeInsets.only(left:8.0),
-                              child: Text('${e.level} (${e.startDate!=null? DateFormat("yMMM").format(e.startDate!) :""} - ${e.endDate!=null? DateFormat("yMMM").format(e.endDate!): ""})',
-                              ),
-                            ),
-                            const SizedBox(height: 5,),
-                            ListView.builder(
-                              physics: const NeverScrollableScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: e.accomplishments.length,
-                              itemBuilder: (context, index) => 
-                              Text('${e.accomplishments.elementAt(index).title} on ${DateFormat.yMMMM().format(e.accomplishments.elementAt(index).dateTime!)}')), 
-                            ],)).toList()
-                            
-                          )
+                              const Text("Contact Info", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),),
+                              const Spacer(),
+                              Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditContactInfoModal(userDetailsList, currentUserData!.id));},),),
+                            ],
+                          ),
+                          const SizedBox(height: 15,),
+                           Row(children: [const CustomDetailsIcon(ico: Icons.phone_iphone), const  SizedBox(width: 10,),Text(currentUserDetails!.contactInfo.mobileNo!)],),
+                          const SizedBox(height: 5,),
+                          Column(children: currentUserDetails!.contactInfo.socialMedias.map((e) =>
+                           Row(
+                             children: [
+                               Image.network('https://logo.clearbit.com/${e.type}', height: 32, width: 32,),
+                               const SizedBox(width: 10,),
+                               Column(children: [
+                                Text(e.title),
+                                Text(e.url.split('/').last),
+                                const SizedBox(height: 15,),      
+                                ]),
+                             ],
+                           )).toList())
                         ],),
-                      ),
-                      ),),
-                    ),
-                  ),
-                  Padding(padding: const EdgeInsets.all(8.0),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width - 40,
-                    child: Card(
-                      color: Colors.white,
-                      elevation: 0,
-                      shape: const LinearBorder(),
-                      child: Padding(padding: const EdgeInsets.all(8),
-                      child: Padding(
-                        padding: const EdgeInsets.all(14.0),
-                        child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditWorkPlaceHistory(userDetailsList, currentUserData!.id));},),),
-                            const Center(child: Text("Workplace History", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),)), 
-                            const SizedBox(height: 15,),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: currentUserDetails!.workExperiences.map((e) => Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                Text(e.jobTitle),
-                                Text(e.organizationName, maxLines: null,),
-                                const SizedBox(height: 5,),
-                                Text('Worked On: - ${e.summary}'),
-                                const SizedBox(height: 5,),
-                                Text( '${DateFormat("yMMM").format(e.startDate!)} - ${DateFormat("yMMM").format(e.endDate!)}'),
-                            ],)).toList(),),
-                          ],
-                        ),
-                      )
-                    ),),
-                    ),
-                  ),
-                  Padding(padding: const EdgeInsets.all(8),
-                  child: SizedBox(
-                    width: MediaQuery.of(context).size.width - 40,
-                    child: Card(
-                      elevation: 0,
-                      shape: const LinearBorder(),
-                      color: Colors.white,
-                      child: Padding(padding: const EdgeInsets.all(8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(children: [
-                        Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditContactInfoModal(userDetailsList, currentUserData!.id));},),),
-                        const Text("Contact Info", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16),),
-                        const SizedBox(height: 15,),
-                         Row(children: [const Text("Mobile No.", style: TextStyle(fontWeight: FontWeight.bold),), const  SizedBox(width: 5,),Text(currentUserDetails!.contactInfo.mobileNo!)],),
-                        const SizedBox(height: 5,),
-                        Column(children: currentUserDetails!.contactInfo.socialMedias.map((e) =>
-                         Row(
-                           children: [
-                             Image.network('https://logo.clearbit.com/${e.type}', height: 32, width: 32,),
-                             const SizedBox(width: 10,),
-                             Column(children: [
-                              Text(e.title),
-                              Text(e.url.split('/').last),
-                              const SizedBox(height: 15,),      
-                              ]),
-                           ],
-                         )).toList())
-                      ],),
-                    ),),),
-                 
-            ),)
-              ],)                          ,
+                      ),),),
+                   
+                            ),)
+                ],),
+              )                          ,
                  )   ,
               );
          });
         });}
+}
+
+class CustomDetailsIcon extends StatelessWidget {
+  final IconData ico;
+  const CustomDetailsIcon({
+    super.key,
+    required this.ico
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(width: 30, height:30, decoration: BoxDecoration(color: Colors.grey[400], shape: BoxShape.circle), child: Center(child: Icon(ico, color: Colors.white,)),);
+  }
 }
