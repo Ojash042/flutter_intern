@@ -108,6 +108,7 @@ class _FriendRequestsState extends State<FriendRequests>{
   @override
   void dispose(){
     super.dispose();
+    closeUserPostLocator();
   }
 
   @override
@@ -132,8 +133,8 @@ class _FriendRequestsState extends State<FriendRequests>{
               (element.friendId == state.userData!.id || element.userId == state.userData!.id) && (element.hasNewRequestAccepted == false) &&
               element.requestedBy != state.userData!.id && element.userListId>0).toList(); 
               for(var item in filteredFriendList){
-                var user = locator.get<UserListBloc>().state.userDataList!.firstWhere((element) => element.id == item.requestedBy); 
-                var userDetails = locator.get<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
+                var user = locator<UserListBloc>().state.userDataList!.firstWhere((element) => element.id == item.requestedBy); 
+                var userDetails = locator<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
                 requestedByUsers.add(user);
                 requestedByUserDetails.add(userDetails);
                 }

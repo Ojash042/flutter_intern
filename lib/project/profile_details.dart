@@ -32,13 +32,15 @@ UserDetails? currentUserDetails;
 UserData? currentUserData;
 
 void saveData(List<UserDetails> userDetailsList) async{ 
-  locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+  if(locator<UserListBloc>().state is! UserListEmpty){
+    locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+  }
 }
 
 @override
   void dispose() {
     super.dispose();
-    locator<UserListBloc>().close();
+    closeUserPostLocator();
   }
 
 @override
@@ -54,6 +56,7 @@ Widget showEditBasicInfoModal(){
     int currentUserId = BlocProvider.of<AuthBloc>(context).state.userData!.id;
     var currentUserDetails = userDetailsList.firstWhere((element) => element.id == currentUserId);
     TextEditingController summaryController = TextEditingController();
+
     summaryController.text = currentUserDetails.basicInfo.summary;
     UserGender? _gender = context.read<AuthBloc>().state.userDetails!.basicInfo.gender == "Male" ? UserGender.male: UserGender.female;
     return StatefulBuilder(
@@ -63,46 +66,60 @@ Widget showEditBasicInfoModal(){
               return Scaffold(
                 appBar: const ModalAppBar(title: "Edit Basic Info",),
                 body: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child:  SingleChildScrollView(
-                        child: Center(
-                          child: Form(child: 
-                              Column(children: [
-                                  const SizedBox(height: 30,),
+                  padding: const EdgeInsets.only(left:16.0, right: 16.0, bottom: 16.0),
+                  child:  SizedBox(
+                    height: MediaQuery.of(context).size.height,
+                    child: Center(
+                      child: Form(
+                        child: SizedBox(
+                          height: MediaQuery.of(context).size.height,
+                          child: Column(children: [
+                            SizedBox(
+                              child: Column(
+                                children: [
                                   TextFormField(
-                                  controller: summaryController,
-                                  decoration: InputDecoration(labelText: currentUserDetails.basicInfo.summary,hintText: "Enter summary"),
-                                  //initialValue: currentUserDetails.basicInfo.summary,
+                                    controller: summaryController,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, style: BorderStyle.solid)),
+                                      hintText: "Enter summary",),
+                                      //initialValue: currentUserDetails.basicInfo.summary,
+                                      ),
+                                      const SizedBox(height: 30,),
+                                      Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
+                                      RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
+                                        setState((){
+                                          currentUserDetails.basicInfo.gender = "Male";
+                                          _gender = value;
+                                          });
+                                          }),
+                                          RadioListTile(value: UserGender.female, title: const Text("Female"), groupValue: _gender, onChanged: (UserGender? value){
+                                            setState((){
+                                              currentUserDetails.basicInfo.gender = "Female";
+                                              _gender = value; });
+                                              }), 
+                                              const SizedBox(height: 30,),
+                                    ],
                                   ),
-                                  const SizedBox(height: 30,),
-                                  Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
-                                  RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
-                              setState((){
-                                currentUserDetails.basicInfo.gender = "Male";
-                                _gender = value;
-                              });
-                              }),
-                            RadioListTile(value: UserGender.female, title: const Text("Female"), groupValue: _gender, onChanged: (UserGender? value){
-                            setState((){
-                              currentUserDetails.basicInfo.gender = "Female";
-                              _gender = value; 
-                              });
-                            }), 
-                            const SizedBox(height: 30,),
-                            FilledButton(
-                              style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.blueAccent), shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
-                              onPressed: (){
-                              setState((){
-                                currentUserDetails.basicInfo.summary = summaryController.text;
-                                currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
+                                ),
+                                const Divider(),
+                                Expanded(child: Container()),
+                                Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: FilledButton(style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.blueAccent), shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
+                                  onPressed: (){
+                                    setState((){
+                                      currentUserDetails.basicInfo.summary = summaryController.text;
+                                      currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
                               });
                               saveData(userDetailsList);
                               Navigator.of(context).pop();
-                              }, child: const Text("Submit"))
-                              ],)
-                          ,),
+                              }, child: const Text("Submit")),
+                                                          )
+                            ],),
                         ),
-                      )  
+                      ),
+                    ),
+                  )  
                 )
               );
             },
@@ -116,49 +133,62 @@ Widget showEditBasicInfoModal(){
     var currentUserDetails = userDetailsList!.firstWhere((element) => element.id == BlocProvider.of<AuthBloc>(context).state.userData!.id);
     TextEditingController skillController = TextEditingController();
     return Scaffold(
-      appBar:const ModalAppBar(title: "Show Edit Skills",),
+      appBar:const ModalAppBar(title: "Edit Skills",),
       body: StatefulBuilder(
         builder: (context, StateSetter setState) {
-          return SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Center(child: 
-              Form(child: Column(
+          return Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: Center(child: 
+            Form(child: 
+            SizedBox(
+              height: MediaQuery.of(context).size.height,
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
+                  Column(
+                    children: [
+                      TextFormField(
+                        controller: skillController,
+                        decoration: const InputDecoration(
+                          border: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 1.0, style: BorderStyle.solid)
+                          ),
+                          hintText: "Enter skills"), onFieldSubmitted: (value){
+                          ;},),
+                      const SizedBox(height: 30,),
+                      // Text("Skills", style: Theme.of(context).textTheme.headlineSmall,),
+                      // const SizedBox(height: 30,),
+                      // Wrap(
+                      //   runSpacing: 8.0,
+                      //   spacing: 8.0,
+                      //   children: currentUserDetails.skills.map((e) => Card(child: Padding(
+                      //   padding: const EdgeInsets.all(8.0),
+                      //   child: Text(e.title!),
+                      // ),)).toList(),),
+                      // const SizedBox(height: 30,),
+                      // 
+                      // const SizedBox(height: 30,),
+                    ],
+                  ),
                   const SizedBox(height: 30,),
-                  Text("Skills", style: Theme.of(context).textTheme.headlineMedium,),
-                  Wrap(children: currentUserDetails.skills.map((e) => Card(child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        Text(e.title!),
-                      ],
-                    ),
-                  ),)).toList(),),
-                  const SizedBox(height: 30,),
-                  TextFormField(
-                    controller: skillController,
-                    decoration: const InputDecoration(hintText: "Enter skills"), onFieldSubmitted: (value){
+                  Expanded(child: Container()),
+                  FilledButton(
+                    style: const ButtonStyle(
+                      shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8)))),
+                      backgroundColor: WidgetStatePropertyAll(Colors.blueAccent)),
+                    onPressed: (){
                       setState(() {
-                       Skills skills = Skills();
-                      skills.id = Random().nextInt(10000) + 1000;
-                      skills.title = value;
-                      currentUserDetails.skills.add(skills);
-                      skillController.clear();
-                      });
-                                  },),
-                  const SizedBox(height: 30,),
-                  OutlinedButton(onPressed: (){
+                          Skills skills = Skills();
+                          skills.id = Random().nextInt(10000) + 1000;
+                          skills.title = skillController.text;
+                          currentUserDetails.skills.add(skills);
+                          skillController.clear();
+                          });
                     saveData(userDetailsList);
                     Navigator.of(context).pop();
                   }, child: const Text("Submit")),
                 ],
-              ),)),
-            ),
+              ),
+            ),)),
           );
         }
       ),
@@ -170,10 +200,9 @@ Widget showEditBasicInfoModal(){
     int currentUserId = BlocProvider.of<AuthBloc>(context).state.userData!.id;
     var currentUserDetails = userDetailsList.firstWhere((element) => element.id == currentUserId);
 
-    //var currentUserDetails = userDetailsList.firstWhere((element) => element.id == currentUserId);
-
     TextEditingController hobbiesController = TextEditingController();
     return Scaffold(
+      appBar: const ModalAppBar(title: "Edit Hobbies",),
       body: StatefulBuilder(
         builder: (context, StateSetter setState) {
           return SingleChildScrollView(
@@ -183,12 +212,12 @@ Widget showEditBasicInfoModal(){
               Form(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
                   const SizedBox(height: 30,),
-                  Text("Hobbies", style: Theme.of(context).textTheme.headlineMedium,),
-                  Wrap(children: currentUserDetails.hobbies.map((e) => Card(child: Padding(
+                  Text("Hobbies", style: Theme.of(context).textTheme.headlineSmall,),
+                  const SizedBox(height: 20,),
+                  Wrap(children: currentUserDetails.hobbies.map((e) => Card(
+                    elevation: 0,
+                    child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(e.title),
                   ),)).toList(),),
@@ -204,7 +233,9 @@ Widget showEditBasicInfoModal(){
                       hobbiesController.clear();
                       });},),
                   const SizedBox(height: 30,),
-                  OutlinedButton(onPressed: (){
+                  FilledButton(
+                    style: blueFilledButtonStyle, 
+                    onPressed: (){
                     saveData(userDetailsList);
                   Navigator.of(context).pop();
                   }, child: const Text("Submit")),
@@ -224,6 +255,7 @@ Widget showEditBasicInfoModal(){
 
     TextEditingController languageController = TextEditingController();
     return Scaffold(
+      appBar: const ModalAppBar(title: "Edit Languages",),
       body: StatefulBuilder(
         builder: (context, StateSetter setState) {
           return SingleChildScrollView(
@@ -233,11 +265,9 @@ Widget showEditBasicInfoModal(){
               Form(child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.cancel))),
                   const SizedBox(height: 30,),
-                  Text("Languages", style: Theme.of(context).textTheme.headlineMedium,),
+                  Text("Languages", style: Theme.of(context).textTheme.headlineSmall,),
+                  const SizedBox(height: 30,),
                   Wrap(children: currentUserDetails.languages.map((e) => Card(child: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Text(e.title),
@@ -254,7 +284,9 @@ Widget showEditBasicInfoModal(){
                         languageController.clear();
                       });},),
                   const SizedBox(height: 30,),
-                  OutlinedButton(onPressed: (){
+                  FilledButton(
+                    style: blueFilledButtonStyle,
+                    onPressed: (){
                     saveData(userDetailsList);
                   Navigator.of(context).pop();
                   }, child: const Text("Submit")),
@@ -294,15 +326,14 @@ Widget showEditBasicInfoModal(){
     }
 
     return Scaffold(
+      appBar: const ModalAppBar(title: "Edit Education",),
       body: StatefulBuilder(builder: (context, setState) => SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(14.0),
           child: Center(child: Form(child: Column(
             children: [
               const SizedBox(height: 30,),
-              Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.cancel), onPressed: (){Navigator.pop(context);},),),
-              const SizedBox(height: 60,),
-              Text("Educational History", style: Theme.of(context).textTheme.headlineMedium,),
+              Text("Educational History", style: Theme.of(context).textTheme.headlineSmall,),
               const SizedBox(height: 30,),
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
@@ -342,7 +373,6 @@ Widget showEditBasicInfoModal(){
                         }
                       });
                     },),
-
                     const SizedBox(height: 10,),
                     Text("Achievement", style: Theme.of(context).textTheme.headlineSmall,), 
                     const SizedBox(height: 10,),
@@ -407,12 +437,13 @@ Widget showEditBasicInfoModal(){
                     achievementTitleControllerMatrix.add([]);
                     achievementDescriptionControllerMatrix.add([]);
                     currentUserDetails.educations.add(education);
-
                     WidgetsBinding.instance.addPostFrameCallback((_) => setState((){}));
                   })
                 ,),
               const SizedBox(height: 30,),
-              OutlinedButton(onPressed: (){
+              FilledButton(
+                style: blueFilledButtonStyle,
+                onPressed: (){
                 setState((){
                   for(int i=0; i<currentUser.educations.length; i++){
                     currentUser.educations.elementAt(i).level = levelControllers.elementAt(i).text;
@@ -433,7 +464,7 @@ Widget showEditBasicInfoModal(){
       )),);
   }
 
-  Widget showEditWorkPlaceHistory(List<UserDetails> userDetailsList, int currentUserId){
+  Widget showEditWorkPlaceHistory(){
     userDetailsList = locator.get<UserListBloc>().state.userDetailsList!;
     int currentUserId = BlocProvider.of<AuthBloc>(context).state.userData!.id;
     var currentUserDetails = userDetailsList.firstWhere((element) => element.id == currentUserId);
@@ -446,7 +477,7 @@ Widget showEditBasicInfoModal(){
       jobTitleController.elementAt(index).text = currentUserDetails.workExperiences.elementAt(index).jobTitle;
       summaryController.elementAt(index).text = currentUserDetails.workExperiences.elementAt(index).summary;
       organizationController.elementAt(index).text = currentUserDetails.workExperiences.elementAt(index).organizationName; 
-   }
+    }
     
     return Scaffold(
       body: StatefulBuilder(builder: (context, setState) => 
@@ -458,7 +489,7 @@ Widget showEditBasicInfoModal(){
               const SizedBox(height: 30,),
               Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.cancel), onPressed: () => Navigator.of(context).pop(),),),
               const SizedBox(height: 30,),
-              Text("Workplace History", style: Theme.of(context).textTheme.headlineMedium,),
+              Text("Workplace History", style: Theme.of(context).textTheme.headlineSmall,),
               const SizedBox(height: 30,),
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
@@ -532,7 +563,9 @@ Widget showEditBasicInfoModal(){
     );
   }
 
-  Widget showEditContactInfoModal(List<UserDetails> userDetailsList, int currentUserId){
+  Widget showEditContactInfoModal(){
+    userDetailsList = locator.get<UserListBloc>().state.userDetailsList!;
+    int currentUserId = BlocProvider.of<AuthBloc>(context).state.userData!.id;
     var currentUserDetails = userDetailsList.firstWhere((e)=>e.id == currentUserId);
     RegExp phoneNoRegex = RegExp(r'^98\d{8}$');
     TextEditingController mobileNoController = TextEditingController();
@@ -548,6 +581,7 @@ Widget showEditBasicInfoModal(){
     }
 
     return Scaffold(
+      appBar: const ModalAppBar(title: "Edit Contact Info",),
       body: StatefulBuilder(builder: (context, StateSetter setState) => 
       SingleChildScrollView(child: 
       Padding(
@@ -555,14 +589,15 @@ Widget showEditBasicInfoModal(){
         child: Center(child:
            Form(child:Column(
             children: [
-              const SizedBox(height: 30,),
-              Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.cancel), onPressed: (){Navigator.pop(context);},),),
-              const SizedBox(height: 30,),
-              Text("Contact Info", style: Theme.of(context).textTheme.headlineMedium,),
+              //Text("Contact Info", style: Theme.of(context).textTheme.headlineMedium,),
               const SizedBox(height: 60,),
-              TextFormField(decoration: const InputDecoration(
+              TextFormField(
+                decoration: const InputDecoration(
+                label: Text("Enter Mobile No."),
+                border: OutlineInputBorder(borderSide: BorderSide(style: BorderStyle.solid, color: Colors.black)),
                 hintText: "Enter mobile no."), controller: mobileNoController, 
-                validator: (value)=> phoneNoRegex.hasMatch(value!)? null :"Invalid Phone No." ,),
+                validator: (value)=> phoneNoRegex.hasMatch(value!)? null :"Invalid Phone No." ,
+                ),
               const SizedBox(height: 30,),
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
@@ -651,8 +686,7 @@ Widget showEditBasicInfoModal(){
                             const Spacer(),
                             IconButton(icon:const Icon(Icons.edit),onPressed: (){showDialog(context: context, builder: (context) => BlocProvider.value(
                             value: locator<UserListBloc>(),
-                            child: showEditBasicInfoModal(),
-                
+                            child: showEditBasicInfoModal(), 
                           ));},),
                           ],
                           ), 
@@ -798,18 +832,7 @@ Widget showEditBasicInfoModal(){
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                               Row(children: [const CustomDetailsIcon(ico: Icons.school), const SizedBox(width: 10,),const Text("Went To "), Text(e.organizationName, style: const TextStyle(fontWeight: FontWeight.bold),)],),
-                              // Padding(
-                              //   padding: const EdgeInsets.only(left:8.0),
-                              //   child: Text('${e.level} (${e.startDate!=null? DateFormat("yMMM").format(e.startDate!) :""} - ${e.endDate!=null? DateFormat("yMMM").format(e.endDate!): ""})',
-                              //   ),
-                              // ),
                               const SizedBox(height: 5,),
-                              // ListView.builder(
-                              //   physics: const NeverScrollableScrollPhysics(),
-                              //   shrinkWrap: true,
-                              //   itemCount: e.accomplishments.length,
-                              //   itemBuilder: (context, index) => 
-                              //   Text('${e.accomplishments.elementAt(index).title} on ${DateFormat.yMMMM().format(e.accomplishments.elementAt(index).dateTime!)}')), 
                               ],)).toList()
                               
                             )
@@ -836,7 +859,7 @@ Widget showEditBasicInfoModal(){
                                 children: [
                                   const Text("Workplace History", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),), 
                                   const Spacer(),
-                                  Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditWorkPlaceHistory(userDetailsList, currentUserData!.id));},),),
+                                  Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditWorkPlaceHistory());},),),
                                 ],
                               ),
                               const SizedBox(height: 15,),
@@ -848,15 +871,13 @@ Widget showEditBasicInfoModal(){
                                   Row(
                                     children: [
                                       const CustomDetailsIcon(ico: Icons.work),
-                                      const SizedBox(height: 10,),
-                                      Text(e.jobTitle),
+                                      const SizedBox(width: 10,),
+                                      const Text("Worked as "),
+                                      Text(e.jobTitle, style: const TextStyle(fontWeight: FontWeight.bold),),
+                                      const Text("at "),
+                                      Text(e.organizationName, style: const TextStyle(fontWeight: FontWeight.bold),),
                                     ],
                                   ),
-                                  Text(e.organizationName, maxLines: null,),
-                                  const SizedBox(height: 5,),
-                                  Text('Worked On: - ${e.summary}'),
-                                  const SizedBox(height: 5,),
-                                  Text( '${DateFormat("yMMM").format(e.startDate!)} - ${DateFormat("yMMM").format(e.endDate!)}'),
                               ],)).toList(),),
                             ],
                           ),
@@ -880,7 +901,7 @@ Widget showEditBasicInfoModal(){
                             children: [
                               const Text("Contact Info", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 18),),
                               const Spacer(),
-                              Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditContactInfoModal(userDetailsList, currentUserData!.id));},),),
+                              Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.edit), onPressed: (){showDialog(context: context, builder: (context) => showEditContactInfoModal());},),),
                             ],
                           ),
                           const SizedBox(height: 15,),

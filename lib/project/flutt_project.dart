@@ -89,7 +89,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     super.dispose();
-    resetLocator();
+    closeUserPostLocator();
   }
 
   @override
@@ -136,7 +136,7 @@ class _MyAppState extends State<MyApp> {
               ),
           "/settings": (context) => const LogoutPage(),
           "/editDetails": (context) => BlocProvider.value(
-              value: locator.get<UserListBloc>(),
+              value: locator<UserListBloc>(),
               child: ProfileDetails()),
           "/search": (context) => MultiBlocProvider(providers: [
                 BlocProvider(create:(context) => UserListBloc()..add(UserListInitialize()),),
@@ -168,7 +168,7 @@ class _MyAppState extends State<MyApp> {
           "/myPosts": (context) => MultiBlocProvider(providers: [
                 BlocProvider(
                     create: (_) => UserPostBloc()..add(UserPostInitialize())),
-                BlocProvider.value(value: locator.get<UserListBloc>()) 
+                BlocProvider.value(value: locator<UserListBloc>()) 
               ], child: const MyPostsPage()),
           "/todos": (context) => const ToDoPage(),
         },

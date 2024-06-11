@@ -29,6 +29,7 @@ class ToDoPage extends StatefulWidget{
 
 class _ToDoPage extends State<ToDoPage>{
   List<ToDoModel> todos = [];
+  bool isLoaded = false;
   Widget showAddTodoDialog(){
     TextEditingController todoController = TextEditingController();
     return Scaffold(
@@ -74,6 +75,9 @@ class _ToDoPage extends State<ToDoPage>{
         todos = responseJson.map((e) => ToDoModel.fromJson(e)).toList();
       });
     }
+    setState(() {
+      isLoaded = true;
+    });
     return;
   }
 
@@ -88,14 +92,14 @@ class _ToDoPage extends State<ToDoPage>{
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CommonAppBar(),
+      appBar: const CommonAppBar(),
       //drawer: const LoggedInDrawer(),
       body: SingleChildScrollView(
-        child: Column(
+        child: isLoaded? Column(
           children: [
             OutlinedButton.icon(onPressed: (){showDialog(context: context, builder: (context) => showAddTodoDialog());}, icon: const Icon(Icons.add_outlined), label: const Text("Add More")),
             Column(
-              children: todos!.map((e) => ListTile(leading: Icon(e.completed ? Icons.check_box_outlined : Icons.check_box_outline_blank_outlined),
+              children: todos.map((e) => ListTile(leading: Icon(e.completed ? Icons.check_box_outlined : Icons.check_box_outline_blank_outlined),
                title: Text(e.todo!, style: TextStyle(decoration: e.completed ? TextDecoration.lineThrough : null),),
                trailing: IconButton(icon: const Icon(Icons.delete_outline), color:Theme.of(context).colorScheme.error, onPressed: (){
                 setState(() {
@@ -110,6 +114,11 @@ class _ToDoPage extends State<ToDoPage>{
                },
                )).toList()
             ),
+          ],
+        ) : const Column(
+          children: [
+            SizedBox(height: 20,),
+            Center(child: CircularProgressIndicator(),),
           ],
         ),
       ), 

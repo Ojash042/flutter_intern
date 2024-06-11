@@ -12,6 +12,8 @@ import 'package:flutter_intern/project/models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 
+final ButtonStyle blueFilledButtonStyle = FilledButton.styleFrom(backgroundColor: Colors.blueAccent, shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))));
+
 class ModalAppBar extends StatelessWidget implements PreferredSizeWidget{
   final String title;
   

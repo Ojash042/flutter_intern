@@ -243,8 +243,6 @@ class _LandingPageState extends State<LandingPage>{
       );
   }
 
-
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -262,15 +260,13 @@ class _LandingPageState extends State<LandingPage>{
   @override
   void dispose() {
     super.dispose();
-    locator<UserListBloc>().close();
+    closeUserPostLocator();
   } 
 
   
   @override
   void initState() {
     super.initState();
-    //context.read<UserListBloc>().add(UserListInitialize());
-    //locator.get<UserListBloc>().add(UserListInitialize());
     if(locator<UserListBloc>().state is UserListEmpty){ 
       locator<UserListBloc>().add(UserListInitialize());
     } 

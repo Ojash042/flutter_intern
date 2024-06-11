@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter/cupertino.dart' as cupertino show CupertinoIcons;
+import 'package:bootstrap_icons/bootstrap_icons.dart' as bs_icons;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
@@ -90,7 +91,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
   @override
   void dispose() {
     super.dispose();
-    locator<UserListBloc>().close();
+    closeUserPostLocator();
   }
 
   @override
@@ -125,9 +126,16 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
               userPosts = mounted ? context.read<UserPostBloc>().state.userPosts!.where((element) => element.userId == userId).toList() : List.empty(growable: true); 
               return (BlocBuilder<UserListBloc, UserListStates>(
                 builder: (context, state) {
-                  currentUser = state.userDataList!.firstWhere((e) => e.id == BlocProvider.of<AuthBloc>(context).state.userData!.id);
-                  currentUserDetails = state.userDetailsList!.firstWhere((e) => e.id == BlocProvider.of<AuthBloc>(context).state.userDetails!.id);
+
                   bool isCurrentUserLoggedInUser = BlocProvider.of<AuthBloc>(context).state.userData!.id == int.parse(widget.id);
+                  if(isCurrentUserLoggedInUser){
+                    currentUser = state.userDataList!.firstWhere((e) => e.id == BlocProvider.of<AuthBloc>(context).state.userData!.id);
+                    currentUserDetails = state.userDetailsList!.firstWhere((e) => e.id == BlocProvider.of<AuthBloc>(context).state.userDetails!.id); 
+                  }
+                  else{
+                    currentUser = state.userDataList!.firstWhere((e) => e.id == int.parse(widget.id));
+                    currentUserDetails = state.userDetailsList!.firstWhere((e) => e.id == int.parse(widget.id));
+                  }
                   return Scaffold(
                     appBar: CommonAppBar(actions: action,),
                               bottomNavigationBar: const CommonNavigationBar(),
@@ -192,7 +200,17 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                                 icon: const Icon(Icons.add),
                                                 onPressed: (){},
                                                 label: const Text("Add to Story"), 
-                                              ) : Container(),
+                                              ) : 
+                                              Padding(
+                                                padding: EdgeInsets.only(left: MediaQuery.of(context).size.width * 0.09),
+                                                child: FilledButton.icon(
+                                                  style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(
+                                                    Size.fromWidth(MediaQuery.of(context).size.width * 0.65))),
+                                                  onPressed: (){},
+                                                  icon: const Icon(bs_icons.BootstrapIcons.chat_dots_fill),
+                                                  label: const Text("Message"),
+                                                  ),
+                                              ),
                                               const Spacer(),
                                               isCurrentUserLoggedInUser? FilledButton.icon(onPressed: (){
                                                 Navigator.of(context).pushNamed('/editDetails');
@@ -206,14 +224,14 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                                 label: const Text("Edit", style: TextStyle(color: Colors.black)),
                                               ) : Container(),
                                             const Spacer(),
-                                            isCurrentUserLoggedInUser? IconButton(
+                                             IconButton(
                                               icon: const Icon(Icons.more_horiz),
                                               style: ButtonStyle(
                                                 fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.1),),
                                                 backgroundColor: WidgetStatePropertyAll(Colors.grey[300]), shape: const WidgetStatePropertyAll(
                                                 RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8.0))))),
                                               onPressed: (){},)
-                                            : Container()],
+                                            ],
                                           ),
                                         ),
                                           const SizedBox(height: 20,),
