@@ -12,26 +12,13 @@ import 'package:flutter_intern/project/bloc/user_list_states.dart';
 import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_event.dart';
 import 'package:flutter_intern/project/bloc/user_post_states.dart';
+import 'package:flutter_intern/project/bloc/utils.dart';
 import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:humanizer/humanizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class CustomThumbUpIcon extends StatelessWidget{
-  const CustomThumbUpIcon({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.blueAccent),
-      child: const Center(child: Icon(cupertino.CupertinoIcons.hand_thumbsup_fill, color: Colors.white, size: 14,),),
-    );
-  }  
-}
 
 
 class ProfileInfoPage extends StatefulWidget{
@@ -66,10 +53,6 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
     
   }
 
-  String getPrefixText(List<TModels.PostLikedBy> postLikedBy){
-    return postLikedBy.isEmpty ?  "No one liked this" : postLikedBy.length==1 ? "1 person liked this." : '${postLikedBy.length} people liked this.';
-  }    
- 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -108,7 +91,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
     });
     }); 
   }
-  Future<void> pressedLikeOperation(int postId) async{
+  void pressedLikeOperation(int postId) async{
       int userId  = context.read<AuthBloc>().state.userData!.id;
       context.read<UserPostBloc>().add(UserPostLikePostEvent(postId: postId, userId: userId));
     }
@@ -159,9 +142,9 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                               child: Stack(alignment: Alignment.bottomLeft,
                                               clipBehavior: Clip.antiAlias,
                                               children: [
-                                                SizedBox(width: MediaQuery.of(context).size.width - 40, height: 210, child: Padding(
+                                                SizedBox(width: MediaQuery.of(context).size.width, height: 210, child: Padding(
                                                   padding: const EdgeInsets.all(16),
-                                                  child: Image.file(File(currentUserDetails!.basicInfo.coverImage.imagePath), fit: BoxFit.fill,),
+                                                  child: Image.file(File(currentUserDetails!.basicInfo.coverImage.imagePath), fit: BoxFit.cover,),
                                                   ),),
                                                  Padding(padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24),
                                                  child: Container(decoration: const BoxDecoration(border:  Border(
@@ -171,7 +154,9 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                                   right: BorderSide(color: Colors.transparent, width: 1.5),
                                                  ),),
                                                  height: 120, width: 120, 
-                                                 child: CircleAvatar(backgroundColor: Colors.white, radius: 0,child: CircleAvatar(radius: 55, backgroundImage: FileImage(File(currentUserDetails!.basicInfo.profileImage.imagePath)))),
+                                                 child: CircleAvatar(
+                                                  backgroundColor: Colors.white, radius: 0,
+                                                  child: CircleAvatar(radius: 55, backgroundImage: FileImage(File(currentUserDetails!.basicInfo.profileImage.imagePath)))),
                                                  ),
                                                  )
                                               ],),
@@ -324,7 +309,9 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                                             width: MediaQuery.of(context).size.height - 40,
                                                             child: Padding(
                                                               padding: const EdgeInsets.all(8.0),
-                                                              child: PhotoGrid(images: e.images, onImageClicked: (idx){}, onExpandClicked: (){},),
+                                                              child: PhotoGrid(
+                                                                onLikePressed:(p0) => pressedLikeOperation,
+                                                                postId: e.postId,images: e.images, onImageClicked: (idx){}, onExpandClicked: (){},),
                                                             )),
                                                             const SizedBox(height: 10,),
                                                             Row(children: [

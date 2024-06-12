@@ -1186,25 +1186,15 @@ class _EducationFormState extends State<EducationForm> {
                             TextButton(
                                 onPressed: () {
                                   setState(() {
-                                    Education education =
-                                        widget.educations.elementAt(index);
-                                    Accomplishment accomplishment =
-                                        Accomplishment();
+                                    Education education = widget.educations.elementAt(index);
+                                    Accomplishment accomplishment = Accomplishment();
                                     accomplishment.description = "";
-                                    accomplishment.id =
-                                        Random().nextInt(10000) + 1000;
+                                    accomplishment.id = Random().nextInt(10000) + 1000;
                                     accomplishment.title = "";
                                     accomplishment.dateTime = null;
                                     // ignore: unnecessary_null_comparison
-                                    List<Accomplishment> accomplishments =
-                                        (widget.educations
-                                                    .elementAt(index)
-                                                    .accomplishments ==
-                                                null)
-                                            ? List.empty(growable: true)
-                                            : widget.educations
-                                                .elementAt(index)
-                                                .accomplishments;
+                                    List<Accomplishment> accomplishments = (widget.educations.elementAt(index).accomplishments ==null) ? List.empty(growable: true)
+                                    : widget.educations.elementAt(index).accomplishments;
                                     accomplishments.add(accomplishment);
                                     education.accomplishments = accomplishments;
                                     widget.achivementCount++;

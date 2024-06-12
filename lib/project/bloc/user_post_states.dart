@@ -16,7 +16,6 @@ class UserPostStates extends Equatable{
   @override
   bool operator ==(Object other) {
     return (identical(this, other));
-    //return identical(this, other) || other is UserPostStates && runtimeType == other.runtimeType && listEquals(userPosts, other.userPosts);
   }
 
   @override

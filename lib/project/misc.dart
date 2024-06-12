@@ -2,13 +2,20 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart' as cupertino show CupertinoIcons;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_events.dart';
 import 'package:flutter_intern/project/bloc/auth_states.dart';
+import 'package:flutter_intern/project/bloc/user_list_bloc.dart';
+import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
+import 'package:flutter_intern/project/bloc/user_post_states.dart';
+import 'package:flutter_intern/project/bloc/utils.dart';
+import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/models.dart';
+import 'package:humanizer/humanizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 
@@ -42,15 +49,30 @@ class UnauthorizedNavigationBar extends StatefulWidget{
 
 class PhotoGrid extends StatefulWidget {
   final int maxImages;
+  final int postId;
   final List<TModels.Image> images;
   final Function(int) onImageClicked;
   final Function onExpandClicked;
+  final void Function(int) onLikePressed;
 
-  PhotoGrid({required this.images, required this.onImageClicked, required this.onExpandClicked,
-      this.maxImages = 4, super.key});
+  PhotoGrid({required this.postId,required this.images, required this.onImageClicked, required this.onExpandClicked,
+      this.maxImages = 4, super.key, required this.onLikePressed});
 
   @override
   createState() => _PhotoGridState();
+}
+
+class PostInfoWidget extends StatelessWidget{
+  final String postText;
+  const PostInfoWidget({super.key, required this.postText});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      
+    );
+  }
+
 }
 
 class _PhotoGridState extends State<PhotoGrid> {
@@ -59,15 +81,14 @@ class _PhotoGridState extends State<PhotoGrid> {
     var images = buildImages();
 
     return GridView(
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        
-        maxCrossAxisExtent: 200,
-        crossAxisSpacing: 2,
-        mainAxisSpacing: 2,
-      ),
-      children: images,
-    );
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 200,
+          crossAxisSpacing: 2,
+          mainAxisSpacing: 2,
+        ),
+        children: images,
+      );
   }
 
   List<Widget> buildImages() {
@@ -89,26 +110,7 @@ class _PhotoGridState extends State<PhotoGrid> {
               fit: BoxFit.cover,
             ):
             Image.file(File(imageUrl), fit: BoxFit.cover,),
-            onTap: () => showDialog(
-              barrierDismissible: true,
-              context: context, builder: (build) {
-                return Scaffold(
-                  appBar: AppBar(backgroundColor: Colors.black, actions: [IconButton(onPressed: ()=> Navigator.of(context).pop, icon: const Icon(cupertino.CupertinoIcons.xmark, color: Colors.white,))],),
-                  body: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  color: Colors.black,
-                    child: InteractiveViewer(
-                      minScale: 0.25,
-                      maxScale: 2,
-                      child: ClipRRect(
-                        child: widget.images.elementAt(index).isNetworkUrl ? 
-                              Image.network(imageUrl, fit: BoxFit.scaleDown,) : Image.file(File(imageUrl), fit: BoxFit.scaleDown,),
-                      ),
-                    ),
-                  ),
-                );
-              },),
+            onTap: () => showGroupedImages(index),
           );
         } else {
           // Create the facebook like effect for the last image with number of remaining  images
@@ -136,39 +138,243 @@ class _PhotoGridState extends State<PhotoGrid> {
             fit: BoxFit.cover,
           ) : Image.file(File(imageUrl), fit: BoxFit.cover,),
           onTap: () {
-            showDialog(
-            barrierDismissible: true,
-            context: context, builder: (build) =>  Scaffold(
-              appBar: AppBar(backgroundColor: Colors.black,actions: [IconButton(icon: const Icon(cupertino.CupertinoIcons.xmark, color: Colors.white,), onPressed: () => Navigator.of(context).pop(),)],),
-              body: Container(
-                width: MediaQuery.of(context).size.width,
-                height: MediaQuery.of(context).size.height,
-                color: Colors.black,
-                child: InteractiveViewer(
-                  panEnabled: true,
-                  minScale: 0.25,
-                  maxScale: 2,
-                  scaleEnabled: true,
-                  child: Flex(
-                  direction: Axis.vertical,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    //SizedBox(height: MediaQuery.of(context).size.height * 0.2,),
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: (widget.images.elementAt(index).isNetworkUrl ? 
-                    Image.network(imageUrl, fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height * 0.75,) 
-                    : Image.file(File(imageUrl), fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.width * 0.75,)),
-                    ),
-                  ],),
-                ),
-              ),
-            ),);
+            showGroupedImages(index);
           },
         );
       }
     });
   }
+
+  bool checkPostLiked(TModels.UserPost userPost){
+    var kafj = BlocProvider.of<AuthBloc>(context).state is AuthorizedAuthState && userPost.postLikedBys.map((e) => e.userId).contains(BlocProvider.of<AuthBloc>(context).state.userData!.id);
+    return kafj;
+  }
+
+  Future<dynamic> showGroupedImages(startingPage) {
+    PageController _imagePageController = PageController(initialPage: startingPage);  
+    List<Widget> widgetPostElements = [
+      
+    ];
+    return showDialog(
+          barrierDismissible: true,
+          context: context,
+          builder: (build) {
+            TModels.UserPost userPosts = BlocProvider.of<UserPostBloc>(context).state.userPosts!.firstWhere((e) => e.postId == widget.postId);
+            return MultiBlocProvider(
+                providers: [
+                    BlocProvider.value(
+                          value: BlocProvider.of<UserPostBloc>(context),
+            
+                        ),
+                    BlocProvider(
+                        create: (context) => locator<UserListBloc>(),
+                    ),
+                ],
+                child: Scaffold(
+                  appBar: AppBar(backgroundColor: Colors.white, actions: [IconButton(onPressed: () => {Navigator.of(context).pop()}, icon: const Icon(cupertino.CupertinoIcons.xmark, color: Colors.white,))],),
+                  body: SizedBox(
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    child:
+                    ListView.builder(
+                    itemCount: userPosts.images.length + 1,
+                      itemBuilder: (context, index){
+                        if(index == 0){
+                          return Card(
+                          shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                          elevation: 0,
+                          shadowColor: Colors.transparent,
+                          color: Colors.white,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 14.0, top: 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                              const SizedBox(height: 20,),
+                              GestureDetector(
+                                onTap: () => Navigator.pushNamed(context, '/profileInfo///${userPosts.userId}'),
+                                child: Row(
+                                  children: [
+                                    CircleAvatar(
+                                      backgroundImage: FileImage(File(locator<UserListBloc>().state.userDetailsList!.firstWhereOrNull((element) => 
+                                      element.id == userPosts.userId)!.basicInfo.profileImage.imagePath)),),
+                                      const SizedBox(width: 10,),
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.start,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(locator<UserListBloc>().state.userDataList!.firstWhereOrNull((element) => element.id == userPosts.userId)!.name, 
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: /* Color(0xffabb5ff) */ Colors.black),),
+                                          Text(
+                                            const ApproximateTimeTransformation(granularity: Granularity.primaryUnit, round: true, isRelativeToNow: true)
+                                            .transform(Duration(microseconds: DateTime.parse(userPosts.createdAt).microsecondsSinceEpoch - DateTime.now().microsecondsSinceEpoch), 'en'))
+                                            ],),
+                                      ],),),
+                                      const SizedBox(height: 10,),
+                                      Text(userPosts.title, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),),
+                                      const SizedBox(height: 5,),
+                                      Row(children: [
+                                        Stack(children: [
+                                          Container(padding: const EdgeInsets.only(left: 14), child: const Icon(cupertino.CupertinoIcons.heart_circle_fill, color: Colors.pinkAccent, size: 22,)),
+                                          const CustomThumbUpIcon(),
+                                          ],),
+                                          const SizedBox(width: 10,), 
+                                                Text(getPrefixText(userPosts.postLikedBys), style: const TextStyle(fontWeight: FontWeight.w300) ,),
+                                              ],),
+                                              const Divider(thickness: 0.5,),
+                                              BlocBuilder<UserPostBloc, UserPostStates>(
+                                                builder: (context, state) {
+                                                  return Row(
+                                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    children: [
+                                                      Row(
+                                                        children: [
+                                                          Row(
+                                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                            children: [
+                                                              IconButton(onPressed: (){
+                                                                if(!BlocProvider.of<AuthBloc>(context).state.loggedInState){
+                                                                  return;
+                                                                }
+                                                                widget.onLikePressed(userPosts.postId);
+                                                              }, 
+                                                              icon: checkPostLiked(userPosts) ? 
+                                                              const Icon(cupertino.CupertinoIcons.hand_thumbsup_fill, color: Colors.blueAccent,) :const Icon(cupertino.CupertinoIcons.hand_thumbsup, color: Colors.grey,),),
+                                                              const Text("Like"),],) 
+                                                          ],),
+                                                          Row(children: [
+                                                            IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.bubble_right, color: Colors.grey,)),
+                                                            const Text("Comment"),
+                                                          ],),
+                                                          Row(children: [
+                                                            IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.share_up, color: Colors.grey,)),
+                                                            const Text("Share"),
+                                                            ],),
+                              ],);
+                            },)
+                            ],),
+                            ),);
+                          }
+                        else{
+                          TModels.Image e = userPosts.images.elementAt(index -1);
+                          return Card(
+                            shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(0)),
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            color: Colors.white,
+                            child: Wrap(
+                              children: [
+                                ConstrainedBox(
+                                  constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
+                                  child: Center(child: GestureDetector(
+                                    onTap: () => showIndividualImage(index -1, e.url),
+                                    child: e.isNetworkUrl ? Image.network(e.url, fit: BoxFit.scaleDown,) : Image.file(File(e.url), fit: BoxFit.scaleDown,)))),
+                                  Column(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(userPosts.title, maxLines: null, style: const TextStyle(fontSize: 16,),),
+                                      const SizedBox(height: 10,),
+                                      Row(
+                                        children: [
+                                          Stack(children: [
+                                            Container(padding: const EdgeInsets.only(left: 14), child: const Icon(cupertino.CupertinoIcons.heart_circle_fill, color: Colors.pinkAccent, size: 22,)),
+                                            const CustomThumbUpIcon(),
+                                            ],),
+                                            const SizedBox(width: 10,), 
+                                            Text(getPrefixText(userPosts.postLikedBys), style: const TextStyle(fontWeight: FontWeight.w300) ,),
+                                            ],),
+                                            const SizedBox(height: 10,),
+                                            const Divider(thickness: 0.5,),
+                                            const SizedBox(height: 10,),
+                                            BlocBuilder<UserPostBloc, UserPostStates>(
+                                              builder: (context, state) {
+                                                return Row(children: [
+                                                  Row(
+                                                    children: [
+                                                      IconButton(onPressed: (){
+                                                        widget.onLikePressed(userPosts.postId);
+                                                        }, icon: Icon(checkPostLiked(userPosts)? cupertino.CupertinoIcons.hand_thumbsup_fill : cupertino.CupertinoIcons.hand_thumbsup, 
+                                                        color: checkPostLiked(userPosts)? Colors.blueAccent : Colors.grey,)),
+                                                        const Text("Like"),
+                                                        ],), 
+                                                        const Spacer(),
+                                                        Row(children: [
+                                                          IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.bubble_right, color: Colors.grey,)),
+                                                          const Text("Comment"),
+                                                          ],),
+                                                          const Spacer(),
+                                                          Row(children: [  
+                                                            IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.share, color: Colors.grey,)),
+                                                            const Text("Share"),
+                                                            ],)
+                                                            ],);
+                                                      },)
+                                                    ],)
+                                                  ],)
+                                                );
+                                                }}),
+                                     ), 
+                                  ),
+            );
+          }
+        );
+  }
+
+  Future<dynamic> showIndividualImageNonFinalImage(int index, String imageUrl) {
+    return showDialog(
+          barrierDismissible: true,
+          context: context, builder: (build) =>  Scaffold(
+            appBar: AppBar(backgroundColor: Colors.black,actions: [IconButton(icon: const Icon(cupertino.CupertinoIcons.xmark, color: Colors.white,), onPressed: () => Navigator.of(context).pop(),)],),
+            body: Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              color: Colors.black,
+              child: InteractiveViewer(
+                panEnabled: true,
+                minScale: 0.25,
+                maxScale: 2,
+                scaleEnabled: true,
+                child: Flex(
+                direction: Axis.vertical,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  //SizedBox(height: MediaQuery.of(context).size.height * 0.2,),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: (widget.images.elementAt(index).isNetworkUrl ? 
+                  Image.network(imageUrl, fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.height * 0.75,) 
+                  : Image.file(File(imageUrl), fit: BoxFit.scaleDown, width: MediaQuery.of(context).size.width, height: MediaQuery.of(context).size.width * 0.75,)),
+                  ),
+                ],),
+              ),
+            ),
+          ),);
+  }
+
+  Future<dynamic> showIndividualImage(int index, String imageUrl) {
+    return showDialog(
+            barrierDismissible: true,
+            context: context, builder: (build) {
+              return Scaffold(
+                appBar: AppBar(backgroundColor: Colors.black, actions: [IconButton(onPressed: ()=> Navigator.of(context).pop(), icon: const Icon(cupertino.CupertinoIcons.xmark, color: Colors.white,))],),
+                body: Container(
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height,
+                color: Colors.black,
+                  child: InteractiveViewer(
+                    minScale: 0.25,
+                    maxScale: 2,
+                    child: ClipRRect(
+                      child: widget.images.elementAt(index).isNetworkUrl ? 
+                            Image.network(imageUrl, fit: BoxFit.scaleDown,) : Image.file(File(imageUrl), fit: BoxFit.scaleDown,),
+                    ),
+                  ),
+                ),
+                );
+                },);
+                }
 }
 
 
@@ -589,4 +795,19 @@ class _LoggedInDrawerState extends State<LoggedInDrawer>{
       ),
     );
   }
+}
+
+
+class CustomThumbUpIcon extends StatelessWidget{
+  const CustomThumbUpIcon({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.blueAccent),
+      child: const Center(child: Icon(cupertino.CupertinoIcons.hand_thumbsup_fill, color: Colors.white, size: 14,),),
+    );
+  }  
 }

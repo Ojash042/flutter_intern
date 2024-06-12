@@ -13,24 +13,12 @@ import 'package:flutter_intern/project/bloc/user_list_states.dart';
 import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_event.dart';
 import 'package:flutter_intern/project/bloc/user_post_states.dart';
+import 'package:flutter_intern/project/bloc/utils.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
 import 'package:humanizer/humanizer.dart';
 
-class CustomThumbUpIcon extends StatelessWidget{
-  const CustomThumbUpIcon({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.blueAccent),
-      child: const Center(child: Icon(cupertino.CupertinoIcons.hand_thumbsup_fill, color: Colors.white, size: 14,),),
-    );
-  }  
-}
 
 class PhotoGrid extends StatefulWidget {
   final int maxImages;
@@ -135,12 +123,7 @@ class _MyPostsPageState extends State<MyPostsPage>{
     super.initState();
     BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
 
-  }
-
-  String getPrefixText(List<TModels.PostLikedBy> postLikedBy){
-    return postLikedBy.isEmpty ?  "No one liked this" : postLikedBy.length==1 ? "1 person liked this." : '${postLikedBy.length} people liked this.';
-  }
-
+  } 
 
   @override
   Widget build(BuildContext context) {
