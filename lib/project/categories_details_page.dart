@@ -34,31 +34,38 @@ class _CategoriesDetailsPageState extends State<CategoriesDetailsPage>{
           List<t_models.Courses> courses = BlocProvider.of<CoursesBloc>(context).state.courses!.where((e) => courseByCategories.map((cbc) => cbc.courseId).contains(e.id)).toList();
           return Scaffold(
             appBar:const CommonAppBar(),
-            body: ListView.builder(
-              itemCount: courses.length, 
-              itemBuilder: (context, index) => Container( 
-              width: MediaQuery.of(context).size.width,
-              decoration: const BoxDecoration(border: Border.symmetric(horizontal: BorderSide(width: 0.45))),
-              child: InkWell(
-              onTap: ()=> Navigator.of(context).pushNamed("/courses/${courses.elementAt(index).id}"),
-                child: Row(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(courses.elementAt(index).title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),),
-                          Text(courses.elementAt(index).subtitle, style: const TextStyle(fontSize: 14,),),
-                          Text("Rs. ${courses.elementAt(index).price}", style: const TextStyle(fontSize: 12, color: Colors.greenAccent)),
-                        ],
+            body: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: ListView.builder(
+                itemCount: courses.length, 
+                itemBuilder: (context, index) => SizedBox( 
+                width: MediaQuery.of(context).size.width,
+                child: InkWell(
+                onTap: ()=> Navigator.of(context).pushNamed("/courses/${courses.elementAt(index).id}"),
+                  child: Row(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(courses.elementAt(index).title, style: const TextStyle(fontSize: 20,fontWeight: FontWeight.w500),),
+                            SizedBox(height: MediaQuery.of(context).size.height * 0.005,),
+                            Text(courses.elementAt(index).subtitle, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w200, color: Colors.grey),),
+                            SizedBox(height: MediaQuery.of(context).size.height * 0.005,),
+                            Row(children: [
+                            const Text("रू ", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),),
+                            Text("${courses.elementAt(index).price}", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                            ],),
+                          ],
+                        ),
                       ),
-                    ),
-                  const Spacer(),
-                    Center(child: SizedBox(height: 128, width: 108, child: Image.network(fit: BoxFit.contain, courses.elementAt(index).image,))),
-                  ],),
-              ),
-              )),
+                    const Spacer(),
+                      Center(child: SizedBox(height: 96, width: 108, child: Image.network(fit: BoxFit.cover, courses.elementAt(index).image,))),
+                    ],),
+                ),
+                )),
+            ),
         );
 
         } 
