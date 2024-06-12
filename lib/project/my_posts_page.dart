@@ -13,7 +13,7 @@ import 'package:flutter_intern/project/bloc/user_list_states.dart';
 import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_event.dart';
 import 'package:flutter_intern/project/bloc/user_post_states.dart';
-import 'package:flutter_intern/project/bloc/utils.dart';
+import 'package:flutter_intern/project/utils.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
@@ -155,89 +155,82 @@ class _MyPostsPageState extends State<MyPostsPage>{
                   shadowColor: Colors.transparent,
                   color: Colors.white,
                   child: Padding(padding: const EdgeInsets.only(left: 14.0, top: 5.0),
-                                        child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            const SizedBox(height: 10,),
-                                            GestureDetector(
-                                              onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
-                                              child: Row(
-                                                children: [
-                                                  CircleAvatar(backgroundImage: FileImage(File(state.userDetails!.basicInfo.profileImage.imagePath)),),
-                                                  const SizedBox(width: 10,),
-                                                  Column(
-                                                    mainAxisAlignment: MainAxisAlignment.start,
-                                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                                    children: [
-                                                      Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, 
-                                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: /* Color(0xffabb5ff) */ Colors.black),),
-                                                      Text(
-                                                        const ApproximateTimeTransformation(granularity: Granularity.primaryUnit, round: true, isRelativeToNow: true)
-                                                        .transform(Duration(microseconds: DateTime.parse(e.createdAt).microsecondsSinceEpoch - DateTime.now().microsecondsSinceEpoch), 'en')
-                                                      )
-                                                    ],
-                                                  ), 
-                                                ],
-                                              )),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 10,),
+                      GestureDetector(
+                        onTap: ()=> Navigator.pushNamed(context, '/profileInfo/${e.userId}'),
+                        child: Row(
+                          children: [
+                            CircleAvatar(backgroundImage: FileImage(File(state.userDetails!.basicInfo.profileImage.imagePath)),),
+                            const SizedBox(width: 10,),
+                            Column(mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(userList.firstWhereOrNull((element) => element.id == e.userId)!.name, 
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: /* Color(0xffabb5ff) */ Colors.black),),
+                              Text(
+                                const ApproximateTimeTransformation(granularity: Granularity.primaryUnit, round: true, isRelativeToNow: true)
+                                .transform(Duration(microseconds: DateTime.parse(e.createdAt).microsecondsSinceEpoch - DateTime.now().microsecondsSinceEpoch), 'en')
+                                )
+                              ],), 
+                            ],)),
                                             //Center(child: SizedBox(width: MediaQuery.of(context).size.width * 0.7 ,child: const Divider())),
-                                            const SizedBox(height: 10,),
-                                            Text(e.title, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),),
-                                            const SizedBox(height: 5,),
-                                            SizedBox(
-                                              height: 300 * min(4, e.images.length.toDouble()) / 3,
-                                              width: MediaQuery.of(context).size.height - 40,
-                                              child: Padding(
-                                                padding: const EdgeInsets.all(8.0),
-                                                child: PhotoGrid(images: e.images, onImageClicked: (idx){}, onExpandClicked: (){},),
-                                              )),
-                                              const SizedBox(height: 10,),
-                                              Row(children: [
-                                                Stack(children: [
-                                                  Container(padding: const EdgeInsets.only(left: 14), child: const Icon(cupertino.CupertinoIcons.heart_circle_fill, color: Colors.pinkAccent, size: 22,)),
-                                                  const CustomThumbUpIcon(),
-                                                ],),
-                                                const SizedBox(width: 10,), 
-                                                Text(getPrefixText(e.postLikedBys), style: const TextStyle(fontWeight: FontWeight.w300) ,),
-                                              ],),
-                                              const Divider(thickness: 0.5,),
-                                              Row(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                children: [
-                                                Row(
-                                                  children: [
-                                                    Row(
-                                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                                      children: [
-                                                        IconButton(onPressed: (){
-                                                        if(!state.loggedInState){
-                                                          return;
-                                                        }
-                                                        pressedLikeOperation(e.postId);
-                                                        }, 
-                                                        icon: (state is AuthorizedAuthState && e.postLikedBys.map((e) => e.userId).toList().contains(state.userData!.id)) ? 
-                                                        const Icon(cupertino.CupertinoIcons.hand_thumbsup_fill, color: Colors.blueAccent,) :const Icon(cupertino.CupertinoIcons.hand_thumbsup, color: Colors.grey,),),
-                                                        const Text("Like")
-                                                      ],
-                                                    ) 
-                                                  ],
-                                                ),
-                                             Row(
-                                               children: [
-                                                 IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.bubble_right, color: Colors.grey,)),
-                                                 const Text("Comment"),
-                                               ],
-                                             ),
-                                             Row(
-                                               children: [
-                                                 IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.share_up, color: Colors.grey,)),
-                                                 const Text("Share"),
-                                               ],
-                                             ),
-                                          ],),
-                                          const SizedBox(height: 10,)
-                                          ],),
-                                      ),
+                            const SizedBox(height: 10,),
+                            Text(e.title, style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 18),),
+                            const SizedBox(height: 5,),
+                            SizedBox(
+                              height: 300 * min(4, e.images.length.toDouble()) / 3,
+                              width: MediaQuery.of(context).size.height - 40,
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: PhotoGrid(images: e.images, onImageClicked: (idx){}, onExpandClicked: (){},),
+                                )),
+                                const SizedBox(height: 10,),
+                                Row(children: [
+                                  Stack(children: [
+                                    Container(padding: const EdgeInsets.only(left: 14), child: const Icon(cupertino.CupertinoIcons.heart_circle_fill, color: Colors.pinkAccent, size: 22,)),
+                                    const CustomThumbUpIcon(),
+                                    ],),
+                                    const SizedBox(width: 10,), 
+                                    Text(getPrefixText(e.postLikedBys), style: const TextStyle(fontWeight: FontWeight.w300) ,),
+                                ],),
+                                const Divider(thickness: 0.5,),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          IconButton(onPressed: (){
+                                            if(!state.loggedInState){
+                                              return;
+                                            }
+                                            pressedLikeOperation(e.postId);
+                                          }, 
+                                          icon: (state is AuthorizedAuthState && e.postLikedBys.map((e) => e.userId).toList().contains(state.userData!.id)) ? 
+                                          const Icon(cupertino.CupertinoIcons.hand_thumbsup_fill, color: Colors.blueAccent,) :const Icon(cupertino.CupertinoIcons.hand_thumbsup, color: Colors.grey,),),
+                                          const Text("Like")
+                                      ],) 
+                                    ],),
+                                    Row(
+                                      children: [
+                                        IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.bubble_right, color: Colors.grey,)),
+                                        const Text("Comment"),
+                                    ],),
+                                    Row(
+                                      children: [
+                                        IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.share_up, color: Colors.grey,)),
+                                        const Text("Share"),
+                                        ],),
+                                    ],),
+                                    const SizedBox(height: 10,)
+                                    ],),
+                                    ),
                                     ));
                               }),
             ),),

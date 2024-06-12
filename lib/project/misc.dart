@@ -12,7 +12,7 @@ import 'package:flutter_intern/project/bloc/auth_states.dart';
 import 'package:flutter_intern/project/bloc/user_list_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_states.dart';
-import 'package:flutter_intern/project/bloc/utils.dart';
+import 'package:flutter_intern/project/utils.dart';
 import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:humanizer/humanizer.dart';
