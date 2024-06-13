@@ -32,9 +32,6 @@ UserDetails? currentUserDetails;
 UserData? currentUserData;
 
 void saveData(List<UserDetails> userDetailsList) async{ 
-  await locator.reset();
-  setupLocator();
-  locator<UserListBloc>().add(UserListInitialize());
   if(locator<UserListBloc>().state is! UserListEmpty){
     locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
   }
@@ -43,16 +40,16 @@ void saveData(List<UserDetails> userDetailsList) async{
 @override
   void dispose() {
     super.dispose();
-    //closeUserPostLocator();
+    // closeUserPostLocator();
   }
 
-@override
-void initState(){
-  super.initState();
-  if(locator<UserListBloc>().state is UserListEmpty){
-    locator<UserListBloc>().add(UserListInitialize());
+  @override
+  void initState(){
+    super.initState();
+    if(locator<UserListBloc>().state is UserListEmpty){
+      locator<UserListBloc>().add(UserListInitialize());
+    }
   }
-}
 
 Widget showEditBasicInfoModal(){
     userDetailsList = locator.get<UserListBloc>().state.userDetailsList!;
@@ -116,10 +113,13 @@ Widget showEditBasicInfoModal(){
                                         currentUserDetails.basicInfo.summary = summaryController.text;
                                         currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
                                 });
-                                saveData(userDetailsList);
+                                if(locator<UserListBloc>().state is! UserListEmpty){
+                                  locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                                }
+                                //saveData(userDetailsList);
                                 Navigator.of(context).pop();
                                 }, child: const Text("Submit")),
-                                                            )
+                                )
                               ],),
                           ),
                         ),
@@ -160,21 +160,8 @@ Widget showEditBasicInfoModal(){
                           ),
                           hintText: "Enter skills"), onFieldSubmitted: (value){
                           ;},),
-                      const SizedBox(height: 30,),
-                      // Text("Skills", style: Theme.of(context).textTheme.headlineSmall,),
-                      // const SizedBox(height: 30,),
-                      // Wrap(
-                      //   runSpacing: 8.0,
-                      //   spacing: 8.0,
-                      //   children: currentUserDetails.skills.map((e) => Card(child: Padding(
-                      //   padding: const EdgeInsets.all(8.0),
-                      //   child: Text(e.title!),
-                      // ),)).toList(),),
-                      // const SizedBox(height: 30,),
-                      // 
-                      // const SizedBox(height: 30,),
-                    ],
-                  ),
+                      const SizedBox(height: 30,),                    
+                    ],),
                   const SizedBox(height: 30,),
                   Expanded(child: Container()),
                   FilledButton(
@@ -189,7 +176,10 @@ Widget showEditBasicInfoModal(){
                           currentUserDetails.skills.add(skills);
                           skillController.clear();
                           });
-                    saveData(userDetailsList);
+                          if(locator<UserListBloc>().state is! UserListEmpty){
+                            locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                            }
+                    // saveData(userDetailsList);
                     Navigator.of(context).pop();
                   }, child: const Text("Submit")),
                 ],
@@ -242,7 +232,10 @@ Widget showEditBasicInfoModal(){
                           currentUserDetails.hobbies.add(hobbies);
                           hobbiesController.clear();
                           });
-                          saveData(userDetailsList);
+                          if(locator<UserListBloc>().state is! UserListEmpty){
+                            locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                            }
+                          // saveData(userDetailsList);
                         Navigator.of(context).pop();
                         }, child: const Text("Submit")),
                       ),
@@ -298,7 +291,10 @@ Widget showEditBasicInfoModal(){
                               currentUserDetails.languages.add(language);
                               languageController.clear();
                             });
-                      saveData(userDetailsList);
+                            if(locator<UserListBloc>().state is! UserListEmpty){
+                              locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                            }
+                      // saveData(userDetailsList);
                       Navigator.of(context).pop();
                       }, child: const Text("Submit")),
                     ],
@@ -469,7 +465,10 @@ Widget showEditBasicInfoModal(){
                         }
                       }
                     });
-                    saveData(userDetailsList);
+                    if(locator<UserListBloc>().state is! UserListEmpty){
+                      locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                      }
+                    //saveData(userDetailsList);
                     Navigator.of(context).pop();
                   }, child: const Text("Submit")),
                 ],
@@ -571,7 +570,10 @@ Widget showEditBasicInfoModal(){
                       currentUserDetails.workExperiences.elementAt(index).summary = summaryController.elementAt(index).text;
                       currentUserDetails.workExperiences.elementAt(index).organizationName = organizationController.elementAt(index).text;
                     } 
-                    saveData(userDetailsList); 
+                    if(locator<UserListBloc>().state is! UserListEmpty){
+                      locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                      }
+                    //saveData(userDetailsList); 
                     Navigator.of(context).pop();
                   }, child: const Text("Submit")),
                 ],
@@ -659,7 +661,10 @@ Widget showEditBasicInfoModal(){
                       currentUserDetails.contactInfo.socialMedias.elementAt(i).url = socialMediaUrlController.elementAt(i).text;
                       currentUserDetails.contactInfo.socialMedias.elementAt(i).type = socialMediaTypeController.elementAt(i).text;
                     }
-                    saveData(userDetailsList);
+                    if(locator<UserListBloc>().state is! UserListEmpty){
+                      locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                    }
+                    //saveData(userDetailsList);
                     setState((){});
                     Navigator.of(context).pop();
                     }, child: const Text("Submit")),

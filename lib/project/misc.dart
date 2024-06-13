@@ -151,10 +151,6 @@ class _PhotoGridState extends State<PhotoGrid> {
   }
 
   Future<dynamic> showGroupedImages(startingPage) {
-    PageController _imagePageController = PageController(initialPage: startingPage);  
-    List<Widget> widgetPostElements = [
-      
-    ];
     return showDialog(
           barrierDismissible: true,
           context: context,
@@ -265,17 +261,21 @@ class _PhotoGridState extends State<PhotoGrid> {
                             color: Colors.white,
                             child: Wrap(
                               children: [
-                                ConstrainedBox(
-                                  constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.45),
-                                  child: Center(child: GestureDetector(
-                                    onTap: () => showIndividualImage(index -1, e.url),
-                                    child: e.isNetworkUrl ? Image.network(e.url, fit: BoxFit.scaleDown,) : Image.file(File(e.url), fit: BoxFit.scaleDown,)))),
+                                GestureDetector(
+                                  onTap: () => showIndividualImage(index -1, e.url),
+                                  child: AspectRatio(
+                                    aspectRatio: 16/9,
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(vertical: 0.0),
+                                      child: FittedBox(fit: BoxFit.contain,
+                                      child: e.isNetworkUrl ? 
+                                      Image.network(e.url,) : Image.file(File(e.url),)),
+                                    ))),
                                   Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(userPosts.title, maxLines: null, style: const TextStyle(fontSize: 16,),),
-                                      const SizedBox(height: 10,),
+                                      //Text(userPosts.title, maxLines: null, style: const TextStyle(fontSize: 16,),),
                                       Row(
                                         children: [
                                           Stack(children: [
