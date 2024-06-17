@@ -245,7 +245,7 @@ class _LandingPageState extends State<LandingPage>{
   @override
   void dispose() {
     super.dispose();
-    closeUserPostLocator();
+    //closeUserPostLocator();
   } 
 
   
@@ -281,7 +281,7 @@ class _LandingPageState extends State<LandingPage>{
                 backgroundColor: Colors.white,
                 //flexibleSpace: Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xffabb5ff), Color(0xfff6efe9)])),),
                 centerTitle: false,
-                title:  Text("Project", style: GoogleFonts.quicksand(color: Colors.lightBlue, fontSize: 24, fontWeight: FontWeight.bold),),),
+                title:  Text("Project", style: GoogleFonts.roboto(color: Colors.lightBlue, fontSize: 24, fontWeight: FontWeight.bold),),),
                       body: Container(
                       color: Colors.grey[200],
                         child: SingleChildScrollView(

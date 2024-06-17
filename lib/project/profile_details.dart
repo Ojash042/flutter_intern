@@ -46,9 +46,12 @@ void saveData(List<UserDetails> userDetailsList) async{
   @override
   void initState(){
     super.initState();
+     if(locator<UserListBloc>().isClosed){
+        print("Zahoo");
+      }
     if(locator<UserListBloc>().state is UserListEmpty){
       locator<UserListBloc>().add(UserListInitialize());
-    }
+    } 
   }
 
 Widget showEditBasicInfoModal(){
@@ -113,8 +116,11 @@ Widget showEditBasicInfoModal(){
                                         currentUserDetails.basicInfo.summary = summaryController.text;
                                         currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
                                 });
+                                if(locator<UserListBloc>().isClosed){
+                                  print("Wahoo");
+                                }
                                 if(locator<UserListBloc>().state is! UserListEmpty){
-                                  locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                                  BlocProvider.of<UserListBloc>(context).add(EditUserEvent(userDetails: userDetailsList));
                                 }
                                 //saveData(userDetailsList);
                                 Navigator.of(context).pop();
@@ -269,17 +275,12 @@ Widget showEditBasicInfoModal(){
                   Form(child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const SizedBox(height: 30,),
-                      Text("Languages", style: Theme.of(context).textTheme.headlineSmall,),
-                      const SizedBox(height: 30,),
-                      Wrap(children: currentUserDetails.languages.map((e) => Card(child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text(e.title),
-                      ),)).toList(),),
-                      const SizedBox(height: 30,),
                       TextFormField(
                         controller: languageController,
-                        decoration: const InputDecoration(hintText: "Enter languages"),),
+                        decoration: const InputDecoration(
+                          labelText: "Enter a Language",
+                          border: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 1.0, style: BorderStyle.solid))
+                          ),),
                       Expanded(child: Container()),
                       FilledButton(
                         style: blueFilledButtonStyle,
@@ -496,16 +497,13 @@ Widget showEditBasicInfoModal(){
     return BlocProvider.value(
       value: locator<UserListBloc>(),
       child: Scaffold(
+          appBar: const ModalAppBar(title: "Edit Workplace Details",),
           body: StatefulBuilder(builder: (context, setState) => 
           SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.all(14.0),
               child: Center(child: Form(child: Column(
                 children: [
-                  const SizedBox(height: 30,),
-                  Align(alignment: Alignment.topRight, child: IconButton(icon: const Icon(Icons.cancel), onPressed: () => Navigator.of(context).pop(),),),
-                  const SizedBox(height: 30,),
-                  Text("Workplace History", style: Theme.of(context).textTheme.headlineSmall,),
                   const SizedBox(height: 30,),
                   ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
@@ -612,7 +610,7 @@ Widget showEditBasicInfoModal(){
                Form(child:Column(
                 children: [
                   //Text("Contact Info", style: Theme.of(context).textTheme.headlineMedium,),
-                  const SizedBox(height: 60,),
+                  const SizedBox(height: 30,),
                   TextFormField(
                     decoration: const InputDecoration(
                     label: Text("Enter Mobile No."),
@@ -682,6 +680,7 @@ Widget showEditBasicInfoModal(){
        if (authState is! AuthorizedAuthState){
            Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
          }
+      
          currentUserData = locator.get<UserListBloc>().state.userDataList!.firstWhere((e) => e.id == BlocProvider.of<AuthBloc>(context).state.userData!.id);
          currentUserDetails = locator.get<UserListBloc>().state.userDetailsList!.firstWhere((e) => e.id == BlocProvider.of<AuthBloc>(context).state.userData!.id);
 
@@ -710,7 +709,9 @@ Widget showEditBasicInfoModal(){
                           Row(children: [
                             const Text("About Me", style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),),
                             const Spacer(),
-                            IconButton(icon:const Icon(Icons.edit),onPressed: (){showDialog(context: context, builder: (context) => showEditBasicInfoModal());},),
+                            IconButton(icon:const Icon(Icons.edit),onPressed: (){showDialog(context: context, builder: (context) { 
+                              return showEditBasicInfoModal();
+                            });},),
                           ],
                           ), 
                           const SizedBox(height: 15,),
@@ -917,7 +918,7 @@ Widget showEditBasicInfoModal(){
                                       const SizedBox(width: 10,),
                                       const Text("Worked as "),
                                       Text(e.jobTitle, style: const TextStyle(fontWeight: FontWeight.bold),),
-                                      const Text("at "),
+                                      const Text(" at "),
                                       Text(e.organizationName, style: const TextStyle(fontWeight: FontWeight.bold),),
                                     ],
                                   ),

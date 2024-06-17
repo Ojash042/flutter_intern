@@ -74,7 +74,7 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
   @override
   void dispose() {
     super.dispose();
-    closeUserPostLocator();
+    // closeUserPostLocator();
   }
 
   @override
@@ -109,7 +109,6 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
               userPosts = mounted ? context.read<UserPostBloc>().state.userPosts!.where((element) => element.userId == userId).toList() : List.empty(growable: true); 
               return (BlocBuilder<UserListBloc, UserListStates>(
                 builder: (context, state) {
-
                   bool isCurrentUserLoggedInUser = BlocProvider.of<AuthBloc>(context).state.userData!.id == int.parse(widget.id);
                   if(isCurrentUserLoggedInUser){
                     currentUser = state.userDataList!.firstWhere((e) => e.id == BlocProvider.of<AuthBloc>(context).state.userData!.id);
@@ -142,11 +141,13 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                               child: Stack(alignment: Alignment.bottomLeft,
                                               clipBehavior: Clip.antiAlias,
                                               children: [
-                                                SizedBox(width: MediaQuery.of(context).size.width, height: 210, child: Padding(
-                                                  padding: const EdgeInsets.all(16),
-                                                  child: Image.file(File(currentUserDetails!.basicInfo.coverImage.imagePath), fit: BoxFit.cover,),
+                                                SizedBox(width: MediaQuery.of(context).size.width, height: 264, child: Padding(
+                                                  padding: const EdgeInsets.all(0),
+                                                  child: AspectRatio(
+                                                    aspectRatio: 16/9,
+                                                    child: Image.file(File(currentUserDetails!.basicInfo.coverImage.imagePath), fit: BoxFit.cover,)),
                                                   ),),
-                                                 Padding(padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 24),
+                                                 Padding(padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 9),
                                                  child: Container(decoration: const BoxDecoration(border:  Border(
                                                   top: BorderSide(color: Colors.transparent, width: 1.5),
                                                   bottom: BorderSide(color: Colors.transparent, width: 1.5),

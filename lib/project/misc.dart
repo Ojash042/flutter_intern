@@ -29,8 +29,9 @@ class ModalAppBar extends StatelessWidget implements PreferredSizeWidget{
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading: false,
       title: Text(title),
-      leading: IconButton(icon: const Icon(cupertino.CupertinoIcons.xmark), onPressed: () => Navigator.of(context).pop(),),
+      actions: [IconButton(icon: const Icon(cupertino.CupertinoIcons.xmark), onPressed: () => Navigator.of(context).pop(),)],
     );
   }
 
@@ -60,19 +61,6 @@ class PhotoGrid extends StatefulWidget {
 
   @override
   createState() => _PhotoGridState();
-}
-
-class PostInfoWidget extends StatelessWidget{
-  final String postText;
-  const PostInfoWidget({super.key, required this.postText});
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      
-    );
-  }
-
 }
 
 class _PhotoGridState extends State<PhotoGrid> {
@@ -162,8 +150,8 @@ class _PhotoGridState extends State<PhotoGrid> {
                           value: BlocProvider.of<UserPostBloc>(context),
             
                         ),
-                    BlocProvider(
-                        create: (context) => locator<UserListBloc>(),
+                    BlocProvider.value(
+                        value: locator<UserListBloc>(),
                     ),
                 ],
                 child: Scaffold(

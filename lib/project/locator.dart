@@ -8,6 +8,6 @@ void setupLocator() {
   locator.registerSingleton<UserListBloc>(UserListBloc());
 }
 
-void closeUserPostLocator() async{
+void closeUserListLocator() async{
   await locator<UserListBloc>().close();
 }

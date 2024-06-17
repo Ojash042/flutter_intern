@@ -102,19 +102,13 @@ class _LoginFormState extends State<LoginForm>{
                       children: [ 
                         Text("Login", style: Theme.of(context).textTheme.headlineMedium),
                         const SizedBox(height: 120,),
-                        // (state is UnauthorizedAuthState && state.isLoginError)? SnackBar(content: const Text("Login Error"), 
-                        // backgroundColor: Colors.white, elevation: 5, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                        // behavior: SnackBarBehavior.floating,showCloseIcon: true,): Container(), 
-
-                        (state is UnauthorizedAuthState && state.isLoginError ) ? Container(
+                                                (state is UnauthorizedAuthState && state.isLoginError ) ? Container(
                           decoration:BoxDecoration(color: Colors.red[400],
                           border: Border.all(color: Colors.grey[200]!, width: 2),
                           borderRadius:const BorderRadius.all(Radius.circular(14)),
-                          //shape: BoxShape.circle
                           ),
-                          child: const Padding(
-                            padding:  EdgeInsets.symmetric(horizontal: 9.0, vertical: 10),
-                            child:  Text("Error! Invalid Credentials", style: TextStyle(color: Colors.white),),
+                          child: const Padding(padding:  EdgeInsets.symmetric(horizontal: 9.0, vertical: 10), 
+                          child:  Text("Error! Invalid Credentials", style: TextStyle(color: Colors.white),),
                           ),) : Container(),
                         SizedBox(width: MediaQuery.of(context).size.width - 100, child: TextFormField(decoration: const InputDecoration(hintText: "Enter Email"),
                         focusNode: _emailFocusNode,controller: _emailController,),),

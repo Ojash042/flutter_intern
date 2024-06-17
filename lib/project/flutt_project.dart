@@ -48,11 +48,10 @@ import 'package:flutter_intern/project/Login_form.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 
-
 void main(List<String> args) {
   setupLocator();
   runApp(const MyApp());
-  }
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
@@ -89,7 +88,7 @@ class _MyAppState extends State<MyApp> {
   @override
   void dispose() {
     super.dispose();
-    closeUserPostLocator();
+    //closeUserPostLocator();
   }
 
   @override
@@ -107,7 +106,7 @@ class _MyAppState extends State<MyApp> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-            textTheme: GoogleFonts.quicksandTextTheme(),
+            textTheme: GoogleFonts.robotoTextTheme(),
             useMaterial3: true,
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.blue,
@@ -333,8 +332,6 @@ class _BasicDetailsState extends State<BasicDetails> {
       retrievedUserData = decoded.map((e) => UserData.fromJson(e)).toList();
     }
     var scaffoldContext = context;
-
-    // var ret = retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text);
 
     if (retrievedUserData.isNotEmpty &&
         (retrievedUserData.firstWhereOrNull((element) => element.email == emailController.text) != null)) {

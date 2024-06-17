@@ -108,7 +108,7 @@ class _FriendRequestsState extends State<FriendRequests>{
   @override
   void dispose(){
     super.dispose();
-    closeUserPostLocator();
+    //closeUserPostLocator();
   }
 
   @override

@@ -10,8 +10,9 @@ class UserListStates extends Equatable{
   List<Object?> get props => [userDataList, userDetailsList]; 
   
   @override
-  int get hashCode => super.hashCode;
-  
+  bool operator ==(Object other) {
+    return identical(userDataList, userDetailsList);
+  }
 
 }
 
