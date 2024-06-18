@@ -127,60 +127,63 @@ class _FriendRequestsState extends State<FriendRequests>{
               key: _scaffoldKey,
                 appBar: const CommonAppBar(),
                 body: SingleChildScrollView(
-                  child: userDataList.length < minUser ? Text(userDataList.length.toString()):Column(
-                    children: [
-                      Center(child: Text("Requests", style: Theme.of(context).textTheme.headlineSmall,)),
-                      const SizedBox(height: 30,),
-                      Padding(padding: const EdgeInsets.all(12),
-                      child: BlocBuilder<UserFriendBloc, UserFriendStates>(
-                        builder:(context,userFriendState) {
-                          if(userFriendState is UserFriendEmpty){
-                            return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),));
-                            }
-                            var filteredFriendList =  locator<UserFriendBloc>().state.userFriends!.where((element) => 
-                            (element.friendId == state.userData!.id || element.userId == state.userData!.id) && (element.hasNewRequestAccepted == false) &&
-                            element.requestedBy != state.userData!.id && element.userListId>0).toList(); 
-                            requestedByUserDetails = List.empty(growable: true);
-                            requestedByUsers = List.empty(growable: true);
-                            for(var item in filteredFriendList){
-                              var user = locator<UserListBloc>().state.userDataList!.firstWhere((element) => element.id == item.requestedBy); 
-                              var userDetails = locator<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
-                              requestedByUsers.add(user);
-                              requestedByUserDetails.add(userDetails);
-                            }
-                          return ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: requestedByUsers.length,
-                          itemBuilder: (context, index) => GestureDetector(
-                            onTap: (){
-                              Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
-                              },
-                              child: Column(children: [
-                                Row(
-                                  children: [
-                                    CircleAvatar(backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
-                                    const SizedBox(width: 20,),
-                                    Column(children: [Text(requestedByUsers.elementAt(index).name),],),
-                                    const Spacer(),
-                                    FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!, state.userData!), builder: (context, AsyncSnapshot<Widget> snapshot){
-                                      if(snapshot.connectionState == ConnectionState.waiting){
-                                        return const CircularProgressIndicator();
-                                        }
-                                        else if(snapshot.hasError){
-                                          return Text('${snapshot.error}');
-                                        }
-                                        return snapshot.data ?? Container();
-                                        })
-                                        ],),
-                                        const SizedBox(height: 30,),
-                                          ],
-                                        ),
-                                      ));
-                        },
-                      ),
-                                ),
-                              ],
-                            ),
+                  child: userDataList.length < minUser ? Text(userDataList.length.toString()): Padding(
+                    padding: const EdgeInsets.all(14.0),
+                    child: Column(
+                      children: [
+                        Center(child: Text("Requests", style: Theme.of(context).textTheme.headlineSmall,)),
+                        const SizedBox(height: 30,),
+                        Padding(padding: const EdgeInsets.all(12),
+                        child: BlocBuilder<UserFriendBloc, UserFriendStates>(
+                          builder:(context,userFriendState) {
+                            if(userFriendState is UserFriendEmpty){
+                              return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),));
+                              }
+                              var filteredFriendList =  locator<UserFriendBloc>().state.userFriends!.where((element) => 
+                              (element.friendId == state.userData!.id || element.userId == state.userData!.id) && (element.hasNewRequestAccepted == false) &&
+                              element.requestedBy != state.userData!.id && element.userListId>0).toList(); 
+                              requestedByUserDetails = List.empty(growable: true);
+                              requestedByUsers = List.empty(growable: true);
+                              for(var item in filteredFriendList){
+                                var user = locator<UserListBloc>().state.userDataList!.firstWhere((element) => element.id == item.requestedBy); 
+                                var userDetails = locator<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
+                                requestedByUsers.add(user);
+                                requestedByUserDetails.add(userDetails);
+                              }
+                            return ListView.builder(
+                            shrinkWrap: true,
+                            itemCount: requestedByUsers.length,
+                            itemBuilder: (context, index) => GestureDetector(
+                              onTap: (){
+                                Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
+                                },
+                                child: Column(children: [
+                                  Row(
+                                    children: [
+                                      CircleAvatar(backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
+                                      const SizedBox(width: 20,),
+                                      Column(children: [Text(requestedByUsers.elementAt(index).name),],),
+                                      const Spacer(),
+                                      FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!, state.userData!), builder: (context, AsyncSnapshot<Widget> snapshot){
+                                        if(snapshot.connectionState == ConnectionState.waiting){
+                                          return const CircularProgressIndicator();
+                                          }
+                                          else if(snapshot.hasError){
+                                            return Text('${snapshot.error}');
+                                          }
+                                          return snapshot.data ?? Container();
+                                          })
+                                          ],),
+                                          const SizedBox(height: 30,),
+                                            ],
+                                          ),
+                                        ));
+                          },
+                        ),
+                                  ),
+                                ],
+                              ),
+                  ),
                           ),
                           );
             },

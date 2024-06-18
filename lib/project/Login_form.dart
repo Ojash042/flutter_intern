@@ -102,7 +102,7 @@ class _LoginFormState extends State<LoginForm>{
                       children: [ 
                         Text("Login", style: Theme.of(context).textTheme.headlineMedium),
                         const SizedBox(height: 120,),
-                                                (state is UnauthorizedAuthState && state.isLoginError ) ? Container(
+                        (state is UnauthorizedAuthState && state.isLoginError ) ? Container(
                           decoration:BoxDecoration(color: Colors.red[400],
                           border: Border.all(color: Colors.grey[200]!, width: 2),
                           borderRadius:const BorderRadius.all(Radius.circular(14)),
@@ -126,12 +126,8 @@ class _LoginFormState extends State<LoginForm>{
                           hintText: "Enter password"),),),
                         const SizedBox(height: 30,), 
                         SizedBox(child: OutlinedButton(onPressed:  (){                        
-                        context.read<AuthBloc>().add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text));
-                        if(true){
-                          
-                        }
+                        BlocProvider.of<AuthBloc>(context).add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text)); 
                         },
-                        //BlocProvider.of<AuthBloc>(context).add(RequestLogInEvent(email: _emailController.text, password: _passwordController.text)),
                         child: const Text("Login"),)),
                         const SizedBox(height: 40,),
                         SizedBox(child: TextButton(onPressed: (){Navigator.pushNamed(context, '/forgotPassword');}, child: const Text("Forgot Password"),),),
@@ -142,8 +138,7 @@ class _LoginFormState extends State<LoginForm>{
                   ),
                 ),
               ),
-            ],
-          ),
+            ],),
         );
         },
       ),

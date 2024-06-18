@@ -37,9 +37,9 @@ class _FriendListPageState extends State<FriendListPage>{
   List<UserDetails> userFriendDetails = List.empty(growable: true);
   
   List<Widget> action = List.empty(growable: true);
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  Future<Widget> getFriendStateWidget(ScaffoldState scaffoldKey,int id, UserData userData) async{
+  Future<Widget> getFriendStateWidget(int id, UserData userData) async{
     String friendStateString;
     fService.FriendServiceProvider fserve = fService.FriendServiceProvider();
     fService.FriendState friendState = await fserve.getFriendState(id, userData);
@@ -85,7 +85,7 @@ class _FriendListPageState extends State<FriendListPage>{
 
     if(friendState == fService.FriendState.friend){
       return IconButton(onPressed: (){
-        _scaffoldKey.currentState!.showBottomSheet(
+        Scaffold.of(context).showBottomSheet(
           enableDrag: true,
         showDragHandle: true,
         (builder) => 
@@ -115,6 +115,7 @@ class _FriendListPageState extends State<FriendListPage>{
   @override
   void initState() {
     super.initState();
+    _scaffoldKey = GlobalKey<ScaffoldState>();
     if(locator<UserFriendBloc>().state is UserFriendEmpty){
       locator<UserFriendBloc>().add(UserFriendInitialize());
     }
@@ -155,75 +156,78 @@ class _FriendListPageState extends State<FriendListPage>{
                 userFriendDetails.add(userDetails); 
               }
               }
-
             return Scaffold (
                 key: _scaffoldKey,
                 appBar: CommonAppBar(actions: action,),
                 bottomNavigationBar: const CommonNavigationBar(),
                 body: (userFriendState is UserFriendEmpty) ? const Center(child: CircularProgressIndicator(),):  SingleChildScrollView(
                   child: Container(
-                  height: MediaQuery.of(context).size.height,
+                  constraints: BoxConstraints(minHeight: MediaQuery.of(context).size.height * 0.82),
                   color: Colors.white,
-                    child: Column(
-                      children: [
-                      Align(alignment: Alignment.topLeft, child: Padding(
-                        padding: const EdgeInsets.only(left: 8.0),
-                        child: Card(
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(50),
-                            child:  const Padding(
-                              padding: EdgeInsets.symmetric(horizontal:25, vertical:  12.0),
-                              child: Text("Requests", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),),
-                              ), onTap: (){
-                            Navigator.of(context).pushNamed("/friendRequests");
-                          },),
-                        ),
-                      ),),
-                      const SizedBox(height: 30,),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 12.0),
-                        child: Align(
-                          alignment: Alignment.topLeft,
-                          child: Text('${userFriendData.length} friends', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-                      ),
-                      ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: userFriendData.length,
-                        itemBuilder: (context, index)=> Padding(
-                          padding: const EdgeInsets.all(14.0),
-                          child: GestureDetector(onTap: (){
-                            Navigator.of(context).pushNamed('/profileInfo/${userFriendState.userFriends!.elementAt(index).userId}');},
-                          child: Row(
-                            children: [
-                              CircleAvatar(backgroundImage: FileImage(File(userFriendDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
-                              const SizedBox(width: 20,),
-                              Column(children: [
-                                Text(userFriendData.elementAt(index).name),
-                                ],),
-                              const Spacer(),
-                              Card(
-                                elevation: 0,
-                                child: IconButton(onPressed: (){}, icon: const Icon(bsIcons.BootstrapIcons.chat_dots_fill, color: Colors.black,))),
-                              Card(
-                              elevation: 0,
-                                color: Colors.transparent,
-                                child: FutureBuilder(future: getFriendStateWidget(_scaffoldKey.currentState!,userFriendDetails.elementAt(index).id!, loggedInUser!), builder: (context, AsyncSnapshot<Widget> snapshot){
-                                  if(snapshot.connectionState == ConnectionState.waiting){
-                                    return const CircularProgressIndicator();
-                                  }
-                                  else if(snapshot.hasError){
-                                    return Text('${snapshot.error}');
-                                  }
-                                  return snapshot.data ?? Container();
-                                }),
-                              )
-                            ],
-                          ), 
+                    child: Padding(
+                      padding: const EdgeInsets.all(14.0),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                        Align(alignment: Alignment.topLeft, child: Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child: Card(
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(50),
+                              child:  const Padding(
+                                padding: EdgeInsets.symmetric(horizontal:25, vertical:  12.0),
+                                child: Text("Requests", style: TextStyle(fontWeight: FontWeight.bold,fontSize: 16),),
+                                ), onTap: (){
+                              Navigator.of(context).pushNamed("/friendRequests");
+                            },),
                           ),
-                        ))
-                      ]
+                        ),),
+                        const SizedBox(height: 30,),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 12.0),
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: Text('${userFriendData.length} friends', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: List.generate(userFriendData.length, (index) => 
+                        Padding(
+                            padding: const EdgeInsets.all(14.0),
+                            child: GestureDetector(onTap: (){
+                              Navigator.of(context).pushNamed('/profileInfo/${userFriendState.userFriends!.elementAt(index).userId}');},
+                            child: Row(
+                              children: [
+                                CircleAvatar(backgroundImage: FileImage(File(userFriendDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
+                                const SizedBox(width: 20,),
+                                Column(children: [
+                                  Text(userFriendData.elementAt(index).name),
+                                  ],),
+                                const Spacer(),
+                                Card(
+                                  elevation: 0,
+                                  child: IconButton(onPressed: (){}, icon: const Icon(bsIcons.BootstrapIcons.chat_dots_fill, color: Colors.black,))),
+                                Card(
+                                elevation: 0,
+                                  color: Colors.transparent,
+                                  child: FutureBuilder(future: getFriendStateWidget(userFriendDetails.elementAt(index).id!, loggedInUser!), builder: (context, AsyncSnapshot<Widget> snapshot){
+                                    if(snapshot.connectionState == ConnectionState.waiting){
+                                      return const CircularProgressIndicator();
+                                    }
+                                    else if(snapshot.hasError){
+                                      return Text('${snapshot.error}');
+                                    }
+                                    return snapshot.data ?? Container();
+                                  }),
+                                )
+                              ],
+                            ), 
+                            ),
+                          )),), 
+                        ]
+                      ),
                     ),
                   ),),);
           },
