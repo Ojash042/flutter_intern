@@ -74,7 +74,6 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
   @override
   void dispose() {
     super.dispose();
-    // closeUserPostLocator();
   }
 
   @override
@@ -138,38 +137,49 @@ class _ProfileInfoPageState extends State<ProfileInfoPage>{
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             Center(
-                                              child: Stack(alignment: Alignment.bottomLeft,
+                                              child: Stack(
+                                              //alignment: Alignment.bottomLeft,
                                               clipBehavior: Clip.antiAlias,
                                               children: [
-                                                SizedBox(width: MediaQuery.of(context).size.width, height: 264, child: Padding(
-                                                  padding: const EdgeInsets.all(0),
-                                                  child: AspectRatio(
-                                                    aspectRatio: 16/9,
-                                                    child: Image.file(File(currentUserDetails!.basicInfo.coverImage.imagePath), fit: BoxFit.cover,)),
+                                                Align(
+                                                  alignment: Alignment.topLeft,
+                                                  child: SizedBox(width: MediaQuery.of(context).size.width, height: 242, child: AspectRatio(
+                                                    aspectRatio: 4/3,
+                                                    child: Image.file(File(currentUserDetails!.basicInfo.coverImage.imagePath), fit: BoxFit.fitWidth,),
                                                   ),),
-                                                 Padding(padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 9),
-                                                 child: Container(decoration: const BoxDecoration(border:  Border(
-                                                  top: BorderSide(color: Colors.transparent, width: 1.5),
-                                                  bottom: BorderSide(color: Colors.transparent, width: 1.5),
-                                                  left: BorderSide(color: Colors.transparent, width: 1.5),
-                                                  right: BorderSide(color: Colors.transparent, width: 1.5),
-                                                 ),),
-                                                 height: 120, width: 120, 
-                                                 child: CircleAvatar(
-                                                  backgroundColor: Colors.white, radius: 0,
-                                                  child: CircleAvatar(radius: 55, backgroundImage: FileImage(File(currentUserDetails!.basicInfo.profileImage.imagePath)))),
-                                                 ),
+                                                ),
+                                                 Align(
+                                                   alignment: Alignment.bottomLeft,
+                                                   child: Padding(padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 9),
+                                                   child: Column(
+                                                     crossAxisAlignment: CrossAxisAlignment.start,
+                                                     children: [
+                                                       Container(height: MediaQuery.of(context).size.height * 0.19, color: Colors.transparent,),
+                                                       Container(decoration: const BoxDecoration(border:  Border(
+                                                        top: BorderSide(color: Colors.transparent, width: 1.5),
+                                                        bottom: BorderSide(color: Colors.transparent, width: 1.5),
+                                                        left: BorderSide(color: Colors.transparent, width: 1.5),
+                                                        right: BorderSide(color: Colors.transparent, width: 1.5),
+                                                       ),),
+                                                       height: 120, width: 120, 
+                                                       child: CircleAvatar(
+                                                        backgroundColor: Colors.white, radius: 0,
+                                                        child: CircleAvatar(radius: 55, backgroundImage: FileImage(File(currentUserDetails!.basicInfo.profileImage.imagePath)))),
+                                                       ),
+                                                     ],
+                                                   ),
+                                                   ),
                                                  )
                                               ],),
                                             ),
                                           const SizedBox(height: 10,),
 
-                                          Padding( padding: const EdgeInsets.symmetric(horizontal: 32),
+                                          Padding( padding: const EdgeInsets.symmetric(horizontal: 12),
                                           child: Text(currentUser!.name, style:const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),), 
                                           ),
                                           const SizedBox(height: 10,),
                                           Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
                                             child: Text(currentUserDetails!.basicInfo.summary),
                                           ),
                                         const SizedBox(height: 15,), 

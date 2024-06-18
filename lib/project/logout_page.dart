@@ -53,18 +53,27 @@ class _LogoutPageState extends State<LogoutPage>{
                 IconButton(onPressed: (){}, icon: const Icon(cupertino.CupertinoIcons.search)),
                 ],),
                 SizedBox(height: constraints.maxWidth * 0.05,),
-                SizedBox(width : MediaQuery.of(context).size.width, child: Card(color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Row(
-                    children: [
-                    CircleAvatar(backgroundImage: FileImage(File(BlocProvider.of<AuthBloc>(context).state.userDetails!.basicInfo.profileImage.imagePath),)), 
-                    const SizedBox(width: 10,),
-                    Text(BlocProvider.of<AuthBloc>(context).state.userData!.name), 
-                    const Spacer(),
-                    IconButton(onPressed: (){}, icon: Icon(cupertino.CupertinoIcons.chevron_down_circle_fill, color: Colors.grey[400],)),
-                    //CircleAvatar(backgroundColor: Colors.grey, child: IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_downward_rounded)))
-                    ],),
+                SizedBox(width : MediaQuery.of(context).size.width, child: Card(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  color: Colors.white,
+                child: InkWell(
+                onTap: (){
+                  Navigator.of(context).popAndPushNamed('/profileInfo/${BlocProvider.of<AuthBloc>(context).state.userData!.id}');
+                },
+                onLongPress: (){},
+                  radius: 8,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                      CircleAvatar(backgroundImage: FileImage(File(BlocProvider.of<AuthBloc>(context).state.userDetails!.basicInfo.profileImage.imagePath),)), 
+                      const SizedBox(width: 10,),
+                      Text(BlocProvider.of<AuthBloc>(context).state.userData!.name), 
+                      const Spacer(),
+                      IconButton(onPressed: (){}, icon: Icon(cupertino.CupertinoIcons.chevron_down_circle_fill, color: Colors.grey[400],)),
+                      //CircleAvatar(backgroundColor: Colors.grey, child: IconButton(onPressed: (){}, icon: const Icon(Icons.arrow_downward_rounded)))
+                      ],),
+                  ),
                 ),
                 )),
                 SizedBox(height: constraints.maxHeight * 0.05,),
@@ -87,7 +96,7 @@ class _LogoutPageState extends State<LogoutPage>{
                               return ui.Gradient.linear(const Offset(12.0, 24),const Offset(24, 4), [Colors.blue, Colors.white]);
                             },
                             child: const Icon(Icons.history, size: 35,),),
-                            const Text("Memories"),
+                            const Text("Memories", style: TextStyle(fontWeight: FontWeight.bold),),
                           ],
                         ),
                       ),),
@@ -103,7 +112,7 @@ class _LogoutPageState extends State<LogoutPage>{
                           },
                           child: const Icon(Icons.bookmark, size: 35,),
                           ),
-                        const Text("Saved"),
+                        const Text("Saved", style: TextStyle(fontWeight: FontWeight.bold),),
                         ],
                       ),
                     ),),
@@ -116,7 +125,7 @@ class _LogoutPageState extends State<LogoutPage>{
                           ShaderMask(blendMode: ui.BlendMode.srcIn,shaderCallback: (bounds) => ui.Gradient.linear(const Offset(32, 12), const Offset(0, 32), [Colors.blue[700]!, Colors.blueAccent]), 
                           child: const Icon(Icons.shop, size: 35,),
                           ),
-                          const Text("Marketplace")
+                          const Text("Marketplace", style: TextStyle(fontWeight: FontWeight.bold),)
                       ],),
                     ),),
                     Card(color: Colors.white, 
@@ -129,7 +138,7 @@ class _LogoutPageState extends State<LogoutPage>{
                           ShaderMask(blendMode: ui.BlendMode.srcIn, shaderCallback: (bounds) => ui.Gradient.linear(const Offset(32, 12), const Offset(0, 32), [Colors.blueAccent, Colors.white]),
                           child: const Icon(Icons.group, size: 30,),
                           ),
-                          const Text("Groups"),
+                          const Text("Groups", style: TextStyle(fontWeight: FontWeight.bold),),
                         ],),
                       ),
                     ), //group
@@ -143,7 +152,7 @@ class _LogoutPageState extends State<LogoutPage>{
                           ShaderMask(blendMode: ui.BlendMode.srcIn, shaderCallback: (bounds) => ui.Gradient.linear(const Offset(20, 53), const Offset(53, 20), [Colors.red[900]!, Colors.red[200]!]),
                           child: const Icon(Icons.slideshow, size: 30,),
                           ),
-                          const Text("Videos"),
+                          const Text("Videos", style: TextStyle(fontWeight: FontWeight.bold),),
                         ],),
                       ) ), //videos
                    Card(color: Colors.white,
@@ -156,7 +165,7 @@ class _LogoutPageState extends State<LogoutPage>{
                           ShaderMask(blendMode: ui.BlendMode.srcIn, shaderCallback: (bounds) => ui.Gradient.linear(const Offset(32, 12), const Offset(0, 32), [Colors.greenAccent, Colors.white]),
                           child: const Icon(Icons.style, size: 30,),
                           ),
-                          const Text("Finds"),
+                          const Text("Finds", style: TextStyle(fontWeight: FontWeight.bold),),
                         ],),
                       ) ), //finds
                   ],
@@ -172,12 +181,7 @@ class _LogoutPageState extends State<LogoutPage>{
                     BlocProvider.of<AuthBloc>(context).add(RequestLogoutEvent());
                     Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
                     }, child: const Text("Logout", style: TextStyle(color: Colors.black),),),
-                ),
-                //   OutlinedButton.icon(onPressed: (){
-                //   BlocProvider.of<AuthBloc>(context).add(RequestLogoutEvent());
-                //   Navigator.of(context).pushNamedAndRemoveUntil('/', (Route<dynamic> route) => false);
-                // }, label: const Text("Logout"), icon: const Icon(Icons.exit_to_app_outlined),),
-              ],
+                ),],
             ),
           );
           },
