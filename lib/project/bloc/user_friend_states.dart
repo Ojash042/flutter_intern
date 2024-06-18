@@ -6,7 +6,7 @@ class UserFriendStates extends Equatable{
   const UserFriendStates({this.userFriends});
   
   @override
-  List<Object?> get props => [this.userFriends];   
+  List<Object?> get props => [userFriends];   
 
   @override
   bool operator ==(Object other) {

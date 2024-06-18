@@ -16,7 +16,6 @@ class UserFriendInitialize extends UserFriendEvents{}
 class UserAddFriendEvent extends UserFriendEvents{
   final int friendId;
   final int userId;
-
   const UserAddFriendEvent({required this.friendId, required this.userId});
 }
 

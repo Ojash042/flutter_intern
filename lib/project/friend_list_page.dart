@@ -51,7 +51,7 @@ class _FriendListPageState extends State<FriendListPage>{
         ico = Icons.group_add;
         onPressed = (){
            int userId = context.read<AuthBloc>().state.userData!.id;
-           context.read<UserFriendBloc>().add(UserAddFriendEvent(friendId: id, userId: userId));
+           locator<UserFriendBloc>().add(UserAddFriendEvent(friendId: id, userId: userId));
           };
         break;
 
@@ -60,7 +60,7 @@ class _FriendListPageState extends State<FriendListPage>{
         ico = Icons.group_off_outlined;
         onPressed = (){
           int userId = context.read<AuthBloc>().state.userData!.id;
-          context.read<UserFriendBloc>().add(UserFriendRemoveEvent(friendId: id, userId: userId));
+          locator<UserFriendBloc>().add(UserFriendRemoveEvent(friendId: id, userId: userId));
         };
         break;
 
@@ -75,10 +75,7 @@ class _FriendListPageState extends State<FriendListPage>{
         ico = Icons.group;
         onPressed = () { 
           int userId = context.read<AuthBloc>().state.userData!.id;
-          context.read<UserFriendBloc>().add(UserFriendAcceptRequestEvent(friendId: id, userId: userId));
-        // fserve.acceptRequest(id, userData);
-        //  setState(() { 
-        // });          
+          locator<UserFriendBloc>().add(UserFriendAcceptRequestEvent(friendId: id, userId: userId));
         };
         break;
 
@@ -114,27 +111,13 @@ class _FriendListPageState extends State<FriendListPage>{
       onPressed(); setState(() { 
     });},child: Row(children: [Icon(ico, color: Colors.white,), Text(friendStateString, style: const TextStyle(color: Colors.white),),], ));
   } 
-  
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-      }
-  
-  @override
-  void didUpdateWidget(covariant FriendListPage oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    }
-  
-  @override
-  void dispose() {
-    super.dispose();
-  }
-  
+    
   @override
   void initState() {
     super.initState();
-    //BlocProvider.of<UserListBloc>(context).add(UserListInitialize());
-    BlocProvider.of<UserFriendBloc>(context).add(UserFriendInitialize());
+    if(locator<UserFriendBloc>().state is UserFriendEmpty){
+      locator<UserFriendBloc>().add(UserFriendInitialize());
+    }
     IconButton searchButton = IconButton(onPressed: (){
     Navigator.of(context).pushNamed('/search');
     }, icon: const Icon(Icons.search));
@@ -148,9 +131,9 @@ class _FriendListPageState extends State<FriendListPage>{
         UserData? loggedInUser = state.userData;
         return 
         BlocBuilder<UserListBloc, UserListStates>(builder: (context, userListState){
-           userDataList = userListState.userDataList;
-           userDetailsList = userListState.userDetailsList;
-        return BlocBuilder<UserFriendBloc, UserFriendStates >(
+           userDataList = locator<UserListBloc>().state.userDataList;
+           userDetailsList = locator<UserListBloc>().state.userDetailsList;
+        return BlocBuilder<UserFriendBloc, UserFriendStates>(
           builder: (context, userFriendState) {
              if(userFriendState is UserFriendEmpty){
               return(
@@ -159,18 +142,12 @@ class _FriendListPageState extends State<FriendListPage>{
                 body: Center(child: CircularProgressIndicator(),),
               ));
              }
-             usersFriends = userFriendState.userFriends!.where((element) => (element.userListId>0) &&
+             usersFriends = locator<UserFriendBloc>().state.userFriends!.where((element) => (element.userListId>0) &&
              (element.userId == loggedInUser!.id || element.friendId == loggedInUser.id ) && (element.hasNewRequest == false) && (!element.hasRemoved)).toList();
-
             for(var item in usersFriends){
               int friendId;
-              if(item.userId == loggedInUser!.id){
-                  friendId = item.friendId;
-              }
-              else{
-                friendId = item.userId;
-              }
- 
+              friendId = item.userId == loggedInUser!.id ? item.friendId : item.userId; 
+
               var userData = userDataList!.firstWhere((element) => element.id == friendId);
               var userDetails = userDetailsList!.firstWhere((element) => element.id == friendId);
               if(userFriendData.firstWhereOrNull((e) => e.id == userData.id) == null){

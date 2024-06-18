@@ -13,7 +13,6 @@ import 'package:flutter_intern/project/friend_service_provider.dart' as fService
 import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
-import 'package:flutter_intern/project/technical_models.dart' as TModels;
 
 class FriendRequests extends StatefulWidget{
   const FriendRequests({super.key});
@@ -47,7 +46,7 @@ class _FriendRequestsState extends State<FriendRequests>{
         ico = Icons.group_add;
         onPressed = (){
           int userId = context.read<AuthBloc>().state.userData!.id;
-          context.read<UserFriendBloc>().add(UserAddFriendEvent(friendId: id, userId: userId));
+          locator<UserFriendBloc>().add(UserAddFriendEvent(friendId: id, userId: userId));
         };
         break;
 
@@ -56,7 +55,7 @@ class _FriendRequestsState extends State<FriendRequests>{
         ico = Icons.group_off_outlined;
         onPressed = (){
           int userId = context.read<AuthBloc>().state.userData!.id;
-          context.read<UserFriendBloc>().add(UserFriendRemoveEvent(friendId: id, userId: userId)); 
+          locator<UserFriendBloc>().add(UserFriendRemoveEvent(friendId: id, userId: userId));
         };
         break;
 
@@ -69,14 +68,13 @@ class _FriendRequestsState extends State<FriendRequests>{
         friendStateString = "Requested";
         ico = Icons.group;
         onPressed = () {
-         int userId = context.read<AuthBloc>().state.userData!.id;
-        context.read<UserFriendBloc>().add(UserFriendAcceptRequestEvent(friendId: id, userId: userId));
-
+          int userId = context.read<AuthBloc>().state.userData!.id;
+          locator<UserFriendBloc>().add(UserFriendAcceptRequestEvent(friendId: id, userId: userId));
         };
         break;
       case fService.FriendState.isUser:
         return Container();
-    }
+      }
     if(friendState == fService.FriendState.friend){
       return IconButton(onPressed: (){
         _scaffoldKey.currentState!.showBottomSheet(
@@ -88,7 +86,6 @@ class _FriendRequestsState extends State<FriendRequests>{
              child: TextButton.icon(onPressed: (){
                 onPressed();
                 Navigator.pop(context);
-                setState(() {});
               }, label: const Text("Remove Friend"), icon: const Icon(Icons.delete_forever_outlined),),
            ),
           
@@ -108,11 +105,13 @@ class _FriendRequestsState extends State<FriendRequests>{
   @override
   void dispose(){
     super.dispose();
-    //closeUserPostLocator();
   }
 
   @override
   void initState() {
+    if(locator<UserFriendBloc>().state is UserFriendEmpty){
+      locator<UserFriendBloc>().add(UserFriendInitialize());
+    }
     super.initState();
   }
 
@@ -123,36 +122,36 @@ class _FriendRequestsState extends State<FriendRequests>{
         return BlocBuilder<UserListBloc, UserListStates>(
           builder: (context, userListState) {
             userDataList = userListState.userDataList!;
-            userDetailsList = userListState.userDetailsList;
-            return BlocBuilder<UserFriendBloc, UserFriendStates>(
-            builder: (context, userFriendState) {
-              if(userFriendState is UserFriendEmpty){
-                return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),));
-              }
-              var filteredFriendList =  userFriendState.userFriends!.where((element) => 
-              (element.friendId == state.userData!.id || element.userId == state.userData!.id) && (element.hasNewRequestAccepted == false) &&
-              element.requestedBy != state.userData!.id && element.userListId>0).toList(); 
-              for(var item in filteredFriendList){
-                var user = locator<UserListBloc>().state.userDataList!.firstWhere((element) => element.id == item.requestedBy); 
-                var userDetails = locator<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
-                requestedByUsers.add(user);
-                requestedByUserDetails.add(userDetails);
-                }
+            userDetailsList = userListState.userDetailsList; 
               return Scaffold(
               key: _scaffoldKey,
                 appBar: const CommonAppBar(),
                 body: SingleChildScrollView(
                   child: userDataList.length < minUser ? Text(userDataList.length.toString()):Column(
                     children: [
-                      const SizedBox(height: 30,),
                       Center(child: Text("Requests", style: Theme.of(context).textTheme.headlineSmall,)),
                       const SizedBox(height: 30,),
                       Padding(padding: const EdgeInsets.all(12),
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: requestedByUsers.length,
-                        itemBuilder: (context, index) => Container(
-                          child: GestureDetector(
+                      child: BlocBuilder<UserFriendBloc, UserFriendStates>(
+                        builder:(context,userFriendState) {
+                          if(userFriendState is UserFriendEmpty){
+                            return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),));
+                            }
+                            var filteredFriendList =  locator<UserFriendBloc>().state.userFriends!.where((element) => 
+                            (element.friendId == state.userData!.id || element.userId == state.userData!.id) && (element.hasNewRequestAccepted == false) &&
+                            element.requestedBy != state.userData!.id && element.userListId>0).toList(); 
+                            requestedByUserDetails = List.empty(growable: true);
+                            requestedByUsers = List.empty(growable: true);
+                            for(var item in filteredFriendList){
+                              var user = locator<UserListBloc>().state.userDataList!.firstWhere((element) => element.id == item.requestedBy); 
+                              var userDetails = locator<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
+                              requestedByUsers.add(user);
+                              requestedByUserDetails.add(userDetails);
+                            }
+                          return ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: requestedByUsers.length,
+                          itemBuilder: (context, index) => GestureDetector(
                             onTap: (){
                               Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
                               },
@@ -176,7 +175,9 @@ class _FriendRequestsState extends State<FriendRequests>{
                                         const SizedBox(height: 30,),
                                           ],
                                         ),
-                                      ))),
+                                      ));
+                        },
+                      ),
                                 ),
                               ],
                             ),
@@ -186,7 +187,5 @@ class _FriendRequestsState extends State<FriendRequests>{
           );
           },
         );
-      },
-    );
+      } 
   }
-}

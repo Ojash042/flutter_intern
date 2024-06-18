@@ -50,7 +50,6 @@ class UserFriendBloc extends Bloc<UserFriendEvents, UserFriendStates>{
       userFriend.hasRemoved = false;
       userFriendList.add(userFriend); 
     }
-
     String editedJson = jsonEncode(userFriendList.map((e) => e.toJson()).toList());
     sharedPreferences.setString("user_friend", editedJson);
     emit(UserFriendStates(userFriends: userFriendList));
@@ -82,9 +81,11 @@ class UserFriendBloc extends Bloc<UserFriendEvents, UserFriendStates>{
     && (element.friendId == event.userId || element.userId == event.userId ) && (element.hasNewRequest == true));
     
     userFriend.hasNewRequest = false;
-    userFriend.hasNewRequestAccepted = true;
-  
+    userFriend.hasNewRequestAccepted = true; 
+
+    print(userFriendList);
     String editedJson = jsonEncode(userFriendList.map((e) => e.toJson()).toList());
     sharedPreferences.setString("user_friend", editedJson);
+    emit(UserFriendStates(userFriends: userFriendList));
   }
 }

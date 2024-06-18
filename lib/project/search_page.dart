@@ -146,8 +146,7 @@ class _SearchPageState extends State<SearchPage>{
         return BlocBuilder<UserListBloc, UserListStates>(
         builder: (context, userListState){
           userDataList = userListState.userDataList!;
-          userDetails = userListState.userDetailsList!;
-      
+          userDetails = userListState.userDetailsList!; 
           return BlocBuilder<UserFriendBloc, UserFriendStates>(
           builder: (context, userFriendState) {
             if(userFriendState is UserFriendEmpty){

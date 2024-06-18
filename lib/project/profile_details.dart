@@ -45,10 +45,7 @@ void saveData(List<UserDetails> userDetailsList) async{
 
   @override
   void initState(){
-    super.initState();
-     if(locator<UserListBloc>().isClosed){
-        print("Zahoo");
-      }
+    super.initState(); 
     if(locator<UserListBloc>().state is UserListEmpty){
       locator<UserListBloc>().add(UserListInitialize());
     } 
@@ -115,10 +112,7 @@ Widget showEditBasicInfoModal(){
                                       setState((){
                                         currentUserDetails.basicInfo.summary = summaryController.text;
                                         currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
-                                });
-                                if(locator<UserListBloc>().isClosed){
-                                  print("Wahoo");
-                                }
+                                }); 
                                 if(locator<UserListBloc>().state is! UserListEmpty){
                                   BlocProvider.of<UserListBloc>(context).add(EditUserEvent(userDetails: userDetailsList));
                                 }
