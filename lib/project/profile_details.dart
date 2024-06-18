@@ -761,20 +761,18 @@ Widget showEditBasicInfoModal(){
                               Container(),
                               const SizedBox(height: 15,),
                               Wrap(
-                                direction: Axis.vertical,
-                                children: currentUserDetails!.skills.map((e) => Container(
-                                width: MediaQuery.of(context).size.width,
-                                child: Padding(padding: const EdgeInsets.all(8), child: Row(
+                                direction: Axis.horizontal,
+                                children: currentUserDetails!.skills.map((e) => Padding(padding: const EdgeInsets.all(8), child: Wrap(
+                                  direction: Axis.horizontal,
                                   children: [
-                                    Row(
-                                      children: [
-                                        const CustomDetailsIcon(ico: Icons.badge,),
-                                        const SizedBox(width: 10,),
-                                        Center(child: Text(e.title!, style: const TextStyle(fontWeight: FontWeight.bold),)),
-                                      ],
+                                    const CustomDetailsIcon(ico: Icons.badge,),
+                                    const SizedBox(width: 10,),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top:4.0),
+                                      child: Text(e.title!, style: const TextStyle(fontWeight: FontWeight.bold),),
                                     ),
                                   ],
-                                ),),)).toList(),),
+                                ),)).toList(),),
                             ],),),),
                           ),
                         Divider(height: 0.5, thickness: 0.5, indent: MediaQuery.of(context).size.width * 0.05, endIndent: MediaQuery.of(context).size.width * 0.05,),
@@ -797,15 +795,19 @@ Widget showEditBasicInfoModal(){
                                   ),
                                   const SizedBox(height: 15,),
                                   Wrap(
-                                    direction: Axis.vertical,
+                                    direction: Axis.horizontal,
                                   children: currentUserDetails!.hobbies.map((e) => Container(
                                     child: Padding(
                                       padding: const EdgeInsets.all(8), 
-                                      child: Row(
+                                      child: Wrap(
+                                        direction: Axis.horizontal,
                                         children: [
                                           const CustomDetailsIcon(ico: Icons.music_note),
                                           const SizedBox(width: 10,),
-                                          Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 4.0),
+                                            child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
+                                          ),
                                         ],
                                       ),),)).toList(),),
                                     ],),),),
@@ -831,11 +833,14 @@ Widget showEditBasicInfoModal(){
                               const SizedBox(height: 15,),
                               Wrap(children: currentUserDetails!.languages.map((e) => Padding(
                                 padding: const EdgeInsets.all(8),
-                                child: Row(
+                                child: Wrap(
                                   children: [
                                     const CustomDetailsIcon(ico: cupertino.CupertinoIcons.chat_bubble_2_fill),
                                     const SizedBox(width: 10,),
-                                    Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top:4.0),
+                                      child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
+                                    ),
                                   ],
                                 ),)).toList(),),
                         ],),),),
