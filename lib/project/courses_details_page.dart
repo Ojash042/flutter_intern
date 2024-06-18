@@ -214,6 +214,19 @@ class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTick
   List<TModels.Instructor>? currentCourseInstructor = List.empty(growable: true);
   late final TabController _tabController = TabController(length: 2, vsync: this);
   bool showMore = false;
+  ScrollController tabScrollController = ScrollController();
+  ScrollController sliverController = ScrollController();
+
+  
+  @override
+  void initState() {
+    super.initState();
+    tabScrollController.addListener(() {
+      print(tabScrollController.position.pixels - MediaQuery.of(context).size.height/2);
+      sliverController.jumpTo(tabScrollController.position.pixels -MediaQuery.of(context).size.height / 2);
+    }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -244,6 +257,7 @@ class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTick
                 return BlocBuilder<InstructorBloc, InstructorState>(
                   builder: (context, instructorState) {
                     return CustomScrollView(
+                    controller: tabScrollController,
                     slivers: [
                       SliverToBoxAdapter(child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -324,8 +338,13 @@ class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTick
                         child: TabBarView(
                           controller: _tabController,
                           children: <Widget>[
-                            SingleChildScrollView(child: SyllabusPage(syllabus: currentCourse!.syllabus,)),
-                          SingleChildScrollView(child: FAQPage(faqs: currentCourse!.faqs,)),
+                            SingleChildScrollView(
+                            physics: const NeverScrollableScrollPhysics(),
+                              controller: tabScrollController,
+                              child: SyllabusPage(syllabus: currentCourse!.syllabus,)),
+                          SingleChildScrollView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            child: FAQPage(faqs: currentCourse!.faqs,)),
                         ])
                       )
                     ],
