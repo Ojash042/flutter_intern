@@ -78,52 +78,58 @@ Widget showEditBasicInfoModal(){
                             child: Column(children: [
                               SizedBox(
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    const Text("Summary", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                                     TextFormField(
                                       controller: summaryController,
                                       decoration: const InputDecoration(
-                                        border: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, style: BorderStyle.solid)),
-                                        hintText: "Enter summary",),
-                                        //initialValue: currentUserDetails.basicInfo.summary,
+                                        hintText: "Bio...",
+                                        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, style: BorderStyle.solid)),
+                                        border: OutlineInputBorder( 
+                                          borderSide: BorderSide(color: Colors.black, style: BorderStyle.solid, width: 1.5)),
+                                        ),
                                         ),
                                         const SizedBox(height: 30,),
-                                        Text("Gender", style: Theme.of(context).textTheme.headlineSmall,),
-                                        RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
-                                          setState((){
-                                            currentUserDetails.basicInfo.gender = "Male";
-                                            _gender = value;
-                                            });
-                                            }),
-                                            RadioListTile(value: UserGender.female, title: const Text("Female"), groupValue: _gender, onChanged: (UserGender? value){
-                                              setState((){
-                                                currentUserDetails.basicInfo.gender = "Female";
-                                                _gender = value; });
-                                                }), 
-                                                const SizedBox(height: 30,),
-                                      ],
-                                    ),
-                                  ),
-                                  // const Divider(),
-                                  Expanded(child: Container()),
-                                  Align(
-                                    alignment: Alignment.bottomCenter,
-                                    child: FilledButton(style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.blueAccent), shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
-                                    onPressed: (){
-                                      setState((){
-                                        currentUserDetails.basicInfo.summary = summaryController.text;
-                                        currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
-                                }); 
-                                if(locator<UserListBloc>().state is! UserListEmpty){
-                                  BlocProvider.of<UserListBloc>(context).add(EditUserEvent(userDetails: userDetailsList));
-                                }
-                                //saveData(userDetailsList);
-                                Navigator.of(context).pop();
-                                }, child: const Text("Submit")),
-                                )
-                              ],),
-                          ),
-                        ),
-                      ),
+                                        //const Text("Gender", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                                        InputDecorator(
+                                          decoration: InputDecoration(
+                                            labelStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                                            labelText: 'Gender',
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10.0),
+                                            ),
+                                            ),
+                                            child: Column(children: [
+                                              RadioListTile(value: UserGender.male, groupValue: _gender, title: const Text("Male"), onChanged: (UserGender? value) {
+                                                setState((){
+                                                  currentUserDetails.basicInfo.gender = "Male";
+                                                  _gender = value;
+                                                  });
+                                                  }),
+                                                  RadioListTile(value: UserGender.female, title: const Text("Female"), groupValue: _gender, onChanged: (UserGender? value){
+                                                    setState((){
+                                                      currentUserDetails.basicInfo.gender = "Female";
+                                                      _gender = value; });
+                                                      })],),),
+                const SizedBox(height: 30,),
+              ],),),
+              Expanded(child: Container()),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: FilledButton(style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.blueAccent), shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(8))))),
+                onPressed: (){
+                  setState((){
+                    currentUserDetails.basicInfo.summary = summaryController.text;
+                    currentUserDetails.basicInfo.gender = _gender == UserGender.male ? "Male"  : "Female";
+                    }); 
+                    if(locator<UserListBloc>().state is! UserListEmpty){
+                      BlocProvider.of<UserListBloc>(context).add(EditUserEvent(userDetails: userDetailsList));
+                      }
+                    Navigator.of(context).pop();
+                    }, child: const Text("Submit")),)],),),
+                ),
+                ),
                     )  
                   )
                 );
@@ -161,6 +167,19 @@ Widget showEditBasicInfoModal(){
                           hintText: "Enter skills"), onFieldSubmitted: (value){
                           ;},),
                       const SizedBox(height: 30,),                    
+                      Wrap(children: currentUserDetails.skills.map((e) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Wrap(
+                          children: [
+                            const CustomDetailsIcon(ico: Icons.badge,),
+                            const SizedBox(width: 10,),
+                            Padding(
+                              padding: const EdgeInsets.only(top:4.0),
+                              child: Text(e.title!, style: const TextStyle(fontWeight: FontWeight.bold),),
+                              ),
+                          ],
+                        ),
+                      )).toList(),)
                     ],),
                   const SizedBox(height: 30,),
                   Expanded(child: Container()),
@@ -219,6 +238,16 @@ Widget showEditBasicInfoModal(){
                           hintText: "Enter hobbies"), 
                           ),
                       const SizedBox(height: 30,),
+                      Wrap(children: currentUserDetails.hobbies.map((e) => Wrap(
+                        children: [
+                          const CustomDetailsIcon(ico: Icons.music_note),
+                          const SizedBox(width: 10,),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
+                            ),
+                        ],
+                      )).toList(),),
                       Expanded(child: Container()),
                       Align(
                         alignment: Alignment.bottomCenter,
@@ -275,6 +304,22 @@ Widget showEditBasicInfoModal(){
                           labelText: "Enter a Language",
                           border: OutlineInputBorder(borderSide: BorderSide(color: Colors.black, width: 1.0, style: BorderStyle.solid))
                           ),),
+                      const SizedBox(height: 30,),
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        children: currentUserDetails.languages.map((e) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Wrap(
+                          children: [
+                            const CustomDetailsIcon(ico: cupertino.CupertinoIcons.chat_bubble_2_fill),
+                                      const SizedBox(width: 10,),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top:4.0),
+                                        child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
+                                      ),
+                          ],
+                        ),
+                      )).toList(),),
                       Expanded(child: Container()),
                       FilledButton(
                         style: blueFilledButtonStyle,
