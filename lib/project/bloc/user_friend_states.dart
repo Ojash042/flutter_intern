@@ -11,8 +11,7 @@ class UserFriendStates extends Equatable{
   @override
   bool operator ==(Object other) {
     return identical(this, other);
-  } 
-  
+  }  
 }
 
 class UserFriendEmpty extends UserFriendStates{
