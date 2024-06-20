@@ -220,11 +220,7 @@ class _CoursesDetailsPageState extends State<CoursesDetailsPage> with SingleTick
   
   @override
   void initState() {
-    super.initState();
-    tabScrollController.addListener(() {
-      sliverController.jumpTo(tabScrollController.position.pixels -MediaQuery.of(context).size.height / 2);
-    }
-    );
+    super.initState(); 
   }
 
   @override

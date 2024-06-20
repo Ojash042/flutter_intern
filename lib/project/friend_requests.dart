@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_bloc.dart';
 import 'package:flutter_intern/project/bloc/auth_states.dart';
@@ -153,8 +152,7 @@ class _FriendRequestsState extends State<FriendRequests>{
                                 requestedByUsers.add(user);
                                 requestedByUserDetails.add(userDetails);
                                 creationDates.add(item.createdAt);
-                              }
-                        
+                              } 
                             return Column(
                               children: requestedByUserDetails.mapIndexed((index,element) => GestureDetector(
                               onTap: (){
@@ -222,55 +220,6 @@ class _FriendRequestsState extends State<FriendRequests>{
                                             ],
                                           ),
                                         )).toList());
-                            return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: requestedByUsers.length,
-                            itemBuilder: (context, index) => GestureDetector(
-                              onTap: (){
-                                Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
-                                },
-                                child: Expanded(
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.max,
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                    Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        CircleAvatar(backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
-                                        const SizedBox(width: 20,),
-                                        Column(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                          Row(
-                                          mainAxisAlignment: MainAxisAlignment.end,
-                                            children: [
-                                              Container(
-                                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.35),
-                                                child: Text(requestedByUsers.elementAt(index).name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),)),
-                                              Text(
-                                                const ApproximateTimeTransformation(granularity: Granularity.primaryUnit, round: true, isRelativeToNow: true)
-                                                .transform(Duration(microseconds: DateTime.parse(creationDates.elementAt(index)).microsecondsSinceEpoch - DateTime.now().microsecondsSinceEpoch), 'en')
-                                                )],
-                                          ),
-                                          FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!, state.userData!), builder: (context, AsyncSnapshot<Widget> snapshot){
-                                            if(snapshot.connectionState == ConnectionState.waiting){
-                                              return const CircularProgressIndicator();
-                                            }
-                                            else if(snapshot.hasError){
-                                              return Text('${snapshot.error}');
-                                            }
-                                            return snapshot.data ?? Container();
-                                            })
-                                          ], ),
-                                        const Spacer(),
-                                        ],),
-                                            const SizedBox(height: 30,),
-                                              ],
-                                            ),
-                                ),
-                                        ));
                           },
                         ),
                                 ],

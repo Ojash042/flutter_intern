@@ -11,6 +11,7 @@ import 'package:flutter_intern/project/bloc/user_list_states.dart';
 import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
+import 'package:flutter_intern/project/utils.dart';
 import 'package:intl/intl.dart';
 
 class ProfileDetails extends StatefulWidget{
@@ -171,7 +172,7 @@ Widget showEditBasicInfoModal(){
                         padding: const EdgeInsets.all(8.0),
                         child: Wrap(
                           children: [
-                            const CustomDetailsIcon(ico: Icons.badge,),
+                            CustomDetailsIcon(ico: Icons.badge, icoColour: getRndPastelColour(),),
                             const SizedBox(width: 10,),
                             Padding(
                               padding: const EdgeInsets.only(top:4.0),
@@ -240,7 +241,7 @@ Widget showEditBasicInfoModal(){
                       const SizedBox(height: 30,),
                       Wrap(children: currentUserDetails.hobbies.map((e) => Wrap(
                         children: [
-                          const CustomDetailsIcon(ico: Icons.music_note),
+                          CustomDetailsIcon(ico: Icons.music_note, icoColour: getRndPastelColour(),),
                           const SizedBox(width: 10,),
                           Padding(
                             padding: const EdgeInsets.only(top: 4.0),
@@ -311,12 +312,12 @@ Widget showEditBasicInfoModal(){
                         padding: const EdgeInsets.all(8.0),
                         child: Wrap(
                           children: [
-                            const CustomDetailsIcon(ico: cupertino.CupertinoIcons.chat_bubble_2_fill),
-                                      const SizedBox(width: 10,),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top:4.0),
-                                        child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
-                                      ),
+                            CustomDetailsIcon(ico: cupertino.CupertinoIcons.chat_bubble_2_fill, icoColour: getRndPastelColour(),),
+                            const SizedBox(width: 10,),
+                            Padding(
+                              padding: const EdgeInsets.only(top:4.0),
+                              child: Text(e.title, style: const TextStyle(fontWeight: FontWeight.w700),),
+                              ),
                           ],
                         ),
                       )).toList(),),
@@ -378,185 +379,248 @@ Widget showEditBasicInfoModal(){
       child: Scaffold(
           appBar: const ModalAppBar(title: "Edit Education",),
           body: StatefulBuilder(builder: (context, setState) => SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Center(child: Form(child: Column(
-                children: [
-                  ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: levelControllers.length,
-                    shrinkWrap: true,
-                    itemBuilder: (context, index) {
-                      return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const SizedBox(height: 30,),
-                        const Text("Level", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                        const SizedBox(height: 10,),
-                        TextFormField(decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          hintText: "SEE.. , SLC.. etc.",), controller: levelControllers.elementAt(index),),
-                        const SizedBox(height: 30,),
-                        const Text("GPA", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                        const SizedBox(height: 10,),
-                        TextFormField(decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          hintText: "0-4",), controller: summaryControllers.elementAt(index),),
-                        const SizedBox(height: 30,),
-                        const Text("School Name", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                        const SizedBox(height: 10,),
-                        TextFormField(decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          hintText: "Enter organization name"), controller: organizationNameControllers.elementAt(index),),
-                        const SizedBox(height: 30,),
-                        const Text("Joined Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                        const SizedBox(height:10),
-                        TextFormField(decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).startDate == null)? "Enter the starting date here":
-                        DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).startDate!)
-                        ),),
-                        readOnly: true,
-                        onTap: () async{
-                          DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
-                          setState((){
-                            if(pickedDate != null){
-                              currentUserDetails.educations.elementAt(index).startDate = pickedDate;
-                            }
-                          });
-                        },),
-                        const SizedBox(height: 30),
-                        const Text("Finished Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                        const SizedBox(height: 10),
-                        TextFormField(decoration: InputDecoration(
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                          suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).endDate == null)? "Enter the end date here":
-                        DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).endDate!)
-                        ),),
-                        readOnly: true,
-                        onTap: () async{
-                          DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
-                          setState((){
-                            if(pickedDate != null){
-                              currentUserDetails.educations.elementAt(index).endDate = pickedDate;
-                            }
-                          });
-                        },),
-                        const SizedBox(height: 30,),
-                        const Text("Achievement", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),), 
-                        ListView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: achievementTitleControllerMatrix.elementAt(index).length,
-                          itemBuilder: (context, indexJ) => Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                            const SizedBox(height: 20,),
-                            const Text("Title", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+            child: Center(child: Form(child: Column(
+              children: [
+                ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: levelControllers.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) {
+                    return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const SizedBox(height: 10,),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Level", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                            const SizedBox(height: 10,),
                             TextFormField(decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              hintText: "Achievement.."), controller: achievementTitleControllerMatrix.elementAt(index).elementAt(indexJ),),
-                            const SizedBox(height: 20,),
-                            const Text("Description",style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                              hintText: "SEE.. , SLC.. etc.",), controller: levelControllers.elementAt(index),),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10,),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("GPA", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                            const SizedBox(height: 10,),
                             TextFormField(decoration: InputDecoration(
                               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              hintText: "Describe the achievement..."),controller: achievementDescriptionControllerMatrix.elementAt(index).elementAt(indexJ),),
-                            const SizedBox(height: 20,),
-                            const Text("Date of Achievement", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
-                            TextFormField(
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                                suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime == null)? "Enter the starting date here":
-                              DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime!)
-                              ),),
-                              readOnly: true,
-                              onTap: () async{
-                                  DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
-                                  setState((){
-                                  if(pickedDate != null){
-                                      currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime = pickedDate;
-                              }
-                          });
-                        },),
-                      ],)),
-                            const SizedBox(height: 15,),
-                            Align(
-                              alignment: Alignment.center,
-                              child: OutlinedButton.icon(
-                                icon: const Icon(Icons.add),
-                                style: ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
-                                onPressed: () => 
-                                setState((){
-                                  TextEditingController achievementTitleController = TextEditingController();
-                                  TextEditingController achievementDescriptionController = TextEditingController();
-                                  achievementTitleControllerMatrix.elementAt(index).add(achievementTitleController);
-                                  achievementDescriptionControllerMatrix.elementAt(index).add(achievementDescriptionController);
-                                  Accomplishment accomplishment = Accomplishment();
-                                  accomplishment.dateTime = null;
-                                  accomplishment.id = Random().nextInt(10000) +1000;
-                                  currentUserDetails.educations.elementAt(index).accomplishments.add(accomplishment);
-                                }), label: const Text("Add achievements")),
+                              hintText: "0-4",), controller: summaryControllers.elementAt(index),),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10,),
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        color: Colors.white,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("School Name", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                            const SizedBox(height: 10,),
+                            TextFormField(decoration: InputDecoration(
+                              border: OutlineInputBorder(borderSide: const BorderSide(width: 0.1, strokeAlign: BorderSide.strokeAlignOutside),borderRadius: BorderRadius.circular(8)),
+                              hintText: "Enter organization name"), controller: organizationNameControllers.elementAt(index),),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10,),
+                      Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Joined Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                            const SizedBox(height:10),
+                            TextFormField(decoration: InputDecoration(
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.educations.elementAt(index).startDate == null)? "Enter the starting date here":
+                            DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).startDate!)
+                            ),),
+                            readOnly: true,
+                            onTap: () async{
+                              DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
+                              setState((){
+                                if(pickedDate != null){
+                                  currentUserDetails.educations.elementAt(index).startDate = pickedDate;
+                                }
+                              });
+                            },),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Container(
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text("Finished Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),), const SizedBox(height: 10), TextFormField(decoration: InputDecoration( border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.educations.elementAt(index).endDate == null)? "Enter the end date here": DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).endDate!)),),
+                            readOnly: true,
+                            onTap: () async{
+                              DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
+                              setState((){
+                                if(pickedDate != null){
+                                  currentUserDetails.educations.elementAt(index).endDate = pickedDate;
+                                }
+                              });
+                            },),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 10,),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        color: Colors.white, width: MediaQuery.of(context).size.width ,child: const Text("Achievement", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),)), 
+                      ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: achievementTitleControllerMatrix.elementAt(index).length,
+                        itemBuilder: (context, indexJ) => Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                          Container(
+                          color: Colors.white,
+                          padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 20,),
+                                const Text("Title", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                                TextFormField(decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  hintText: "Achievement.."), controller: achievementTitleControllerMatrix.elementAt(index).elementAt(indexJ),),
+                              ],
                             ),
-                      ],
-                     );
-                    }),
-                    const SizedBox(height: 15,),
-                    FilledButton.icon(
-                    icon: const Icon(Icons.add),
-                    style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.8 ))), //ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
-                     label: const Text("Add More Education"),
-                      onPressed: () =>
-                      setState((){
-                        TextEditingController levelController = TextEditingController();
-                        TextEditingController summaryController = TextEditingController();
-                        TextEditingController organizationController = TextEditingController();
-                        
-                        levelControllers.add(levelController);
-                        summaryControllers.add(summaryController);
-                        organizationNameControllers.add(organizationController);
-                        
-                        Education education = Education();
-                        education.id = Random().nextInt(10000)+1000;
-    
-                        education.endDate =null;
-                        education.startDate = null;
-                        education.organizationName = "";
-                        education.level = "";
-                        education.summary ="";
-                        List<Accomplishment> accomplishment = List.empty(growable: true);
-                        education.accomplishments = accomplishment;
-                        achievementTitleControllerMatrix.add([]);
-                        achievementDescriptionControllerMatrix.add([]);
-                        currentUserDetails.educations.add(education);
-                        WidgetsBinding.instance.addPostFrameCallback((_) => setState((){}));
-                      })
-                    ,),
-                  const SizedBox(height: 30,),
+                          ),
+                          const SizedBox(height: 10,),
+                          Container(
+                            color: Colors.white,
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("Description",style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                                TextFormField(decoration: InputDecoration(
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                  hintText: "Describe the achievement..."),controller: achievementDescriptionControllerMatrix.elementAt(index).elementAt(indexJ),),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10,),
+                          Container(
+                          color: Colors.white,
+                            padding: const EdgeInsets.all(14),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("Date of Achievement", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                                TextFormField(
+                                  decoration: InputDecoration(
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime == null)? "Enter the starting date here":
+                                  DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime!)
+                                  ),),
+                                  readOnly: true,
+                                  onTap: () async{
+                                      DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
+                                      setState((){
+                                      if(pickedDate != null){
+                                          currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime = pickedDate;
+                                  }});},),
+                              ],
+                            ),
+                          ),
+                    ],)),
+                          const SizedBox(height: 15,),
+                          Align(
+                            alignment: Alignment.center,
+                            child: OutlinedButton.icon(
+                              icon: const Icon(Icons.add),
+                              style: ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
+                              onPressed: () => 
+                              setState((){
+                                TextEditingController achievementTitleController = TextEditingController();
+                                TextEditingController achievementDescriptionController = TextEditingController();
+                                achievementTitleControllerMatrix.elementAt(index).add(achievementTitleController);
+                                achievementDescriptionControllerMatrix.elementAt(index).add(achievementDescriptionController);
+                                Accomplishment accomplishment = Accomplishment();
+                                accomplishment.dateTime = null;
+                                accomplishment.id = Random().nextInt(10000) +1000;
+                                currentUserDetails.educations.elementAt(index).accomplishments.add(accomplishment);
+                              }), label: const Text("Add achievements")),
+                          ),
+                    ],
+                   );
+                  }),
+                  const SizedBox(height: 15,),
                   FilledButton.icon(
-                    icon: const Icon(Icons.send),
-                    style: blueFilledButtonStyle,
-                    onPressed: (){
+                  icon: const Icon(Icons.add),
+                  style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.8 ))), //ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
+                   label: const Text("Add More Education"),
+                    onPressed: () =>
                     setState((){
-                      for(int i=0; i<currentUser.educations.length; i++){
-                        currentUser.educations.elementAt(i).level = levelControllers.elementAt(i).text;
-                        currentUser.educations.elementAt(i).organizationName = organizationNameControllers.elementAt(i).text;
-                        currentUser.educations.elementAt(i).summary = summaryControllers.elementAt(i).text;
-                        for(int j=0; j<currentUser.educations.elementAt(i).accomplishments.length; j++){
-                          currentUser.educations.elementAt(i).accomplishments.elementAt(j).title = achievementTitleControllerMatrix.elementAt(i).elementAt(j).text;
-                          currentUser.educations.elementAt(i).accomplishments.elementAt(j).description = achievementDescriptionControllerMatrix.elementAt(i).elementAt(j).text;
-                        }
+                      TextEditingController levelController = TextEditingController();
+                      TextEditingController summaryController = TextEditingController();
+                      TextEditingController organizationController = TextEditingController();
+                      
+                      levelControllers.add(levelController);
+                      summaryControllers.add(summaryController);
+                      organizationNameControllers.add(organizationController);
+                      
+                      Education education = Education();
+                      education.id = Random().nextInt(10000)+1000;
+              
+                      education.endDate =null;
+                      education.startDate = null;
+                      education.organizationName = "";
+                      education.level = "";
+                      education.summary ="";
+                      List<Accomplishment> accomplishment = List.empty(growable: true);
+                      education.accomplishments = accomplishment;
+                      achievementTitleControllerMatrix.add([]);
+                      achievementDescriptionControllerMatrix.add([]);
+                      currentUserDetails.educations.add(education);
+                      WidgetsBinding.instance.addPostFrameCallback((_) => setState((){}));
+                    })
+                  ,),
+                const SizedBox(height: 30,),
+                FilledButton.icon(
+                  icon: const Icon(Icons.send),
+                  style: blueFilledButtonStyle,
+                  onPressed: (){
+                  setState((){
+                    for(int i=0; i<currentUser.educations.length; i++){
+                      currentUser.educations.elementAt(i).level = levelControllers.elementAt(i).text;
+                      currentUser.educations.elementAt(i).organizationName = organizationNameControllers.elementAt(i).text;
+                      currentUser.educations.elementAt(i).summary = summaryControllers.elementAt(i).text;
+                      for(int j=0; j<currentUser.educations.elementAt(i).accomplishments.length; j++){
+                        currentUser.educations.elementAt(i).accomplishments.elementAt(j).title = achievementTitleControllerMatrix.elementAt(i).elementAt(j).text;
+                        currentUser.educations.elementAt(i).accomplishments.elementAt(j).description = achievementDescriptionControllerMatrix.elementAt(i).elementAt(j).text;
                       }
-                    });
-                    if(locator<UserListBloc>().state is! UserListEmpty){
-                      locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
-                      }
-                    //saveData(userDetailsList);
-                    Navigator.of(context).pop();
-                  }, label: const Text("Submit")),
-                ],
-              ),),),
-            ),
+                    }
+                  });
+                  if(locator<UserListBloc>().state is! UserListEmpty){
+                    locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                    }
+                  //saveData(userDetailsList);
+                  Navigator.of(context).pop();
+                }, label: const Text("Submit")),
+              ],
+            ),),),
           )),),
     );
   }
@@ -604,7 +668,7 @@ Widget showEditBasicInfoModal(){
                       TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "ABC Organization LLC..."), controller: organizationController.elementAt(index),),
                       const SizedBox(height: 30,),
                       const Text("Date Joined", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.workExperiences.elementAt(index).startDate == null)? "Enter the starting date here":
+                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.workExperiences.elementAt(index).startDate == null)? "Enter the starting date here":
                       DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).startDate!)
                       ),),
                       readOnly: true,
@@ -618,7 +682,7 @@ Widget showEditBasicInfoModal(){
                       },),
                       const SizedBox(height: 30,),
                       const Text("Finished Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.workExperiences.elementAt(index).endDate == null)? "Enter the end date here":
+                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.workExperiences.elementAt(index).endDate == null)? "Enter the end date here":
                       DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).endDate!)
                       ),),
                       readOnly: true,
@@ -692,7 +756,8 @@ Widget showEditBasicInfoModal(){
       socialMediaTitleController.elementAt(i).text = currentUserDetails.contactInfo.socialMedias.elementAt(i).title;      
       socialMediaUrlController.elementAt(i).text = currentUserDetails.contactInfo.socialMedias.elementAt(i).url;
       socialMediaTypeController.elementAt(i).text = currentUserDetails.contactInfo.socialMedias.elementAt(i).type;
-    }
+    } 
+
 
     return BlocProvider.value(
       value: locator<UserListBloc>(),
@@ -706,7 +771,6 @@ Widget showEditBasicInfoModal(){
                Form(child:Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  //Text("Contact Info", style: Theme.of(context).textTheme.headlineMedium,),
                   const Text("Mobile No.", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                   TextFormField(
                     decoration: const InputDecoration(
@@ -791,6 +855,8 @@ Widget showEditBasicInfoModal(){
         ),
     );
   }
+
+ 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthBloc, AuthStates>( 
@@ -833,7 +899,7 @@ Widget showEditBasicInfoModal(){
                           ],
                           ), 
                           const SizedBox(height: 15,),
-                          Row(children: [const CustomDetailsIcon(ico: Icons.text_snippet_outlined), const SizedBox(width: 10,), 
+                          Row(children: [const CustomDetailsIcon(ico: Icons.text_snippet_outlined, icoColour: Color.fromARGB(255, 255, 104, 94),), const SizedBox(width: 10,), 
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -842,7 +908,7 @@ Widget showEditBasicInfoModal(){
                             ],
                           )],),
                           const SizedBox(height: 15,),
-                          Row(children: [const CustomDetailsIcon(ico: Icons.person),const SizedBox(width: 10,), 
+                          Row(children: [const CustomDetailsIcon(ico: Icons.person, icoColour: Colors.lightBlueAccent,),const SizedBox(width: 10,), 
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -851,7 +917,7 @@ Widget showEditBasicInfoModal(){
                             ],
                           )],),
                         const SizedBox(height: 15,),
-                        Row(children: [const CustomDetailsIcon(ico: Icons.cake), const SizedBox(width: 10,), 
+                        Row(children: [const CustomDetailsIcon(ico: Icons.cake, icoColour: Colors.lightGreen,), const SizedBox(width: 10,), 
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -889,7 +955,9 @@ Widget showEditBasicInfoModal(){
                                 children: currentUserDetails!.skills.map((e) => Padding(padding: const EdgeInsets.all(8), child: Wrap(
                                   direction: Axis.horizontal,
                                   children: [
-                                    const CustomDetailsIcon(ico: Icons.badge,),
+                                    CustomDetailsIcon(ico: Icons.badge, 
+                                    icoColour: getRndPastelColour(),
+                                    ),
                                     const SizedBox(width: 10,),
                                     Padding(
                                       padding: const EdgeInsets.only(top:4.0),
@@ -926,7 +994,10 @@ Widget showEditBasicInfoModal(){
                                       child: Wrap(
                                         direction: Axis.horizontal,
                                         children: [
-                                          const CustomDetailsIcon(ico: Icons.music_note),
+                                          CustomDetailsIcon(ico: Icons.music_note, 
+                                          //icoColour: HSLColor.fromAHSL(1, Random().nextInt(12).toDouble() * 28, (Random().nextInt(20)+50) /100, (Random().nextInt(40) + 40) / 100).toColor(),
+                                          icoColour: getRndPastelColour(),
+                                          ),
                                           const SizedBox(width: 10,),
                                           Padding(
                                             padding: const EdgeInsets.only(top: 4.0),
@@ -959,7 +1030,10 @@ Widget showEditBasicInfoModal(){
                                 padding: const EdgeInsets.all(8),
                                 child: Wrap(
                                   children: [
-                                    const CustomDetailsIcon(ico: cupertino.CupertinoIcons.chat_bubble_2_fill),
+                                    CustomDetailsIcon(ico: cupertino.CupertinoIcons.chat_bubble_2_fill, 
+                                    //icoColour: HSLColor.fromAHSL(1, Random().nextInt(12).toDouble() * 28, (Random().nextInt(20)+50) /100, (Random().nextInt(40) + 40) / 100).toColor(),
+                                    icoColour: getRndPastelColour(),
+                                    ),
                                     const SizedBox(width: 10,),
                                     Padding(
                                       padding: const EdgeInsets.only(top:4.0),
@@ -998,7 +1072,12 @@ Widget showEditBasicInfoModal(){
                             children: currentUserDetails!.educations.map((e) => Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                              Row(children: [const CustomDetailsIcon(ico: Icons.school), const SizedBox(width: 10,),const Text("Went To "), Text(e.organizationName, style: const TextStyle(fontWeight: FontWeight.bold),)],),
+                              Row(children: [
+                                CustomDetailsIcon(ico: Icons.school, 
+                                icoColour: getRndPastelColour(),
+                                //icoColour: HSLColor.fromAHSL(1, Random().nextInt(12).toDouble() * 28, (Random().nextInt(50)+30) /100, (Random().nextInt(20) + 70) / 100).toColor(),
+                                ), const SizedBox(width: 10,),const Text("Went To "), 
+                                Text(e.organizationName, style: const TextStyle(fontWeight: FontWeight.bold),)],),
                               const SizedBox(height: 5,),
                               ],)).toList()
                               
@@ -1037,7 +1116,7 @@ Widget showEditBasicInfoModal(){
                                   children: [
                                   Row(
                                     children: [
-                                      const CustomDetailsIcon(ico: Icons.work),
+                                      CustomDetailsIcon(ico: Icons.work, icoColour: getRndPastelColour(),),
                                       const SizedBox(width: 10,),
                                       const Text("Worked as "),
                                       Text(e.jobTitle, style: const TextStyle(fontWeight: FontWeight.bold),),
@@ -1072,7 +1151,7 @@ Widget showEditBasicInfoModal(){
                             ],
                           ),
                           const SizedBox(height: 15,),
-                           Row(children: [const CustomDetailsIcon(ico: Icons.phone_iphone), const  SizedBox(width: 10,),Column(
+                           Row(children: [CustomDetailsIcon(ico: Icons.phone_iphone, icoColour: getRndPastelColour(),), const  SizedBox(width: 10,),Column(
                              crossAxisAlignment: CrossAxisAlignment.start,
                              children: [
                                Text(currentUserDetails!.contactInfo.mobileNo!, style: const TextStyle(fontWeight: FontWeight.w700),),
@@ -1106,13 +1185,15 @@ Widget showEditBasicInfoModal(){
 
 class CustomDetailsIcon extends StatelessWidget {
   final IconData ico;
+  final Color icoColour;
   const CustomDetailsIcon({
     super.key,
-    required this.ico
+    required this.ico,
+    this.icoColour = Colors.grey,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(width: 30, height:30, decoration: BoxDecoration(color: Colors.blueGrey[100], shape: BoxShape.circle), child: Center(child: Icon(ico, color: Colors.black,)),);
+    return Container(width: 30, height:30, decoration: const BoxDecoration(color: Colors.white24, shape: BoxShape.circle), child: Center(child: Icon(ico, color: icoColour,)),);
   }
 }
