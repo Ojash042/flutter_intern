@@ -10,7 +10,6 @@ class UserFriendStates extends Equatable{
 
   @override
   bool operator ==(Object other) {
-    print(identical(this, other));
     return identical(this, other);
   } 
   

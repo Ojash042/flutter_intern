@@ -32,3 +32,10 @@ class UserFriendAcceptRequestEvent extends UserFriendEvents{
   
   const UserFriendAcceptRequestEvent({required this.friendId, required this.userId});
 }
+
+class UserFriendRejectRequestEvent extends UserFriendEvents{
+  final int friendId;
+  final int userId;
+ 
+  const UserFriendRejectRequestEvent({required this.friendId, required this.userId});
+}

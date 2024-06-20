@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_intern/project/friend_service_provider.dart' as fService
 import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
+import 'package:humanizer/humanizer.dart';
 
 class FriendRequests extends StatefulWidget{
   const FriendRequests({super.key});
@@ -28,6 +30,7 @@ class _FriendRequestsState extends State<FriendRequests>{
   List<UserData> requestedByUsers = List.empty(growable: true);
   List<UserDetails> requestedByUserDetails = List.empty(growable: true);
   List<UserData> userDataList =List.empty(growable: true);
+  List<String> creationDates = List.empty(growable: true);
 
   final GlobalKey<ScaffoldState> _scaffoldKey  = GlobalKey();
 
@@ -94,7 +97,7 @@ class _FriendRequestsState extends State<FriendRequests>{
     }
     return OutlinedButton(
       style:const ButtonStyle(
-        shape: WidgetStatePropertyAll(RoundedRectangleBorder(side: BorderSide(), borderRadius: BorderRadius.all(Radius.circular(12)))),
+        shape: WidgetStatePropertyAll(RoundedRectangleBorder(side: BorderSide(), borderRadius: BorderRadius.all(Radius.circular(0)))),
         backgroundColor: WidgetStatePropertyAll(Colors.blue),side: WidgetStatePropertyAll(BorderSide(
           width: 2, color: Colors.white, style: BorderStyle.solid))),
       onPressed: (){onPressed(); setState(() {
@@ -130,11 +133,11 @@ class _FriendRequestsState extends State<FriendRequests>{
                   child: userDataList.length < minUser ? Text(userDataList.length.toString()): Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Center(child: Text("Requests", style: Theme.of(context).textTheme.headlineSmall,)),
+                        const Text("Requests", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
                         const SizedBox(height: 30,),
-                        Padding(padding: const EdgeInsets.all(12),
-                        child: BlocBuilder<UserFriendBloc, UserFriendStates>(
+                        BlocBuilder<UserFriendBloc, UserFriendStates>(
                           builder:(context,userFriendState) {
                             if(userFriendState is UserFriendEmpty){
                               return const Scaffold(appBar: CommonAppBar(), body: Center(child: CircularProgressIndicator(),));
@@ -149,7 +152,76 @@ class _FriendRequestsState extends State<FriendRequests>{
                                 var userDetails = locator<UserListBloc>().state.userDetailsList!.firstWhere((element) => element.id == user.id); 
                                 requestedByUsers.add(user);
                                 requestedByUserDetails.add(userDetails);
+                                creationDates.add(item.createdAt);
                               }
+                        
+                            return Column(
+                              children: requestedByUserDetails.mapIndexed((index,element) => GestureDetector(
+                              onTap: (){
+                                Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
+                                },
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.max,
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                  Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      CircleAvatar(
+                                        minRadius: 40,
+                                        backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
+                                      const SizedBox(width: 5,),
+                                      Flexible(
+                                      flex: 5,
+                                        fit: FlexFit.loose,
+                                        child: Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                          Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(requestedByUsers.elementAt(index).name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                                              Flexible(
+                                                fit: FlexFit.loose,
+                                                child: Text(
+                                                  maxLines: 1,
+                                                  const ApproximateTimeTransformation(granularity: Granularity.primaryUnit, round: true, isRelativeToNow: true)
+                                                  .transform(Duration(microseconds: DateTime.parse(creationDates.elementAt(index)).microsecondsSinceEpoch - DateTime.now().microsecondsSinceEpoch), 'en')
+                                                  ),
+                                              )],
+                                          ),
+                                          Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                            children: [
+                                              FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!, state.userData!), builder: (context, AsyncSnapshot<Widget> snapshot){
+                                                if(snapshot.connectionState == ConnectionState.waiting){
+                                                  return const CircularProgressIndicator();
+                                                }
+                                                else if(snapshot.hasError){
+                                                  return Text('${snapshot.error}');
+                                                }
+                                                return snapshot.data ?? Container();
+                                                }),
+                                              Flexible(
+                                                fit: FlexFit.loose,
+                                                child: FilledButton(
+                                                  style: ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.grey[400]), shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)))),
+                                                  onPressed: (){
+                                                    int friendId = requestedByUserDetails.elementAt(index).id!;
+                                                    int userId = context.read<AuthBloc>().state.userData!.id;
+                                                    locator<UserFriendBloc>().add(UserFriendRejectRequestEvent(friendId: friendId, userId: userId));
+                                                  }, child: const Text("Remove")),
+                                              ),
+                                            ],
+                                          )
+                                          ], ),
+                                      ),
+                                      ],),
+                                          const SizedBox(height: 30,),
+                                            ],
+                                          ),
+                                        )).toList());
                             return ListView.builder(
                             shrinkWrap: true,
                             itemCount: requestedByUsers.length,
@@ -157,30 +229,50 @@ class _FriendRequestsState extends State<FriendRequests>{
                               onTap: (){
                                 Navigator.of(context).pushNamed('/profileInfo/${requestedByUsers.elementAt(index).id}');
                                 },
-                                child: Column(children: [
-                                  Row(
+                                child: Expanded(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.max,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      CircleAvatar(backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
-                                      const SizedBox(width: 20,),
-                                      Column(children: [Text(requestedByUsers.elementAt(index).name),],),
-                                      const Spacer(),
-                                      FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!, state.userData!), builder: (context, AsyncSnapshot<Widget> snapshot){
-                                        if(snapshot.connectionState == ConnectionState.waiting){
-                                          return const CircularProgressIndicator();
-                                          }
-                                          else if(snapshot.hasError){
-                                            return Text('${snapshot.error}');
-                                          }
-                                          return snapshot.data ?? Container();
-                                          })
-                                          ],),
-                                          const SizedBox(height: 30,),
-                                            ],
+                                    Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        CircleAvatar(backgroundImage: FileImage(File(requestedByUserDetails.elementAt(index).basicInfo.profileImage.imagePath)),),
+                                        const SizedBox(width: 20,),
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                          Row(
+                                          mainAxisAlignment: MainAxisAlignment.end,
+                                            children: [
+                                              Container(
+                                                constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.35),
+                                                child: Text(requestedByUsers.elementAt(index).name, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),)),
+                                              Text(
+                                                const ApproximateTimeTransformation(granularity: Granularity.primaryUnit, round: true, isRelativeToNow: true)
+                                                .transform(Duration(microseconds: DateTime.parse(creationDates.elementAt(index)).microsecondsSinceEpoch - DateTime.now().microsecondsSinceEpoch), 'en')
+                                                )],
                                           ),
+                                          FutureBuilder(future: getFriendStateWidget(requestedByUserDetails.elementAt(index).id!, state.userData!), builder: (context, AsyncSnapshot<Widget> snapshot){
+                                            if(snapshot.connectionState == ConnectionState.waiting){
+                                              return const CircularProgressIndicator();
+                                            }
+                                            else if(snapshot.hasError){
+                                              return Text('${snapshot.error}');
+                                            }
+                                            return snapshot.data ?? Container();
+                                            })
+                                          ], ),
+                                        const Spacer(),
+                                        ],),
+                                            const SizedBox(height: 30,),
+                                              ],
+                                            ),
+                                ),
                                         ));
                           },
                         ),
-                                  ),
                                 ],
                               ),
                   ),

@@ -13,6 +13,7 @@ class UserFriendBloc extends Bloc<UserFriendEvents, UserFriendStates>{
     on<UserAddFriendEvent>((event,emit) => _addUserFriend(event,emit));
     on<UserFriendRemoveEvent>((event, emit) => _removeUserFriend(event, emit));
     on<UserFriendAcceptRequestEvent>((event, emit) => _acceptRequest(event, emit));
+    on<UserFriendRejectRequestEvent>((event, emit) => _rejectRequest(event, emit),);
   }
   
   void _fetchUserFriend(UserFriendEvents event, Emitter<UserFriendStates> emit) async{
@@ -83,7 +84,25 @@ class UserFriendBloc extends Bloc<UserFriendEvents, UserFriendStates>{
     userFriend.hasNewRequest = false;
     userFriend.hasNewRequestAccepted = true; 
 
-    print(userFriendList);
+    String editedJson = jsonEncode(userFriendList.map((e) => e.toJson()).toList());
+    sharedPreferences.setString("user_friend", editedJson);
+    emit(UserFriendStates(userFriends: userFriendList));
+  }
+  
+  void _rejectRequest(UserFriendRejectRequestEvent event, Emitter<UserFriendStates> emit) async{
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    String? userFriendJson = sharedPreferences.getString("user_friend");
+    Iterable decoder = jsonDecode(userFriendJson!);
+    List<UserFriend> userFriendList = decoder.map((e) => UserFriend.fromJson(e)).toList();
+    var userFriend = userFriendList.firstWhere((element) => element.userListId>0 && 
+    (element.friendId == event.friendId || element.userId == event.friendId) 
+    && (element.friendId == event.userId || element.userId == event.userId ) && (element.hasNewRequest == true));
+        
+    userFriend.hasNewRequest = false;
+    userFriend.hasNewRequestAccepted = true;
+    userFriend.userId = -1;
+    userFriend.friendId = -1;
+
     String editedJson = jsonEncode(userFriendList.map((e) => e.toJson()).toList());
     sharedPreferences.setString("user_friend", editedJson);
     emit(UserFriendStates(userFriends: userFriendList));
