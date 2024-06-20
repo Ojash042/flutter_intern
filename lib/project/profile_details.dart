@@ -15,14 +15,15 @@ import 'package:flutter_intern/project/utils.dart';
 import 'package:intl/intl.dart';
 
 class ProfileDetails extends StatefulWidget{
+  const ProfileDetails({super.key});
+
   @override
   State<ProfileDetails> createState() {
     return _ProfileDetailsState();
   }
 }
+
 enum UserGender{male, female}
-
-
 
 class _ProfileDetailsState extends  State<ProfileDetails>{
 
@@ -41,7 +42,6 @@ void saveData(List<UserDetails> userDetailsList) async{
 @override
   void dispose() {
     super.dispose();
-    // closeUserPostLocator();
   }
 
   @override
@@ -199,7 +199,6 @@ Widget showEditBasicInfoModal(){
                           if(locator<UserListBloc>().state is! UserListEmpty){
                             locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
                             }
-                    // saveData(userDetailsList);
                     Navigator.of(context).pop();
                   }, child: const Text("Submit")),
                 ],
@@ -361,7 +360,6 @@ Widget showEditBasicInfoModal(){
 
     List<List<TextEditingController>> achievementTitleControllerMatrix = List.generate(currentUser.educations.length, (index) => List.generate(currentUser.educations.elementAt(index).accomplishments.length, (i) => TextEditingController()));
     List<List<TextEditingController>> achievementDescriptionControllerMatrix = List.generate(currentUser.educations.length, (index) => List.generate(currentUser.educations.elementAt(index).accomplishments.length, (i) => TextEditingController()));
-
 
     for(int i=0; i<currentUser.educations.length; i++){
       levelControllers.elementAt(i).text = currentUserDetails.educations.elementAt(i).level;
@@ -646,97 +644,140 @@ Widget showEditBasicInfoModal(){
           appBar: const ModalAppBar(title: "Edit Workplace Details",),
           body: StatefulBuilder(builder: (context, setState) => 
           SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(14.0),
-              child: Center(child: Form(child: Column(
-                children: [
-                  ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: jobTitleController.length,
-                    itemBuilder: (context, index) => 
-                    Column(
+            child: Center(child: Form(child: Column(
+              children: [
+                ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: jobTitleController.length,
+                  itemBuilder: (context, index) => 
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Job Title", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                          TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "Doctor"), controller: jobTitleController.elementAt(index),),
+                        ],
+                      ),
+                    ),
+            
+                    const SizedBox(height: 10,),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      color: Colors.white,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Summary", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                          TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "Work done "), controller: summaryController.elementAt(index),),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10,),
+                    Container(
+                    padding: const EdgeInsets.all(14),
+                    color: Colors.white,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Organization Name", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                          TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "ABC Organization LLC..."), controller: organizationController.elementAt(index),),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10,),
+                    Container(
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Date Joined", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                          TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.workExperiences.elementAt(index).startDate == null)? "Enter the starting date here":
+                          DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).startDate!)
+                          ),),
+                          readOnly: true,
+                          onTap: () async{
+                            DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
+                            setState((){
+                              if(pickedDate != null){
+                                currentUserDetails.workExperiences.elementAt(index).startDate = pickedDate;
+                              }
+                            });
+                          },),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10,),
+                    Container(
+                    padding: const EdgeInsets.all(14),
+                    color: Colors.white,
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                      const Text("Job Title", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "Doctor"), controller: jobTitleController.elementAt(index),),
-                      const SizedBox(height: 30,),
-                      const Text("Summary", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "Work done "), controller: summaryController.elementAt(index),),
-                      const SizedBox(height: 30,),
-                      const Text("Organization Name", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "ABC Organization LLC..."), controller: organizationController.elementAt(index),),
-                      const SizedBox(height: 30,),
-                      const Text("Date Joined", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.workExperiences.elementAt(index).startDate == null)? "Enter the starting date here":
-                      DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).startDate!)
-                      ),),
-                      readOnly: true,
-                      onTap: () async{
-                        DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
-                        setState((){
-                          if(pickedDate != null){
-                            currentUserDetails.workExperiences.elementAt(index).startDate = pickedDate;
-                          }
-                        });
-                      },),
-                      const SizedBox(height: 30,),
-                      const Text("Finished Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.workExperiences.elementAt(index).endDate == null)? "Enter the end date here":
-                      DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).endDate!)
-                      ),),
-                      readOnly: true,
-                      onTap: () async{
-                        DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
-                        setState((){
-                          if(pickedDate != null){
-                            currentUserDetails.workExperiences.elementAt(index).endDate = pickedDate;
-                          }
-                        });
-                      },),
-                      const SizedBox(height: 30,)
-                      ],)
-                    ,),
-                    OutlinedButton.icon(
-                      style: ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
-                      icon: const Icon(Icons.add),
-                      onPressed: (){
-                      setState((){
-                        TextEditingController jobTitleControls = TextEditingController();
-                        TextEditingController summaryControls = TextEditingController();
-                        TextEditingController organizationContols = TextEditingController();
-              
-                        jobTitleController.add(jobTitleControls);
-                        summaryController.add(summaryControls);
-                        organizationController.add(organizationContols);
-                        
-                        WorkExperiences workExperience = WorkExperiences();
-                        workExperience.startDate = null;
-                        workExperience.endDate = null;
-                        workExperience.id = Random().nextInt(10000) + 1000;
-                        currentUserDetails.workExperiences.add(workExperience);
-                      });  
-                    }, label: const Text("Add More")),
-                  const SizedBox(height: 15,),
-                  FilledButton.icon(
-                    style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.8))),
-                    icon: const Icon(Icons.send),
+                        children: [
+                          const Text("Finished Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                          TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month, color: Colors.lightGreen,), label: Text((currentUserDetails.workExperiences.elementAt(index).endDate == null)? "Enter the end date here":
+                          DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).endDate!)
+                          ),),
+                          readOnly: true,
+                          onTap: () async{
+                            DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(1970), lastDate: DateTime(2030), initialDate: DateTime.now());
+                            setState((){
+                              if(pickedDate != null){
+                                currentUserDetails.workExperiences.elementAt(index).endDate = pickedDate;
+                              }
+                            });
+                          },),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 30,)
+                    ],)
+                  ,),
+                  OutlinedButton.icon(
+                    style: ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
+                    icon: const Icon(Icons.add),
                     onPressed: (){
-                    for(int index = 0; index < currentUserDetails.workExperiences.length; index++){
-                      currentUserDetails.workExperiences.elementAt(index).jobTitle = jobTitleController.elementAt(index).text;
-                      currentUserDetails.workExperiences.elementAt(index).summary = summaryController.elementAt(index).text;
-                      currentUserDetails.workExperiences.elementAt(index).organizationName = organizationController.elementAt(index).text;
-                    } 
-                    if(locator<UserListBloc>().state is! UserListEmpty){
-                      locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
-                      }
-                    //saveData(userDetailsList); 
-                    Navigator.of(context).pop();
-                  }, 
-                  label: const Text("Submit")),
-                ],
-              ),),),
-            ),),),
+                    setState((){
+                      TextEditingController jobTitleControls = TextEditingController();
+                      TextEditingController summaryControls = TextEditingController();
+                      TextEditingController organizationContols = TextEditingController();
+            
+                      jobTitleController.add(jobTitleControls);
+                      summaryController.add(summaryControls);
+                      organizationController.add(organizationContols);
+                      
+                      WorkExperiences workExperience = WorkExperiences();
+                      workExperience.startDate = null;
+                      workExperience.endDate = null;
+                      workExperience.id = Random().nextInt(10000) + 1000;
+                      currentUserDetails.workExperiences.add(workExperience);
+                    });  
+                  }, label: const Text("Add More")),
+                const SizedBox(height: 15,),
+                FilledButton.icon(
+                  style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.8))),
+                  icon: const Icon(Icons.send),
+                  onPressed: (){
+                  for(int index = 0; index < currentUserDetails.workExperiences.length; index++){
+                    currentUserDetails.workExperiences.elementAt(index).jobTitle = jobTitleController.elementAt(index).text;
+                    currentUserDetails.workExperiences.elementAt(index).summary = summaryController.elementAt(index).text;
+                    currentUserDetails.workExperiences.elementAt(index).organizationName = organizationController.elementAt(index).text;
+                  } 
+                  if(locator<UserListBloc>().state is! UserListEmpty){
+                    locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                    }
+                  //saveData(userDetailsList); 
+                  Navigator.of(context).pop();
+                }, 
+                label: const Text("Submit")),
+              ],
+            ),),),),),
         ),
     );
   }

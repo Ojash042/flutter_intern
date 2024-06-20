@@ -13,7 +13,6 @@ import 'package:flutter_intern/project/bloc/user_post_bloc.dart';
 import 'package:flutter_intern/project/bloc/user_post_event.dart';
 import 'package:flutter_intern/project/bloc/user_post_states.dart';
 import 'package:flutter_intern/project/utils.dart';
-import 'package:flutter_intern/project/locator.dart';
 import 'package:flutter_intern/project/misc.dart';
 import 'package:flutter_intern/project/models.dart';
 import 'package:flutter_intern/project/technical_models.dart' as TModels;
