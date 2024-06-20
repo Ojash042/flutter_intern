@@ -382,24 +382,39 @@ Widget showEditBasicInfoModal(){
               padding: const EdgeInsets.all(14.0),
               child: Center(child: Form(child: Column(
                 children: [
-                  const SizedBox(height: 30,),
-                  Text("Educational History", style: Theme.of(context).textTheme.headlineSmall,),
-                  const SizedBox(height: 30,),
                   ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
                     itemCount: levelControllers.length,
                     shrinkWrap: true,
-                    itemBuilder: (context, index) =>
-                     Column(
+                    itemBuilder: (context, index) {
+                      return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         const SizedBox(height: 30,),
-                        TextFormField(decoration: const InputDecoration(hintText: "Enter level",), controller: levelControllers.elementAt(index),),
+                        const Text("Level", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                        const SizedBox(height: 10,),
+                        TextFormField(decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          hintText: "SEE.. , SLC.. etc.",), controller: levelControllers.elementAt(index),),
                         const SizedBox(height: 30,),
-                        TextFormField(decoration: const InputDecoration(hintText: "Enter summary",), controller: summaryControllers.elementAt(index),),
+                        const Text("GPA", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                        const SizedBox(height: 10,),
+                        TextFormField(decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          hintText: "0-4",), controller: summaryControllers.elementAt(index),),
                         const SizedBox(height: 30,),
-                        TextFormField(decoration: const InputDecoration(hintText: "Enter organization name"), controller: organizationNameControllers.elementAt(index),),
+                        const Text("School Name", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                        const SizedBox(height: 10,),
+                        TextFormField(decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          hintText: "Enter organization name"), controller: organizationNameControllers.elementAt(index),),
                         const SizedBox(height: 30,),
-                        TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).startDate == null)? "Enter the starting date here":
+                        const Text("Joined Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                        const SizedBox(height:10),
+                        TextFormField(decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).startDate == null)? "Enter the starting date here":
                         DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).startDate!)
                         ),),
                         readOnly: true,
@@ -411,7 +426,12 @@ Widget showEditBasicInfoModal(){
                             }
                           });
                         },),
-                        TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).endDate == null)? "Enter the end date here":
+                        const SizedBox(height: 30),
+                        const Text("Finished Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                        const SizedBox(height: 10),
+                        TextFormField(decoration: InputDecoration(
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).endDate == null)? "Enter the end date here":
                         DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).endDate!)
                         ),),
                         readOnly: true,
@@ -423,20 +443,31 @@ Widget showEditBasicInfoModal(){
                             }
                           });
                         },),
-                        const SizedBox(height: 10,),
-                        Text("Achievement", style: Theme.of(context).textTheme.headlineSmall,), 
-                        const SizedBox(height: 10,),
+                        const SizedBox(height: 30,),
+                        const Text("Achievement", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),), 
                         ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: achievementTitleControllerMatrix.elementAt(index).length,
-                          itemBuilder: (context, indexJ) => Column(children: [
-                            const SizedBox(height: 10,),
-                            TextFormField(decoration: const InputDecoration(hintText: "Achievement Title"), controller: achievementTitleControllerMatrix.elementAt(index).elementAt(indexJ),),
-                            const SizedBox(height: 10,),
-                            TextFormField(decoration: const InputDecoration(hintText: "Achievement Description"),controller: achievementDescriptionControllerMatrix.elementAt(index).elementAt(indexJ),),
-                            const SizedBox(height: 10,),
-                            TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime == null)? "Enter the starting date here":
+                          itemBuilder: (context, indexJ) => Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                            const SizedBox(height: 20,),
+                            const Text("Title", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                            TextFormField(decoration: InputDecoration(
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              hintText: "Achievement.."), controller: achievementTitleControllerMatrix.elementAt(index).elementAt(indexJ),),
+                            const SizedBox(height: 20,),
+                            const Text("Description",style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                            TextFormField(decoration: InputDecoration(
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                              hintText: "Describe the achievement..."),controller: achievementDescriptionControllerMatrix.elementAt(index).elementAt(indexJ),),
+                            const SizedBox(height: 20,),
+                            const Text("Date of Achievement", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),),
+                            TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime == null)? "Enter the starting date here":
                               DateFormat("yyyy-MM-dd").format(currentUserDetails.educations.elementAt(index).accomplishments.elementAt(indexJ).dateTime!)
                               ),),
                               readOnly: true,
@@ -449,21 +480,32 @@ Widget showEditBasicInfoModal(){
                           });
                         },),
                       ],)),
-                            TextButton(onPressed: () => 
-                              setState((){
-                                TextEditingController achievementTitleController = TextEditingController();
-                                TextEditingController achievementDescriptionController = TextEditingController();
-                                achievementTitleControllerMatrix.elementAt(index).add(achievementTitleController);
-                                achievementDescriptionControllerMatrix.elementAt(index).add(achievementDescriptionController);
-                                Accomplishment accomplishment = Accomplishment();
-                                accomplishment.dateTime = null;
-                                accomplishment.id = Random().nextInt(10000) +1000;
-                                currentUserDetails.educations.elementAt(index).accomplishments.add(accomplishment);
-                              }), child: const Text("Add achievements")),
+                            const SizedBox(height: 15,),
+                            Align(
+                              alignment: Alignment.center,
+                              child: OutlinedButton.icon(
+                                icon: const Icon(Icons.add),
+                                style: ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
+                                onPressed: () => 
+                                setState((){
+                                  TextEditingController achievementTitleController = TextEditingController();
+                                  TextEditingController achievementDescriptionController = TextEditingController();
+                                  achievementTitleControllerMatrix.elementAt(index).add(achievementTitleController);
+                                  achievementDescriptionControllerMatrix.elementAt(index).add(achievementDescriptionController);
+                                  Accomplishment accomplishment = Accomplishment();
+                                  accomplishment.dateTime = null;
+                                  accomplishment.id = Random().nextInt(10000) +1000;
+                                  currentUserDetails.educations.elementAt(index).accomplishments.add(accomplishment);
+                                }), label: const Text("Add achievements")),
+                            ),
                       ],
-                     )),
-                    TextButton(
-                     child: const Text("Add more education"),
+                     );
+                    }),
+                    const SizedBox(height: 15,),
+                    FilledButton.icon(
+                    icon: const Icon(Icons.add),
+                    style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.8 ))), //ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
+                     label: const Text("Add More Education"),
                       onPressed: () =>
                       setState((){
                         TextEditingController levelController = TextEditingController();
@@ -491,7 +533,8 @@ Widget showEditBasicInfoModal(){
                       })
                     ,),
                   const SizedBox(height: 30,),
-                  FilledButton(
+                  FilledButton.icon(
+                    icon: const Icon(Icons.send),
                     style: blueFilledButtonStyle,
                     onPressed: (){
                     setState((){
@@ -510,7 +553,7 @@ Widget showEditBasicInfoModal(){
                       }
                     //saveData(userDetailsList);
                     Navigator.of(context).pop();
-                  }, child: const Text("Submit")),
+                  }, label: const Text("Submit")),
                 ],
               ),),),
             ),
@@ -543,20 +586,25 @@ Widget showEditBasicInfoModal(){
               padding: const EdgeInsets.all(14.0),
               child: Center(child: Form(child: Column(
                 children: [
-                  const SizedBox(height: 30,),
                   ListView.builder(
                     physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
                     itemCount: jobTitleController.length,
                     itemBuilder: (context, index) => 
-                    Column(children: [
-                      TextFormField(decoration: const InputDecoration(hintText: "Enter job Title"), controller: jobTitleController.elementAt(index),),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      const Text("Job Title", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "Doctor"), controller: jobTitleController.elementAt(index),),
                       const SizedBox(height: 30,),
-                      TextFormField(decoration: const InputDecoration(hintText: "Enter Features worked on"), controller: summaryController.elementAt(index),),
+                      const Text("Summary", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "Work done "), controller: summaryController.elementAt(index),),
                       const SizedBox(height: 30,),
-                      TextFormField(decoration: const InputDecoration(hintText: "Enter Organization Name"), controller: organizationController.elementAt(index),),
+                      const Text("Organization Name", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), hintText: "ABC Organization LLC..."), controller: organizationController.elementAt(index),),
                       const SizedBox(height: 30,),
-                      TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.workExperiences.elementAt(index).startDate == null)? "Enter the starting date here":
+                      const Text("Date Joined", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.workExperiences.elementAt(index).startDate == null)? "Enter the starting date here":
                       DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).startDate!)
                       ),),
                       readOnly: true,
@@ -568,7 +616,9 @@ Widget showEditBasicInfoModal(){
                           }
                         });
                       },),
-                      TextFormField(decoration: InputDecoration(icon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.workExperiences.elementAt(index).endDate == null)? "Enter the end date here":
+                      const SizedBox(height: 30,),
+                      const Text("Finished Date", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)), suffixIcon: const Icon(Icons.calendar_month), label: Text((currentUserDetails.workExperiences.elementAt(index).endDate == null)? "Enter the end date here":
                       DateFormat("yyyy-MM-dd").format(currentUserDetails.workExperiences.elementAt(index).endDate!)
                       ),),
                       readOnly: true,
@@ -583,7 +633,10 @@ Widget showEditBasicInfoModal(){
                       const SizedBox(height: 30,)
                       ],)
                     ,),
-                    TextButton(onPressed: (){
+                    OutlinedButton.icon(
+                      style: ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
+                      icon: const Icon(Icons.add),
+                      onPressed: (){
                       setState((){
                         TextEditingController jobTitleControls = TextEditingController();
                         TextEditingController summaryControls = TextEditingController();
@@ -599,9 +652,12 @@ Widget showEditBasicInfoModal(){
                         workExperience.id = Random().nextInt(10000) + 1000;
                         currentUserDetails.workExperiences.add(workExperience);
                       });  
-                    }, child: const Text("Add More")),
-                  const SizedBox(height: 60,),
-                  OutlinedButton(onPressed: (){
+                    }, label: const Text("Add More")),
+                  const SizedBox(height: 15,),
+                  FilledButton.icon(
+                    style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.8))),
+                    icon: const Icon(Icons.send),
+                    onPressed: (){
                     for(int index = 0; index < currentUserDetails.workExperiences.length; index++){
                       currentUserDetails.workExperiences.elementAt(index).jobTitle = jobTitleController.elementAt(index).text;
                       currentUserDetails.workExperiences.elementAt(index).summary = summaryController.elementAt(index).text;
@@ -612,7 +668,8 @@ Widget showEditBasicInfoModal(){
                       }
                     //saveData(userDetailsList); 
                     Navigator.of(context).pop();
-                  }, child: const Text("Submit")),
+                  }, 
+                  label: const Text("Submit")),
                 ],
               ),),),
             ),),),
@@ -644,17 +701,17 @@ Widget showEditBasicInfoModal(){
           body: StatefulBuilder(builder: (context, StateSetter setState) => 
           SingleChildScrollView(child: 
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(14.0),
             child: Center(child:
                Form(child:Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   //Text("Contact Info", style: Theme.of(context).textTheme.headlineMedium,),
-                  const SizedBox(height: 30,),
+                  const Text("Mobile No.", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                   TextFormField(
                     decoration: const InputDecoration(
-                    label: Text("Enter Mobile No."),
                     border: OutlineInputBorder(borderSide: BorderSide(style: BorderStyle.solid, color: Colors.black)),
-                    hintText: "Enter mobile no."), controller: mobileNoController, 
+                    hintText: "98xxxxxxxx..."), controller: mobileNoController, 
                     validator: (value)=> phoneNoRegex.hasMatch(value!)? null :"Invalid Phone No." ,
                     ),
                   const SizedBox(height: 30,),
@@ -663,48 +720,70 @@ Widget showEditBasicInfoModal(){
                     shrinkWrap: true,
                     itemCount: socialMediaTitleController.length,
                     itemBuilder: (context, index) => 
-                    Column(children: [
-                      TextFormField(decoration: const InputDecoration(hintText: "Enter Social Media Title"), controller: socialMediaTitleController.elementAt(index),),
-                      const SizedBox(height: 10,),
-                      TextFormField(decoration: const InputDecoration(hintText: "Enter Social Media Url"), controller: socialMediaUrlController.elementAt(index),),
-                      const SizedBox(height: 10,),
-                      TextFormField(decoration: const InputDecoration(hintText:"Enter Social Media Type" ), controller: socialMediaTypeController.elementAt(index),),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                      const Text("Social Media Title", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(decoration: InputDecoration(
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                        hintText: "Facebook"), controller: socialMediaTitleController.elementAt(index),),
+                      const SizedBox(height: 30,),
+                      const Text("Social Media URL", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(
+                        decoration: InputDecoration(
+                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                         hintText: "http://www.facebook.com/profile.link"), controller: socialMediaUrlController.elementAt(index),),
+                      const SizedBox(height: 30,),
+                      const Text("Social Media Type", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      TextFormField(decoration: InputDecoration(
+                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                       hintText:"http://www.facebook.com",), controller: socialMediaTypeController.elementAt(index),),
                       const SizedBox(height: 20,),
                     ],)
                     ),
-                  TextButton(onPressed: (){
-                    setState((){
-                      TextEditingController titleController = TextEditingController();
-                      TextEditingController urlController = TextEditingController();
-                      TextEditingController typeController = TextEditingController();
-                      socialMediaTitleController.add(titleController);
-                      socialMediaUrlController.add(urlController);
-                      socialMediaTypeController.add(typeController); 
-                    });                 
-                  }, child: const Text("Add More")),
-                  const SizedBox(height: 30,),
-                  OutlinedButton(onPressed: (){
-                  currentUserDetails.contactInfo = currentUserDetails.contactInfo.copyWith(mobileNoController.text, null);
-                    for(int i=0; i< socialMediaTitleController.length - currentUserDetails.contactInfo.socialMedias.length; i++){
-                      SocialMedia sm = SocialMedia();
-                      sm.id = Random().nextInt(10000) + 1000;
-                      sm.title = "";
-                      sm.type = "";
-                      sm.url = "";
-                      currentUserDetails.contactInfo.socialMedias.add(sm);
-                    }
-                    for (int i=0; i<currentUserDetails.contactInfo.socialMedias.length; i++){
-                      currentUserDetails.contactInfo.socialMedias.elementAt(i).title = socialMediaTitleController.elementAt(i).text;
-                      currentUserDetails.contactInfo.socialMedias.elementAt(i).url = socialMediaUrlController.elementAt(i).text;
-                      currentUserDetails.contactInfo.socialMedias.elementAt(i).type = socialMediaTypeController.elementAt(i).text;
-                    }
-                    if(locator<UserListBloc>().state is! UserListEmpty){
-                      locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
-                    }
-                    //saveData(userDetailsList);
-                    setState((){});
-                    Navigator.of(context).pop();
-                    }, child: const Text("Submit")),
+                  Center(
+                    child: OutlinedButton.icon(
+                      style: ButtonStyle(shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)))),
+                      icon: const Icon(Icons.add),
+                      onPressed: (){
+                      setState((){
+                        TextEditingController titleController = TextEditingController();
+                        TextEditingController urlController = TextEditingController();
+                        TextEditingController typeController = TextEditingController();
+                        socialMediaTitleController.add(titleController);
+                        socialMediaUrlController.add(urlController);
+                        socialMediaTypeController.add(typeController); 
+                      });                 
+                    }, label: const Text("Add More Links")),
+                  ),
+                  const SizedBox(height: 15,),
+                  Center(
+                    child: FilledButton.icon(
+                      icon: const Icon(Icons.send),
+                      style: blueFilledButtonStyle.copyWith(fixedSize: WidgetStatePropertyAll(Size.fromWidth(MediaQuery.of(context).size.width * 0.8))),
+                      onPressed: (){
+                    currentUserDetails.contactInfo = currentUserDetails.contactInfo.copyWith(mobileNoController.text, null);
+                      for(int i=0; i< socialMediaTitleController.length - currentUserDetails.contactInfo.socialMedias.length; i++){
+                        SocialMedia sm = SocialMedia();
+                        sm.id = Random().nextInt(10000) + 1000;
+                        sm.title = "";
+                        sm.type = "";
+                        sm.url = "";
+                        currentUserDetails.contactInfo.socialMedias.add(sm);
+                      }
+                      for (int i=0; i<currentUserDetails.contactInfo.socialMedias.length; i++){
+                        currentUserDetails.contactInfo.socialMedias.elementAt(i).title = socialMediaTitleController.elementAt(i).text;
+                        currentUserDetails.contactInfo.socialMedias.elementAt(i).url = socialMediaUrlController.elementAt(i).text;
+                        currentUserDetails.contactInfo.socialMedias.elementAt(i).type = socialMediaTypeController.elementAt(i).text;
+                      }
+                      if(locator<UserListBloc>().state is! UserListEmpty){
+                        locator<UserListBloc>().add(EditUserEvent(userDetails: userDetailsList));
+                      }
+                      //saveData(userDetailsList);
+                      setState((){});
+                      Navigator.of(context).pop();
+                      }, label: const Text("Submit")),
+                  ),
                 ],
                ),),),
           ),
