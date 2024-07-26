@@ -61,7 +61,6 @@ class _LandingPageState extends State<LandingPage>{
     int forceUpdateVar = 0;
 
     TextEditingController titleController = TextEditingController();
-    //TextEditingController descriptionController = TextEditingController(); 
       return BlocProvider<UserPostBloc>(
         create: (_) => UserPostBloc(), 
         child: BlocBuilder<AuthBloc, AuthStates>(
